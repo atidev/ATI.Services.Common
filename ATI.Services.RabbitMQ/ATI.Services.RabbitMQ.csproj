@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Label="Main">
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Team Services</Authors>
+    <Company>ATI</Company>
+    <LangVersion>9</LangVersion>
+    <VersionPrefix>2.3.1</VersionPrefix>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageVersion>3.0.0-ghv-test-6</PackageVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <NoWarn>1701;1702;CS1591;CS1571;CS1573;CS1574</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <NoWarn>1701;1702;CS1591;CS1571;CS1573;CS1574</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="EasyNetQ" Version="6.3.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ATI.Services.Common\ATI.Services.Common.csproj" />
+  </ItemGroup>
+</Project>

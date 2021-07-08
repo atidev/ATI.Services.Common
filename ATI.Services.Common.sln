@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ATI.Services.Common", "ATI.Services.Common\ATI.Services.Common.csproj", "{4913B117-23E7-4670-A11E-DEB9A5857120}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ATI.Services.Consul", "ATI.Services.Consul\ATI.Services.Consul.csproj", "{9FC58156-4D4C-43A8-97FD-ED578D405073}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ATI.Services.RabbitMQ", "ATI.Services.RabbitMQ\ATI.Services.RabbitMQ.csproj", "{1688FEC3-48AE-4BA7-BAF4-767E846BDD3F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4913B117-23E7-4670-A11E-DEB9A5857120}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4913B117-23E7-4670-A11E-DEB9A5857120}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4913B117-23E7-4670-A11E-DEB9A5857120}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4913B117-23E7-4670-A11E-DEB9A5857120}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9FC58156-4D4C-43A8-97FD-ED578D405073}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9FC58156-4D4C-43A8-97FD-ED578D405073}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9FC58156-4D4C-43A8-97FD-ED578D405073}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9FC58156-4D4C-43A8-97FD-ED578D405073}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1688FEC3-48AE-4BA7-BAF4-767E846BDD3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1688FEC3-48AE-4BA7-BAF4-767E846BDD3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1688FEC3-48AE-4BA7-BAF4-767E846BDD3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1688FEC3-48AE-4BA7-BAF4-767E846BDD3F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Label="Main">
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Team Services</Authors>
+    <Company>ATI</Company>
+    <LangVersion>9</LangVersion>
+    <VersionPrefix>5.2.1</VersionPrefix>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageVersion>5.3.0-ghv-test-7</PackageVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <NoWarn>1701;1702;CS1591;CS1571;CS1573;CS1574</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <NoWarn>1701;1702;CS1591;CS1571;CS1573;CS1574</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Consul" Version="0.7.2.6" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ATI.Services.Common\ATI.Services.Common.csproj" />
+  </ItemGroup>
+</Project>
