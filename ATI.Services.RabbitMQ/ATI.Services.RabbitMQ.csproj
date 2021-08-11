@@ -9,7 +9,9 @@
     <VersionPrefix>2.3.1</VersionPrefix>
     <PublishReadyToRun>true</PublishReadyToRun>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageVersion>3.0.0-ghv-test-6</PackageVersion>
+    <PackageVersion>3.0.0</PackageVersion>
+    <PackageId>atisu.services.rabbitmq</PackageId>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <NoWarn>1701;1702;CS1591;CS1571;CS1573;CS1574</NoWarn>
