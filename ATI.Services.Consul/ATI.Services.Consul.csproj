@@ -9,7 +9,9 @@
     <VersionPrefix>5.2.1</VersionPrefix>
     <PublishReadyToRun>true</PublishReadyToRun>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageVersion>5.3.0-ghv-test-7</PackageVersion>
+    <PackageVersion>5.3.0</PackageVersion>
+    <PackageId>atisu.services.consul</PackageId>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <NoWarn>1701;1702;CS1591;CS1571;CS1573;CS1574</NoWarn>

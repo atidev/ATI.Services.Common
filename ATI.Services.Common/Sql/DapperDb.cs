@@ -327,7 +327,8 @@ namespace ATI.Services.Common.Sql
 
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
                             metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
-                            longTimeRequest, QueryMetricTypeLabel))
+                            longTimeRequest, 
+                            QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
                                 procedureName,
