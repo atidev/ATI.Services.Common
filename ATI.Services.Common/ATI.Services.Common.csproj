@@ -2,7 +2,6 @@
   <PropertyGroup Label="Main">
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Team Services</Authors>
     <Company>ATI</Company>
     <VersionPrefix>7.5.1</VersionPrefix>
