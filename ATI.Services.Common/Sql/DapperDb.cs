@@ -55,8 +55,6 @@ namespace ATI.Services.Common.Sql
                     var timeout = GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
-                        await connection.OpenAsync();
-                        
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
                             metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -110,8 +108,6 @@ namespace ATI.Services.Common.Sql
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
-                        await connection.OpenAsync();
-
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
                             metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -172,8 +168,6 @@ namespace ATI.Services.Common.Sql
                     var timeout = GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
-                        await connection.OpenAsync();
-
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
                             metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -226,8 +220,6 @@ namespace ATI.Services.Common.Sql
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
-                        await connection.OpenAsync();
-
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
                             metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -268,8 +260,6 @@ namespace ATI.Services.Common.Sql
                     var timeout = GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
-                        await connection.OpenAsync();
-
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
                             metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -323,8 +313,6 @@ namespace ATI.Services.Common.Sql
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
-                        await connection.OpenAsync();
-
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
                             metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, 
@@ -381,8 +369,6 @@ namespace ATI.Services.Common.Sql
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
-                        await connection.OpenAsync();
-
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
                             metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -451,8 +437,6 @@ namespace ATI.Services.Common.Sql
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
-                        await connection.OpenAsync();
-
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
                             metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -513,8 +497,6 @@ namespace ATI.Services.Common.Sql
                     var timeout = GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
-                        await connection.OpenAsync();
-
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
                             metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -577,8 +559,6 @@ namespace ATI.Services.Common.Sql
                     var timeout = GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
-                        await connection.OpenAsync();
-
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
                             metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -632,8 +612,6 @@ namespace ATI.Services.Common.Sql
                     var timeout = GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
-                        await connection.OpenAsync();
-
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
                             metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -671,8 +649,6 @@ namespace ATI.Services.Common.Sql
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
-                        await connection.OpenAsync();
-
                         T result;
                         
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
@@ -717,8 +693,6 @@ namespace ATI.Services.Common.Sql
                     var timeout = GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
-                        await connection.OpenAsync();
-
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
                             metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -758,8 +732,6 @@ namespace ATI.Services.Common.Sql
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
-                        await connection.OpenAsync();
-
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
                             metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -803,8 +775,6 @@ namespace ATI.Services.Common.Sql
 
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
-                        await connection.OpenAsync();
-
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
                             metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -868,8 +838,6 @@ namespace ATI.Services.Common.Sql
 
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
-                        await connection.OpenAsync();
-
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
                             metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -927,8 +895,6 @@ namespace ATI.Services.Common.Sql
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
-                        await connection.OpenAsync();
-
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
                             metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -998,8 +964,6 @@ namespace ATI.Services.Common.Sql
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
-                        await connection.OpenAsync();
-
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
                             metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
