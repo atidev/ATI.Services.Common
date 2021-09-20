@@ -9,7 +9,7 @@
     <LangVersion>9</LangVersion>
     <PublishReadyToRun>true</PublishReadyToRun>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageVersion>7.6.3</PackageVersion>
+    <PackageVersion>7.6.4</PackageVersion>
     <PackageId>atisu.services.common</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
