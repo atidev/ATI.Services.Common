@@ -673,6 +673,26 @@ namespace ATI.Services.Common.Caching.Redis
             }
         }
         
+        public async Task<OperationResult<double>> IncreaseAsync(string key, double value, string metricEntity, TimeSpan? longTimeRequest = null)
+        {
+            if (!_connected)
+                return new OperationResult<double>(ActionStatus.InternalOptionalServerUnavailable);
+            if (string.IsNullOrEmpty(key))
+                return new OperationResult<double>();
+
+            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(key), metricEntity, requestParams: new { Key = key, Value = value }, longRequestTime: longTimeRequest))
+            {
+                var transaction = _redisDb.CreateTransaction();
+                var incrementTransaction = transaction.StringIncrementAsync(key, value);
+
+                var operation = await ExecuteAsync(async () => await transaction.ExecuteAsync(), new { key, value });
+                if (!operation.Success)
+                    return new OperationResult<double>(operation);
+
+                return new OperationResult<double>(incrementTransaction.Result);
+            }
+        }
+
 
         #region ByScript
 
