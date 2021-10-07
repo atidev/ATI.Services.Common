@@ -18,8 +18,8 @@ namespace ATI.Services.Common.Caching.Redis
         
         protected RedisOptions Options;
         
-        protected const string ConvertMetricTypeLabel = "Convert";
-        protected const string FullMetricTypeLabel = "Full";
+        protected const string ConvertMetricTypeLabel = "convert";
+        protected const string FullMetricTypeLabel = "full";
         
         protected Dictionary<string, string> GetTracingInfo(string key) => TraceHelper.GetRedisTracingInfo(Options.ConnectionString, key);
         
