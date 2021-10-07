@@ -30,6 +30,8 @@ namespace ATI.Services.Common.Caching.Redis
         private readonly JsonSerializerSettings _serializeSettings;
         private bool _connected;
 
+        private const string ConvertMetricTypeLabel = "Convert";
+
         private RedisScriptCache _redisScriptCache;
 
         private static readonly Policy<ConnectionMultiplexer> InitPolicy =
@@ -41,7 +43,7 @@ namespace ATI.Services.Common.Caching.Redis
         public RedisCache(RedisOptions options, CacheHitRatioManager manager)
         {
             Options = options;
-            _metricsTracingFactory = MetricsTracingFactory.CreateRedisMetricsFactory(nameof(RedisCache), Options.LongRequestTime);
+            _metricsTracingFactory = MetricsTracingFactory.CreateRedisMetricsFactory(nameof(RedisCache), Options.LongRequestTime, "type");
             _serializeSettings = new JsonSerializerSettings
             {
                 ContractResolver = new DefaultContractResolver { IgnoreShouldSerializeMembers = true }
@@ -160,7 +162,9 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(key))
                 return new OperationResult<T>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(key), metricEntity, requestParams: new { RedisKey = key }, longRequestTime: longRequestTime))
+            var tracingInfo = GetTracingInfo(key);
+
+            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, requestParams: new { RedisKey = key }, longRequestTime: longRequestTime))
             {
                 var operationResult = await ExecuteAsync(async () => await _redisDb.StringGetAsync(key), key);
 
@@ -172,7 +176,14 @@ namespace ATI.Services.Common.Caching.Redis
                 }
 
                 _counter.Hit();
-                var value = JsonConvert.DeserializeObject<T>(operationResult.Value);
+                
+                T value;
+                using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity,
+                    requestParams: new { RedisKey = key }, longRequestTime: longRequestTime, additionalLabels: ConvertMetricTypeLabel))
+                {
+                    value = JsonConvert.DeserializeObject<T>(operationResult.Value);
+                }
+
                 return new OperationResult<T>(value);
             }
         }
@@ -216,16 +227,25 @@ namespace ATI.Services.Common.Caching.Redis
             if (keys == null || keys.Count == 0)
                 return new OperationResult<List<T>>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(keys.FirstOrDefault()), metricEntity, requestParams: new { RedisKeys = keys, WithNulls = withNulls }, longRequestTime: longRequestTime))
+            var tracingInfo = GetTracingInfo(keys.FirstOrDefault());
+
+            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, requestParams: new { RedisKeys = keys, WithNulls = withNulls }, longRequestTime: longRequestTime))
             {
                 var keysArray = keys.Select(key => (RedisKey)key).ToArray();
                 var operationResult = await ExecuteAsync(async () => await _redisDb.StringGetAsync(keysArray), keys);
                 if (!operationResult.Success)
                     return new OperationResult<List<T>>(operationResult);
 
-                var result = withNulls
-                    ? operationResult.Value.Select(value => value.HasValue ? JsonConvert.DeserializeObject<T>(value) : default).ToList()
-                    : operationResult.Value.Where(value => value.HasValue).Select(value => JsonConvert.DeserializeObject<T>(value)).ToList();
+                List<T> result;
+
+                using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity,
+                    requestParams: new { RedisKeys = keys, WithNulls = withNulls }, longRequestTime: longRequestTime,
+                    additionalLabels: ConvertMetricTypeLabel))
+                { 
+                    result = withNulls
+                        ? operationResult.Value.Select(value => value.HasValue ? JsonConvert.DeserializeObject<T>(value) : default).ToList()
+                        : operationResult.Value.Where(value => value.HasValue).Select(value => JsonConvert.DeserializeObject<T>(value)).ToList();
+                }
 
                 var amountOfFoundValues = operationResult.Value.Count(value => value.HasValue);
                 _counter.Hit(amountOfFoundValues);
@@ -243,28 +263,33 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(key))
                 return new OperationResult<List<string>>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(key), metricEntity, requestParams: new { Key = key }, longRequestTime: longRequestTime))
+            var tracingInfo = GetTracingInfo(key);
+
+            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, requestParams: new { Key = key }, longRequestTime: longRequestTime))
             {
                 var operationResult = await ExecuteAsync(async () => await _redisDb.SetMembersAsync(key), key);
 
-                if (operationResult.Success)
+                if (!operationResult.Success) 
+                    return new OperationResult<List<string>>(operationResult.ActionStatus);
+                
+                if (operationResult.Value.Length == 0)
+                    return new OperationResult<List<string>>(ActionStatus.NotFound);
+
+                if (operationResult.Value.Length == 1 && string.IsNullOrEmpty(operationResult.Value.FirstOrDefault()))
                 {
-                    if (operationResult.Value.Length == 0)
-                    {
-                        return new OperationResult<List<string>>(ActionStatus.NotFound);
-                    }
-
-                    if (operationResult.Value.Length == 1 && string.IsNullOrEmpty(operationResult.Value.FirstOrDefault()))
-                    {
-                        return new OperationResult<List<string>>(new List<string>());
-                    }
-
-                    var result = operationResult.Value.Where(value => value.HasValue && !string.IsNullOrEmpty(value)).Select(value => value.ToString()).ToList();
-
-                    return new OperationResult<List<string>>(result);
+                    return new OperationResult<List<string>>(new List<string>());
                 }
 
-                return new OperationResult<List<string>>(operationResult.ActionStatus);
+                List<string> result;
+                using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity,
+                    requestParams: new { Key = key }, longRequestTime: longRequestTime, additionalLabels: ConvertMetricTypeLabel))
+                {
+                    result = operationResult.Value
+                        .Where(value => value.HasValue && !string.IsNullOrEmpty(value))
+                        .Select(value => value.ToString()).ToList();
+                }
+
+                return new OperationResult<List<string>>(result);
             }
         }
 
@@ -331,7 +356,9 @@ namespace ATI.Services.Common.Caching.Redis
             if (keys == null || keys.Count == 0)
                 return new OperationResult<List<string>>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(keys.FirstOrDefault()), metricEntity, requestParams: new { RedisKeys = keys, WithNulls = withNulls }, longRequestTime: longRequestTime))
+            var tracingInfo = GetTracingInfo(keys.FirstOrDefault());
+
+            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, requestParams: new { RedisKeys = keys, WithNulls = withNulls }, longRequestTime: longRequestTime))
             {
                 var transaction = _redisDb.CreateTransaction();
                 var operations = keys.Select(key =>
@@ -343,13 +370,18 @@ namespace ATI.Services.Common.Caching.Redis
                     return new OperationResult<List<string>>(operationResult);
 
                 var results = new List<string>();
-                foreach (var response in responses)
+                using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, 
+                    requestParams: new { RedisKeys = keys, WithNulls = withNulls },
+                    longRequestTime: longRequestTime, additionalLabels: ConvertMetricTypeLabel))
                 {
-                    var result = withNulls
-                        ? response.Result.Select(value => value.HasValue ? value.ToString() : default).ToList()
-                        : response.Result.Where(value => value.HasValue).Select(value => value.ToString()).ToList();
+                    foreach (var response in responses)
+                    {
+                        var result = withNulls
+                            ? response.Result.Select(value => value.HasValue ? value.ToString() : default).ToList()
+                            : response.Result.Where(value => value.HasValue).Select(value => value.ToString()).ToList();
 
-                    results.AddRange(result);
+                        results.AddRange(result);
+                    }
                 }
 
                 return new OperationResult<List<string>>(results);
@@ -572,7 +604,9 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(hashKey) || string.IsNullOrEmpty(hashField))
                 return new OperationResult<T>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(hashKey), metricEntity, requestParams: new { HashKey = hashKey, HashField = hashField }, longRequestTime: longTimeRequest))
+            var tracingInfo = GetTracingInfo(hashKey);
+
+            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, requestParams: new { HashKey = hashKey, HashField = hashField }, longRequestTime: longTimeRequest))
             {
                 var operationResult = await ExecuteAsync(async () => await _redisDb.HashGetAsync(hashKey, hashField), new { hashKey, hashField });
 
@@ -584,7 +618,15 @@ namespace ATI.Services.Common.Caching.Redis
                 }
 
                 _counter.Hit();
-                var value = JsonConvert.DeserializeObject<T>(operationResult.Value);
+
+                T value;
+                using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, 
+                    requestParams: new { HashKey = hashKey, HashField = hashField },
+                    longRequestTime: longTimeRequest, additionalLabels: ConvertMetricTypeLabel))
+                {
+                    value = JsonConvert.DeserializeObject<T>(operationResult.Value);
+                }
+
                 return new OperationResult<T>(value);
             }
         }
@@ -596,7 +638,9 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(hashKey))
                 return new OperationResult<T>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(hashKey), metricEntity,
+            var tracingInfo = GetTracingInfo(hashKey);
+
+            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity,
                 requestParams: new {HashKey = hashKey}, longRequestTime: longTimeRequest))
             {
                 var operationResult = await ExecuteAsync(async () => await _redisDb.HashGetAllAsync(hashKey), hashKey);
@@ -609,7 +653,13 @@ namespace ATI.Services.Common.Caching.Redis
                 }
                 _counter.Hit();
 
-                var result = FromRedisHash<T>(operationResult.Value);
+                T result;
+                using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity,
+                    requestParams: new {HashKey = hashKey}, longRequestTime: longTimeRequest, additionalLabels: ConvertMetricTypeLabel))
+                {
+                    result = FromRedisHash<T>(operationResult.Value);
+                }
+
                 return new OperationResult<T>(result);
             }
         }
@@ -620,8 +670,10 @@ namespace ATI.Services.Common.Caching.Redis
                 return new OperationResult<List<KeyValuePair<TKey, TValue>>>(ActionStatus.InternalOptionalServerUnavailable);
             if (string.IsNullOrEmpty(hashKey))
                 return new OperationResult<List<KeyValuePair<TKey, TValue>>>();
+
+            var tracingInfo = GetTracingInfo(hashKey);
         
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(hashKey), metricEntity,
+            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity,
                 requestParams: new {HashKey = hashKey}, longRequestTime: longTimeRequest))
             {
                 var operationResult = await ExecuteAsync(async () => await _redisDb.HashGetAllAsync(hashKey), hashKey);
@@ -633,13 +685,19 @@ namespace ATI.Services.Common.Caching.Redis
                     return new OperationResult<List<KeyValuePair<TKey, TValue>>>(ActionStatus.NotFound);
                 }
                 _counter.Hit();
-                
-                var result = operationResult.Value.Select(h =>
+
+                List<KeyValuePair<TKey, TValue>> result;
+                using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity,
+                    requestParams: new {HashKey = hashKey}, longRequestTime: longTimeRequest, additionalLabels: ConvertMetricTypeLabel))
                 {
-                    if(!h.Name.ToString().TryConvert(out TKey key))
-                        throw new ArgumentException($"Не удалось сконвертировать HashFieldName={h.Name} в тип {typeof(TKey)}");
-                    return new KeyValuePair<TKey, TValue>(key, JsonConvert.DeserializeObject<TValue>(h.Value, _serializeSettings));
-                }).ToList();
+                    result = operationResult.Value.Select(h =>
+                    {
+                        if(!h.Name.ToString().TryConvert(out TKey key))
+                            throw new ArgumentException($"Не удалось сконвертировать HashFieldName={h.Name} в тип {typeof(TKey)}");
+                        return new KeyValuePair<TKey, TValue>(key, JsonConvert.DeserializeObject<TValue>(h.Value, _serializeSettings));
+                    }).ToList();
+                }
+                
                 return new OperationResult<List<KeyValuePair<TKey, TValue>>>(result);
             }
         }
@@ -652,7 +710,9 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(hashKey))
                 return new OperationResult<List<T>>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(hashKey), metricEntity, requestParams: new { HashKey = hashKey }, longRequestTime: longTimeRequest))
+            var tracingInfo = GetTracingInfo(hashKey);
+            
+            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, requestParams: new { HashKey = hashKey }, longRequestTime: longTimeRequest))
             {
                 var operationResult = await ExecuteAsync(async () => await _redisDb.HashValuesAsync(hashKey), hashKey);
                 if (operationResult.Success)
@@ -661,7 +721,16 @@ namespace ATI.Services.Common.Caching.Redis
                     {
                         return new OperationResult<List<T>>(ActionStatus.NotFound);
                     }
-                    var result = operationResult.Value.Where(value => value.HasValue).Select(value => JsonConvert.DeserializeObject<T>(value)).ToList();
+
+                    List<T> result;
+                    using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity,
+                        requestParams: new { HashKey = hashKey }, longRequestTime: longTimeRequest, additionalLabels: ConvertMetricTypeLabel))
+                    {
+                        result = operationResult.Value
+                            .Where(value => value.HasValue)
+                            .Select(value => JsonConvert.DeserializeObject<T>(value))
+                            .ToList();
+                    }
 
                     var amountOfFoundValues = operationResult.Value.Count(value => value.HasValue);
                     _counter.Hit(amountOfFoundValues);
