@@ -13,6 +13,6 @@
         public ConfigNetworkTarget[] NetworkTargets { get; set; } = { };
         public Rule[] Rules { get; set; } = { };
         
-        public readonly string[] LoggedRequestHeader = { };
+        public string[] LoggedRequestHeader { get; set; } = { };
     }
 }
