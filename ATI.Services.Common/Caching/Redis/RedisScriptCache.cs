@@ -49,7 +49,8 @@ namespace ATI.Services.Common.Caching.Redis
             if (redisValue.Count < 0)
                 return OperationResult.Ok;
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(redisValue.FirstOrDefault()?.GetKey()), metricEntity, requestParams: new { RedisValues = redisValue }, longRequestTime: longRequestTime))
+            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(redisValue.FirstOrDefault()?.GetKey()), metricEntity, 
+                requestParams: new { RedisValues = redisValue }, longRequestTime: longRequestTime, additionalLabels: FullMetricTypeLabel))
             {
                 var result = await InsertManyByScriptAsync(redisValue.Select(v => v.GetKey()), redisValue);
                 return result;
@@ -61,8 +62,9 @@ namespace ATI.Services.Common.Caching.Redis
             if (redisValues == null || redisValues.Count == 0 )
                 return OperationResult.Ok;
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(redisValues.FirstOrDefault().Key), metricEntity, requestParams: new { RedisValues = redisValues },
-                longRequestTime: longRequestTime))
+            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(redisValues.FirstOrDefault().Key), metricEntity,
+                requestParams: new { RedisValues = redisValues },
+                longRequestTime: longRequestTime, additionalLabels: FullMetricTypeLabel))
             {
                 var result = await InsertManyByScriptAsync(redisValues.Keys, redisValues.Values);
                 return result;
