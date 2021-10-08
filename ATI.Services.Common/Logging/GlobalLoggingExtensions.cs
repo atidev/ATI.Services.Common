@@ -13,6 +13,8 @@ namespace ATI.Services.Common.Logging
     [PublicAPI]
     public static class GlobalLoggingExtensions
     {
+        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+        
         public static void UseCustomExceptionHandler(this IApplicationBuilder app, WarningError errorAsWarning = 0)
         {
             app.UseExceptionHandler(new ExceptionHandlerOptions
@@ -36,14 +38,14 @@ namespace ATI.Services.Common.Logging
                              errorAsWarning.HasFlag(WarningError.ConnectionResetException) &&
                              exception is ConnectionResetException))
                         {
-                            LogManager.GetCurrentClassLogger().WarnWithObject(
+                            Logger.WarnWithObject(
                                 exception.Message,
                                 logContext
                             );
                         }
                         else
                         {
-                            LogManager.GetCurrentClassLogger().ErrorWithObject(
+                            Logger.ErrorWithObject(
                                 exception,
                                 "UNHANDLED EXCEPTION",
                                 logContext
