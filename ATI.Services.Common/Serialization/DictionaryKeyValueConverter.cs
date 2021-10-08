@@ -8,8 +8,6 @@ using JetBrains.Annotations;
 namespace ATI.Services.Common.Serialization
 {
     /// <summary>
-    /// Demonstrates a <see cref="Dictionary{TKey,TValue}"> converter using a JSON array containing KeyValuePair objects.
-    /// Sample JSON for <see cref="Dictionary{int, string}">: [{"Key":1,"Value":"One"},{"Key":2,"Value":"Two"}]
     /// https://github.com/dotnet/corefx/blob/master/src/System.Text.Json/tests/Serialization/CustomConverterTests.DictionaryKeyValueConverter.cs
     /// </summary>
     [PublicAPI]
