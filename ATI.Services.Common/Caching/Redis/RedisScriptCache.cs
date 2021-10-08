@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Metrics;
 using JetBrains.Annotations;
-using Newtonsoft.Json;
 using Polly;
 using Polly.CircuitBreaker;
 using StackExchange.Redis;
@@ -77,7 +77,7 @@ namespace ATI.Services.Common.Caching.Redis
             var i = 0;
             foreach (var value in values)
             {
-                redisValues[i] = JsonConvert.SerializeObject(value);
+                redisValues[i] = JsonSerializer.Serialize(value);
                 i++;
             }
 
