@@ -16,7 +16,7 @@ namespace ATI.Services.Common.Behaviors.OperationBuilder
         protected internal Func<ActionStatus, string> GetCustomMessage { protected get; set; }
 
 
-        protected readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+        protected static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
         internal static bool CheckActionStatus(ref IActionResult result,
             OperationResult operationResult,
