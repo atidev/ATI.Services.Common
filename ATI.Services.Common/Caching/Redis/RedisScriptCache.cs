@@ -77,7 +77,7 @@ namespace ATI.Services.Common.Caching.Redis
             var i = 0;
             foreach (var value in values)
             {
-                redisValues[i] = JsonSerializer.Serialize(value);
+                redisValues[i] = JsonSerializer.Serialize(value, JsonSerializerOptions);
                 i++;
             }
 

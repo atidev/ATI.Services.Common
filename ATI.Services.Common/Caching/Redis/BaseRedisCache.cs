@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
+using ATI.Services.Common.Serialization;
 using ATI.Services.Common.Tracing;
 using NLog;
 using Polly;
@@ -16,8 +18,16 @@ namespace ATI.Services.Common.Caching.Redis
     {
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
         
-        protected RedisOptions Options;
+        protected readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
+        {
+            Converters =
+            {
+                new TimeSpanConverter()
+            }
+        };
         
+        protected RedisOptions Options;
+
         protected Dictionary<string, string> GetTracingInfo(string key) => TraceHelper.GetRedisTracingInfo(Options.ConnectionString, key);
         
         protected async Task<OperationResult> ExecuteAsync(
