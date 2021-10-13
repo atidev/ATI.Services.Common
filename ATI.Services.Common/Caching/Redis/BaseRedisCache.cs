@@ -22,7 +22,8 @@ namespace ATI.Services.Common.Caching.Redis
         {
             Converters =
             {
-                new TimeSpanConverter()
+                new TimeSpanConverter(),
+                new DictionaryKeyValueConverter()
             }
         };
         
