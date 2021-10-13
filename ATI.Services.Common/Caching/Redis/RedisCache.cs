@@ -94,7 +94,7 @@ namespace ATI.Services.Common.Caching.Redis
             return true;
         }
         
-        public async Task<OperationResult> InsertAsync(ICacheEntity redisValue, string metricEntity, TimeSpan? longRequestTime = null)
+        public async Task<OperationResult> InsertAsync<T>(T redisValue, string metricEntity, TimeSpan? longRequestTime = null) where T : ICacheEntity
             =>
             await InsertAsync(redisValue, redisValue.GetKey(), Options.TimeToLive, metricEntity, longRequestTime);
 
@@ -106,7 +106,7 @@ namespace ATI.Services.Common.Caching.Redis
             =>
             await InsertAsync(redisValue, key, Options.TimeToLive, metricEntity, longRequestTime, When.NotExists);
 
-        public async Task<OperationResult<bool>> InsertIfNotExistsAsync(ICacheEntity redisValue, string metricEntity, TimeSpan? longRequestTime = null)
+        public async Task<OperationResult<bool>> InsertIfNotExistsAsync<T>(T redisValue, string metricEntity, TimeSpan? longRequestTime = null) where T : ICacheEntity
             =>
             await InsertAsync(redisValue, redisValue.GetKey(), Options.TimeToLive, metricEntity, longRequestTime, When.NotExists);
 
