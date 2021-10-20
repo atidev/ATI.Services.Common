@@ -68,7 +68,7 @@ namespace ATI.Services.Common.Behaviors.OperationBuilder.Extensions
         {
             action.GetCustomStatus = status =>
                 customStatusMap.TryGetValue(status, out var statusCode) ? statusCode : null;
-            ;
+            
             return action;
         }
 
