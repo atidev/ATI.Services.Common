@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 
-namespace ATI.Services.Common.Serialization
+namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization
 {
     [PublicAPI]
     public class TimeSpanConverter : JsonConverter<TimeSpan>

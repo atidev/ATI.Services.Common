@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Metrics;
@@ -77,7 +76,7 @@ namespace ATI.Services.Common.Caching.Redis
             var i = 0;
             foreach (var value in values)
             {
-                redisValues[i] = JsonSerializer.Serialize(value, JsonSerializerOptions);
+                redisValues[i] = Serializer.Serialize(value);
                 i++;
             }
 

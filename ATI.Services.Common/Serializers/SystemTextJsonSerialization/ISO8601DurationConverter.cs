@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using System.Xml;
 using JetBrains.Annotations;
 
-namespace ATI.Services.Common.Serialization
+namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization
 {
     // ReSharper disable once InconsistentNaming
     /// <summary>

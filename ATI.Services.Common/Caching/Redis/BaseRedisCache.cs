@@ -4,7 +4,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
-using ATI.Services.Common.Serialization;
+using ATI.Services.Common.Serializers;
+using ATI.Services.Common.Serializers.SystemTextJsonSerialization;
 using ATI.Services.Common.Tracing;
 using NLog;
 using Polly;
@@ -17,17 +18,14 @@ namespace ATI.Services.Common.Caching.Redis
     public abstract class BaseRedisCache
     {
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
-        
-        protected readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
-        {
-            Converters =
-            {
-                new TimeSpanConverter(),
-                new DictionaryKeyValueConverter()
-            }
-        };
-        
+        protected ISerializer Serializer;
+
         protected RedisOptions Options;
+
+        protected void SetSerializer(ISerializer serializer)
+        {
+            Serializer = serializer;
+        }
 
         protected Dictionary<string, string> GetTracingInfo(string key) => TraceHelper.GetRedisTracingInfo(Options.ConnectionString, key);
         

@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 
-namespace ATI.Services.Common.Serialization
+namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization
 {
     /// <summary>
     /// https://github.com/dotnet/corefx/blob/master/src/System.Text.Json/tests/Serialization/CustomConverterTests.DictionaryKeyValueConverter.cs
