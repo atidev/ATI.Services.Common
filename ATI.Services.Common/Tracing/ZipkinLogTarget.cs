@@ -13,8 +13,11 @@ namespace ATI.Services.Common.Tracing
 
         protected override void Write(LogEventInfo logEvent)
         {
-            var trace = Trace.Current;
-            trace?.Record(Annotations.Tag("error", Layout.Render(logEvent)));
+            if (logEvent != null)
+            {
+                var trace = Trace.Current;
+                trace?.Record(Annotations.Tag("error", Layout.Render(logEvent) ?? logEvent.ToString()));
+            }
         }
     }
 }

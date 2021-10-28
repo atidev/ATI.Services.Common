@@ -34,7 +34,11 @@ namespace ATI.Services.Common.Metrics
 
                 foreach (var tag in getTracingTagsCallback)
                 {
-                    _trace.Record(Annotations.Tag(tag.Key, tag.Value));
+                    if (!string.IsNullOrWhiteSpace(tag.Key) &&
+                        !string.IsNullOrWhiteSpace(tag.Value))
+                    {
+                        _trace.Record(Annotations.Tag(tag.Key, tag.Value));
+                    }
                 }
             }
         }
