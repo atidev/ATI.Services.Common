@@ -1,3 +1,4 @@
+using System;
 using ATI.Services.Common.Extensions;
 using ATI.Services.Common.Initializers;
 using ATI.Services.Common.Tracing;
@@ -10,12 +11,13 @@ namespace ATI.Services.Common.Metrics
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     public static class MetricsExtensions
     {
-        public static void AddMetrics(this IServiceCollection services)
+        public static void AddMetrics(this IServiceCollection services, IServiceProvider provider)
         {
             services.ConfigureByName<TracingOptions>();
             services.AddSingleton<ZipkinManager>();
             services.AddTransient<MetricsInitializer>();
             MetricsConfig.Configure();
+            AppHttpContext.Services = provider;
         }
 
         public static void UseMetrics(this IApplicationBuilder app)
