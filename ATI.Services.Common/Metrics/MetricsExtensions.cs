@@ -24,7 +24,6 @@ namespace ATI.Services.Common.Metrics
         public static void UseMetrics(this IApplicationBuilder app)
         {
             app.UseMiddleware<MetricsStatusCodeCounterMiddleware>();
-            AppHttpContext.Services = app.ApplicationServices;
         }
     }
 }
