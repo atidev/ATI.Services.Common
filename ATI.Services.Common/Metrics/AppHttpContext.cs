@@ -45,14 +45,14 @@ namespace ATI.Services.Common.Metrics
             {
                 if (Current == null)
                 {
-                    return null;
+                    return "this service";
                 }
                 if (Current.Items.TryGetValue(CommonBehavior.ClientNameItemKey, out var clientNameValue))
                 {
                     return clientNameValue as string;
                 }
 
-                return null;
+                return "Empty";
             }
         }
     }
