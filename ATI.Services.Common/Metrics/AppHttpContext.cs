@@ -33,7 +33,7 @@ namespace ATI.Services.Common.Metrics
         {
             get
             {
-                IHttpContextAccessor httpContextAccessor =
+                var httpContextAccessor =
                     _services.GetService(typeof(IHttpContextAccessor)) as IHttpContextAccessor;
                 return httpContextAccessor?.HttpContext;
             }
@@ -43,6 +43,10 @@ namespace ATI.Services.Common.Metrics
         {
             get
             {
+                if (Current == null)
+                {
+                    return null;
+                }
                 if (Current.Items.TryGetValue(CommonBehavior.ClientNameItemKey, out var clientNameValue))
                 {
                     return clientNameValue as string;
