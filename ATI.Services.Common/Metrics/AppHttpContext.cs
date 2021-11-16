@@ -45,7 +45,7 @@ namespace ATI.Services.Common.Metrics
             {
                 if (Current == null)
                 {
-                    return "this service";
+                    return "ThisService";
                 }
                 if (Current.Items.TryGetValue(CommonBehavior.ClientNameItemKey, out var clientNameValue))
                 {
