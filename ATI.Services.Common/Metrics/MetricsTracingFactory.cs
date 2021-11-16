@@ -17,7 +17,7 @@ namespace ATI.Services.Common.Metrics
         private readonly string _tracingServiceName;
         private readonly string _externalHttpServiceName;
         private readonly LogSource _logSource;
-        
+        private static readonly string ClientLabelName = "client_name";
         private static TimeSpan _defaultLongRequestTime = TimeSpan.FromSeconds(1);
 
         //Время запроса считающегося достаточно долгим, что бы об этом доложить в кибану
@@ -32,7 +32,7 @@ namespace ATI.Services.Common.Metrics
 
         public static MetricsTracingFactory CreateHttpClientMetricsFactory([NotNull]string summaryName, string externalHttpServiceName, TimeSpan? longRequestTime = null, params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("route_template", "entity_name", "external_http_service_name", "client_name", additionalSummaryLabels);
+            var labels = ConcatLabelNames("route_template", "entity_name", "external_http_service_name", ClientLabelName, additionalSummaryLabels);
             
             return new MetricsTracingFactory(
                 LogSource.HttpClient,
@@ -45,7 +45,7 @@ namespace ATI.Services.Common.Metrics
 
         public static MetricsTracingFactory CreateRedisMetricsFactory([NotNull]string summaryName, TimeSpan? longRequestTime = null, params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("method_name", "entity_name", null, "client_name", additionalSummaryLabels);
+            var labels = ConcatLabelNames("method_name", "entity_name", null, ClientLabelName, additionalSummaryLabels);
 
             return new MetricsTracingFactory(
                 LogSource.Redis,
@@ -57,7 +57,7 @@ namespace ATI.Services.Common.Metrics
 
         public static MetricsTracingFactory CreateMongoMetricsFactory([NotNull]string summaryName, params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("method_name", "entity_name", null, "client_name", additionalSummaryLabels);
+            var labels = ConcatLabelNames("method_name", "entity_name", null, ClientLabelName, additionalSummaryLabels);
 
             return new MetricsTracingFactory(
                 LogSource.Mongo,
@@ -69,7 +69,7 @@ namespace ATI.Services.Common.Metrics
 
         public static MetricsTracingFactory CreateSqlMetricsFactory([NotNull]string summaryName, TimeSpan? longTimeRequest = null, params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("procedure_name", "entity_name", null, "client_name", additionalSummaryLabels);
+            var labels = ConcatLabelNames("procedure_name", "entity_name", null, ClientLabelName, additionalSummaryLabels);
 
             return new MetricsTracingFactory(
                 LogSource.Sql,
@@ -84,7 +84,7 @@ namespace ATI.Services.Common.Metrics
             double? longRequestTime = null,
             params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("route_template", "entity_name", null, "client_name", additionalSummaryLabels);
+            var labels = ConcatLabelNames("route_template", "entity_name", null, ClientLabelName, additionalSummaryLabels);
 
             return new MetricsTracingFactory(
                 LogSource.Controller,
@@ -96,7 +96,7 @@ namespace ATI.Services.Common.Metrics
 
         public static MetricsTracingFactory CreateRepositoryMetricsFactory([NotNull]string summaryName, TimeSpan? requestLongTime = null, params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("method_name", "entity_name", null, "client_name", additionalSummaryLabels);
+            var labels = ConcatLabelNames("method_name", "entity_name", null, ClientLabelName, additionalSummaryLabels);
 
             return new MetricsTracingFactory(
                 LogSource.Repository,
