@@ -1,5 +1,6 @@
 using System;
 using ATI.Services.Common.Behaviors;
+using ATI.Services.Common.Extensions;
 using Microsoft.AspNetCore.Http;
 
 namespace ATI.Services.Common.Metrics
@@ -50,7 +51,20 @@ namespace ATI.Services.Common.Metrics
 
             if (context.Items.TryGetValue(CommonBehavior.ClientNameItemKey, out var clientNameValue))
             {
-                return clientNameValue as string;
+                var clientName = clientNameValue as string;
+                if (!clientName.IsNullOrEmpty())
+                {
+                    return clientName;
+                }
+            }
+
+            if (context.Items.TryGetValue(CommonBehavior.ServiceNameItemKey, out var serviceNameValue))
+            {
+                var clientName = serviceNameValue as string;
+                if (!clientName.IsNullOrEmpty())
+                {
+                    return clientName;
+                }
             }
 
             return "Empty";
