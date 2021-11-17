@@ -8,7 +8,7 @@ namespace ATI.Services.Common.Metrics
     {
         private static Counter counter = Prometheus.Metrics.CreateCounter("HttpStatusCodeCounter", "", new CounterConfiguration
         {
-            LabelNames = new[] { "http_status_code" }
+            LabelNames = new[] { "http_status_code", "client_name" }
         });
 
         private readonly RequestDelegate _next;
@@ -20,7 +20,8 @@ namespace ATI.Services.Common.Metrics
         public async Task InvokeAsync(HttpContext context)
         {
             await _next(context);
-            counter.WithLabels(context.Response.StatusCode.ToString()).Inc();
+            var clientName = AppHttpContext.GetClientName(context);
+            counter.WithLabels(context.Response.StatusCode.ToString(), clientName).Inc();
         }
     }
 }

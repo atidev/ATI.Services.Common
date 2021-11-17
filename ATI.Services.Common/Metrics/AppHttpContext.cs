@@ -39,21 +39,21 @@ namespace ATI.Services.Common.Metrics
             }
         }
 
-        public static string ClientName
-        {
-            get
-            {
-                if (Current == null)
-                {
-                    return "ThisService";
-                }
-                if (Current.Items.TryGetValue(CommonBehavior.ClientNameItemKey, out var clientNameValue))
-                {
-                    return clientNameValue as string;
-                }
+        public static string ClientName => GetClientName(Current);
 
-                return "Empty";
+        public static string GetClientName(HttpContext context)
+        {
+            if (context == null)
+            {
+                return "ThisService";
             }
+
+            if (context.Items.TryGetValue(CommonBehavior.ClientNameItemKey, out var clientNameValue))
+            {
+                return clientNameValue as string;
+            }
+
+            return "Empty";
         }
     }
 }
