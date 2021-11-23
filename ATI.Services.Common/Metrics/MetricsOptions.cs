@@ -5,7 +5,7 @@ using System.Reflection.Emit;
 
 namespace ATI.Services.Common.Metrics
 {
-    public static class MetricsOptions
+    public class MetricsOptions
     {
         public static Dictionary<string, string> Labels { get; set; }
 
