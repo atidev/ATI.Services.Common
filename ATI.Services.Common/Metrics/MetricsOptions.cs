@@ -7,9 +7,11 @@ namespace ATI.Services.Common.Metrics
 {
     public class MetricsOptions
     {
-        public static Dictionary<string, string> Labels { get; set; }
+        public Dictionary<string, string> Labels { get; set; }
 
-        public static string[] UserLabels => Labels.Keys.ToArray();
-        public static string[] UserHeaders => Labels.Values.ToArray();
+        internal static Dictionary<string, string> LabelsStatic { get; set; }
+        
+        public static string[] UserLabels => LabelsStatic.Keys.ToArray();
+        public static string[] UserHeaders => LabelsStatic.Values.ToArray();
     }
 }

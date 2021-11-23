@@ -1,9 +1,11 @@
+using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Extensions;
 using ATI.Services.Common.Initializers;
 using ATI.Services.Common.Tracing;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ATI.Services.Common.Metrics
@@ -19,6 +21,7 @@ namespace ATI.Services.Common.Metrics
             MetricsConfig.Configure();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             AppHttpContext.Services = services.BuildServiceProvider(new ServiceProviderOptions().ValidateOnBuild);
+            MetricsOptions.LabelsStatic = ConfigurationManager.GetSection(nameof(MetricsOptions)).Get<MetricsOptions>().Labels;
         }
 
         public static void UseMetrics(this IApplicationBuilder app)
