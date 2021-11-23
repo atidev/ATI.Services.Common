@@ -17,7 +17,6 @@ namespace ATI.Services.Common.Metrics
         private readonly string _tracingServiceName;
         private readonly string _externalHttpServiceName;
         private readonly LogSource _logSource;
-        private static readonly string ClientLabelName = "client_name";
         private static TimeSpan _defaultLongRequestTime = TimeSpan.FromSeconds(1);
 
         //Время запроса считающегося достаточно долгим, что бы об этом доложить в кибану
@@ -32,7 +31,7 @@ namespace ATI.Services.Common.Metrics
 
         public static MetricsTracingFactory CreateHttpClientMetricsFactory([NotNull]string summaryName, string externalHttpServiceName, TimeSpan? longRequestTime = null, params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("route_template", "entity_name", "external_http_service_name", ClientLabelName, additionalSummaryLabels);
+            var labels = ConcatLabelNames("route_template", "entity_name", "external_http_service_name", MetricsOptions.UserLabels, additionalSummaryLabels);
             
             return new MetricsTracingFactory(
                 LogSource.HttpClient,
@@ -45,7 +44,7 @@ namespace ATI.Services.Common.Metrics
 
         public static MetricsTracingFactory CreateRedisMetricsFactory([NotNull]string summaryName, TimeSpan? longRequestTime = null, params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("method_name", "entity_name", null, ClientLabelName, additionalSummaryLabels);
+            var labels = ConcatLabelNames("method_name", "entity_name", null, MetricsOptions.UserLabels, additionalSummaryLabels);
 
             return new MetricsTracingFactory(
                 LogSource.Redis,
@@ -57,7 +56,7 @@ namespace ATI.Services.Common.Metrics
 
         public static MetricsTracingFactory CreateMongoMetricsFactory([NotNull]string summaryName, params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("method_name", "entity_name", null, ClientLabelName, additionalSummaryLabels);
+            var labels = ConcatLabelNames("method_name", "entity_name", null, MetricsOptions.UserLabels, additionalSummaryLabels);
 
             return new MetricsTracingFactory(
                 LogSource.Mongo,
@@ -69,7 +68,7 @@ namespace ATI.Services.Common.Metrics
 
         public static MetricsTracingFactory CreateSqlMetricsFactory([NotNull]string summaryName, TimeSpan? longTimeRequest = null, params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("procedure_name", "entity_name", null, ClientLabelName, additionalSummaryLabels);
+            var labels = ConcatLabelNames("procedure_name", "entity_name", null, MetricsOptions.UserLabels, additionalSummaryLabels);
 
             return new MetricsTracingFactory(
                 LogSource.Sql,
@@ -84,7 +83,7 @@ namespace ATI.Services.Common.Metrics
             double? longRequestTime = null,
             params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("route_template", "entity_name", null, ClientLabelName, additionalSummaryLabels);
+            var labels = ConcatLabelNames("route_template", "entity_name", null, MetricsOptions.UserLabels, additionalSummaryLabels);
 
             return new MetricsTracingFactory(
                 LogSource.Controller,
@@ -96,7 +95,7 @@ namespace ATI.Services.Common.Metrics
 
         public static MetricsTracingFactory CreateRepositoryMetricsFactory([NotNull]string summaryName, TimeSpan? requestLongTime = null, params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("method_name", "entity_name", null, ClientLabelName, additionalSummaryLabels);
+            var labels = ConcatLabelNames("method_name", "entity_name", null, MetricsOptions.UserLabels, additionalSummaryLabels);
 
             return new MetricsTracingFactory(
                 LogSource.Repository,
@@ -171,7 +170,7 @@ namespace ATI.Services.Common.Metrics
                     actionName,
                     entityName,
                     _externalHttpServiceName,
-                    AppHttpContext.ClientName,
+                    AppHttpContext.HeadersValues,
                     additionalLabels),
                 longRequestTime ?? _longRequestTime,
                 requestParams,
@@ -216,7 +215,7 @@ namespace ATI.Services.Common.Metrics
                     actionName,
                     entityName,
                     _externalHttpServiceName,
-                    AppHttpContext.ClientName,
+                    AppHttpContext.HeadersValues,
                     additionalLabels),
                 longRequestTime ?? _longRequestTime,
                 requestParams,
@@ -250,7 +249,7 @@ namespace ATI.Services.Common.Metrics
                     actionName,
                     entityName,
                     _externalHttpServiceName,
-                    AppHttpContext.ClientName,
+                    AppHttpContext.HeadersValues,
                     additionalLabels),
                 _longRequestTime,
                 requestParams,
@@ -283,7 +282,7 @@ namespace ATI.Services.Common.Metrics
                     actionName,
                     entityName,
                     _externalHttpServiceName,
-                    AppHttpContext.ClientName,
+                    AppHttpContext.HeadersValues,
                     additionalLabels));
 
 
@@ -317,7 +316,7 @@ namespace ATI.Services.Common.Metrics
                         actionName,
                         entityName,
                         _externalHttpServiceName,
-                        AppHttpContext.ClientName,
+                        AppHttpContext.HeadersValues,
                         additionalLabels),
                     _longRequestTime,
                     requestParams,
@@ -338,7 +337,7 @@ namespace ATI.Services.Common.Metrics
                         actionName,
                         entityName,
                         _externalHttpServiceName,
-                        AppHttpContext.ClientName,
+                        AppHttpContext.HeadersValues,
                         additionalLabels));
 
             return new TimersWrapper(metricsTimer);
@@ -351,10 +350,10 @@ namespace ATI.Services.Common.Metrics
             string actionName,
             string entityName = null,
             string externHttpService = null,
-            string clientName = null,
+            string[] userLabels = null,
             params string[] additionalLabels)
         {
-            return ConcatLabels(MachineName, actionName, entityName, externHttpService, clientName, additionalLabels);
+            return ConcatLabels(MachineName, actionName, entityName, externHttpService, userLabels, additionalLabels);
         }
 
         /// <summary>
@@ -364,10 +363,10 @@ namespace ATI.Services.Common.Metrics
             string actionName,
             string entityName = null,
             string externHttpService = null,
-            string clientName = null,
+            string[] userLabels = null,
             params string[] additionalLabels)
         {
-            return ConcatLabels("machine_name", actionName, entityName, externHttpService, clientName, additionalLabels);
+            return ConcatLabels("machine_name", actionName, entityName, externHttpService, userLabels, additionalLabels);
         }
 
         /// <summary>
@@ -379,7 +378,7 @@ namespace ATI.Services.Common.Metrics
             string machineName,
             string entityName,
             string externHttpService,
-            string clientName,
+            string[] userLabels,
             params string[] additionalLabels)
         {
             var labels = new List<string>(4);
@@ -395,8 +394,8 @@ namespace ATI.Services.Common.Metrics
             if (externHttpService != null)
                 labels.Add(externHttpService);
 
-            if (clientName != null)
-                labels.Add(clientName);
+            if (userLabels.Length != 0)
+                labels.AddRange(userLabels);
 
             if (additionalLabels.Length != 0)
                 labels.AddRange(additionalLabels);

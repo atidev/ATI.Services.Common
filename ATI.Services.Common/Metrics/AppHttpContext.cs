@@ -1,7 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Extensions;
+using ATI.Services.Common.Tracing;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
+
 
 namespace ATI.Services.Common.Metrics
 {
@@ -39,35 +45,32 @@ namespace ATI.Services.Common.Metrics
                 return httpContextAccessor?.HttpContext;
             }
         }
+        
+        public static string[] HeadersValues => GetHeadersValues(Current, MetricsOptions.UserHeaders);
 
-        public static string ClientName => GetClientName(Current);
 
-        public static string GetClientName(HttpContext context)
+        private static string GetHeaderValue(HttpContext context, string headerName)
         {
             if (context == null)
             {
-                return "ThisService";
+                return ServiceVariables.ServiceVariables.ServiceAsClientName;
             }
 
-            if (context.Items.TryGetValue(CommonBehavior.ClientNameItemKey, out var clientNameValue))
+            context.Request.Headers.TryGetValue(headerName, out var headerValueObject);
+            var headerValue = headerValueObject[0];
+            if (!headerValue.IsNullOrEmpty())
             {
-                var clientName = clientNameValue as string;
-                if (!clientName.IsNullOrEmpty())
-                {
-                    return clientName;
-                }
+                return headerValue;
             }
-
-            if (context.Items.TryGetValue(CommonBehavior.ServiceNameItemKey, out var serviceNameValue))
-            {
-                var clientName = serviceNameValue as string;
-                if (!clientName.IsNullOrEmpty())
-                {
-                    return clientName;
-                }
-            }
-
+            
             return "Empty";
         }
+
+        private static string[] GetHeadersValues(HttpContext context, IEnumerable<string> headersNames)
+        {
+            var labels = headersNames.Select(label => GetHeaderValue(context, label)).ToArray();
+            return labels;
+        }
+        
     }
 }
