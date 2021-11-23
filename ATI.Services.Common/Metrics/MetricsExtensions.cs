@@ -22,7 +22,7 @@ namespace ATI.Services.Common.Metrics
             MetricsConfig.Configure();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             AppHttpContext.Services = services.BuildServiceProvider(new ServiceProviderOptions().ValidateOnBuild);
-            MetricsOptions.LabelsStatic = ConfigurationManager.GetSection(nameof(MetricsOptions)).Get<MetricsOptions>()?.Labels ?? new Dictionary<string, string>();
+            MetricsOptions.LabelsStatic = ConfigurationManager.GetSection(nameof(MetricsOptions))?.Get<MetricsOptions>()?.Labels ?? new Dictionary<string, string>();
         }
 
         public static void UseMetrics(this IApplicationBuilder app)
