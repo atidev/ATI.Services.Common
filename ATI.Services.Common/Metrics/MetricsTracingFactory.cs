@@ -407,7 +407,7 @@ namespace ATI.Services.Common.Metrics
             if (externHttpService != null)
                 labels.Add(externHttpService);
 
-            if (userLabels.Length != 0)
+            if (userLabels != null)
                 labels.AddRange(userLabels);
 
             if (additionalLabels.Length != 0)
