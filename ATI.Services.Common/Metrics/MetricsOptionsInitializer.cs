@@ -12,9 +12,9 @@ namespace ATI.Services.Common.Metrics
     public class MetricsOptionsInitializer : IInitializer
     {
         private static bool _initialized;
-        private readonly MetricsLabelsOptions _options;
+        private readonly MetricsOptions _options;
 
-        public MetricsOptionsInitializer(IOptions<MetricsLabelsOptions> options)
+        public MetricsOptionsInitializer(IOptions<MetricsOptions> options)
         {
             _options = options.Value;
         }
@@ -26,9 +26,9 @@ namespace ATI.Services.Common.Metrics
                 return Task.CompletedTask;
             }
 
-            MetricsLabels.LabelsStatic = _options?.Labels ?? new Dictionary<string, string>();
-            MetricsLabels.UserLabels = MetricsLabels.LabelsStatic?.Keys?.ToArray() ?? Array.Empty<string>();
-            MetricsLabels.UserHeaders = MetricsLabels.LabelsStatic?.Values?.ToArray() ?? Array.Empty<string>();
+            MetricsLabels.LabelsStatic = _options?.LabelsAndHeaders ?? new Dictionary<string, string>();
+            MetricsLabels.UserLabels = MetricsLabels.LabelsStatic?.Keys?.ToArray();
+            MetricsLabels.UserHeaders = MetricsLabels.LabelsStatic?.Values?.ToArray();
 
             _initialized = true;
             return Task.CompletedTask;

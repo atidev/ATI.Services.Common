@@ -51,14 +51,15 @@ namespace ATI.Services.Common.Metrics
             {
                 return ServiceVariables.ServiceVariables.ServiceAsClientName;
             }
-
-            context.Request.Headers.TryGetValue(headerName, out var headerValueObject);
-            var headerValue = headerValueObject[0];
-            if (!headerValue.IsNullOrEmpty())
+            
+            if (context.Request.Headers.TryGetValue(headerName, out var headerValues))
             {
-                return headerValue;
+                if (!headerValues[0].IsNullOrEmpty())
+                {
+                    return headerValues[0];
+                }
             }
-
+            
             return "Empty";
         }
 
@@ -68,6 +69,7 @@ namespace ATI.Services.Common.Metrics
             {
                 return Array.Empty<string>();
             }
+
             var labels = headersNames.Select(label => GetHeaderValue(context, label)).ToArray();
             return labels;
         }
