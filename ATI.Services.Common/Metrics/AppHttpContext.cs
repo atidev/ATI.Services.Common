@@ -64,6 +64,10 @@ namespace ATI.Services.Common.Metrics
 
         private static string[] GetHeadersValues(HttpContext context, IEnumerable<string> headersNames)
         {
+            if (context == null || headersNames == null)
+            {
+                return Array.Empty<string>();
+            }
             var labels = headersNames.Select(label => GetHeaderValue(context, label)).ToArray();
             return labels;
         }
