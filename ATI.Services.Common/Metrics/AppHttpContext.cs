@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Extensions;
-using ATI.Services.Common.Tracing;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
 
 
 namespace ATI.Services.Common.Metrics
@@ -45,8 +41,8 @@ namespace ATI.Services.Common.Metrics
                 return httpContextAccessor?.HttpContext;
             }
         }
-        
-        public static string[] HeadersValues => GetHeadersValues(Current, MetricsOptions.UserHeaders);
+
+        public static string[] HeadersValues => GetHeadersValues(Current, MetricsLabels.UserHeaders);
 
 
         private static string GetHeaderValue(HttpContext context, string headerName)
@@ -62,7 +58,7 @@ namespace ATI.Services.Common.Metrics
             {
                 return headerValue;
             }
-            
+
             return "Empty";
         }
 
@@ -71,6 +67,5 @@ namespace ATI.Services.Common.Metrics
             var labels = headersNames.Select(label => GetHeaderValue(context, label)).ToArray();
             return labels;
         }
-        
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Prometheus;
@@ -9,12 +7,14 @@ namespace ATI.Services.Common.Metrics
 {
     public class MetricsStatusCodeCounterMiddleware
     {
-        private static Counter counter = Prometheus.Metrics.CreateCounter("HttpStatusCodeCounter", "", new CounterConfiguration
-        {
-            LabelNames = new string[] { "http_status_code" }.Concat(MetricsOptions.UserLabels).ToArray()
-        });
+        private static Counter counter = Prometheus.Metrics.CreateCounter("HttpStatusCodeCounter", "",
+            new CounterConfiguration
+            {
+                LabelNames = new string[] {"http_status_code"}.Concat(MetricsLabels.UserLabels).ToArray()
+            });
 
         private readonly RequestDelegate _next;
+
         public MetricsStatusCodeCounterMiddleware(RequestDelegate next)
         {
             _next = next;
@@ -23,7 +23,7 @@ namespace ATI.Services.Common.Metrics
         public async Task InvokeAsync(HttpContext context)
         {
             await _next(context);
-            var param = new string[] {context.Response.StatusCode.ToString()}.Concat(MetricsOptions.UserHeaders)
+            var param = new string[] {context.Response.StatusCode.ToString()}.Concat(MetricsLabels.UserHeaders)
                 .ToArray();
             counter.WithLabels(param).Inc();
         }
