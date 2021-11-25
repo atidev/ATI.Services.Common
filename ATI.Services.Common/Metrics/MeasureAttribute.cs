@@ -84,16 +84,25 @@ namespace ATI.Services.Common.Metrics
                     controllerName,
                     MetricsTracingFactory.CreateControllerMetricsFactory(controllerName, _longRequestTime, "client_header_name"));
             
+            var serviceName = "Unknown";
+            
+
+
+            if (context.HttpContext.Items.TryGetValue(CommonBehavior.ServiceNameItemKey, out var serviceNameValue))
+            {
+                serviceName = serviceNameValue as string;
+            }
+            
 
             using (TryGetTrace(context.HttpContext, out var trace)
 
                 ? _longRequestLoggingEnabled
-                    ? metricsFactory.CreateTracingWithLoggingMetricsTimerOnExistingTrace(trace, _metricEntity, actionName, context.ActionArguments)
-                    : metricsFactory.CreateTracingMetricsTimerOnExistingTrace(trace, _metricEntity, actionName)
+                    ? metricsFactory.CreateTracingWithLoggingMetricsTimerOnExistingTrace(trace, _metricEntity, actionName, context.ActionArguments, serviceName)
+                    : metricsFactory.CreateTracingMetricsTimerOnExistingTrace(trace, _metricEntity, actionName, serviceName)
 
                 : _longRequestLoggingEnabled
-                    ? metricsFactory.CreateLoggingMetricsTimer(_metricEntity, actionName, context.ActionArguments)
-                    : metricsFactory.CreateMetricsTimer(_metricEntity, actionName))
+                    ? metricsFactory.CreateLoggingMetricsTimer(_metricEntity, actionName, context.ActionArguments, serviceName)
+                    : metricsFactory.CreateMetricsTimer(_metricEntity, actionName, serviceName))
             {
                 await next.Invoke();
             }

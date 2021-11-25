@@ -42,17 +42,17 @@ namespace ATI.Services.Common.Metrics
             }
         }
 
-        public static string[] HeadersValues => GetHeadersValues(Current, MetricsLabels.UserHeaders);
+        public static string[] HeadersValues => GetHeadersValues(Current, MetricsLabels.UserLabels);
 
 
-        private static string GetHeaderValue(HttpContext context, string headerName)
+        private static string GetHeaderValue(HttpContext context, string labelName)
         {
             if (context == null)
             {
                 return ServiceVariables.ServiceVariables.ServiceAsClientName;
             }
             
-            if (context.Request.Headers.TryGetValue(headerName, out var headerValues))
+            if (context.Request.Headers.TryGetValue(labelName, out var headerValues))
             {
                 if (!headerValues[0].IsNullOrEmpty())
                 {
@@ -63,14 +63,14 @@ namespace ATI.Services.Common.Metrics
             return "Empty";
         }
 
-        private static string[] GetHeadersValues(HttpContext context, IEnumerable<string> headersNames)
+        private static string[] GetHeadersValues(HttpContext context, IEnumerable<string> labelsNames)
         {
-            if (context == null || headersNames == null)
+            if (context == null || labelsNames == null)
             {
                 return Array.Empty<string>();
             }
 
-            var labels = headersNames.Select(label => GetHeaderValue(context, label)).ToArray();
+            var labels = labelsNames.Select(label => GetHeaderValue(context, label)).ToArray();
             return labels;
         }
     }
