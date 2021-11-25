@@ -63,14 +63,14 @@ namespace ATI.Services.Common.Metrics
             return "Empty";
         }
 
-        private static string[] GetHeadersValues(HttpContext context, IEnumerable<string> labelsNames)
+        private static string[] GetHeadersValues(HttpContext context, IEnumerable<string> headersNames)
         {
-            if (context == null || labelsNames == null)
+            if (context == null || headersNames == null)
             {
                 return Array.Empty<string>();
             }
 
-            var labels = labelsNames.Select(label => GetHeaderValue(context, label)).ToArray();
+            var labels = headersNames.Select(label => GetHeaderValue(context, label)).ToArray();
             return labels;
         }
     }
