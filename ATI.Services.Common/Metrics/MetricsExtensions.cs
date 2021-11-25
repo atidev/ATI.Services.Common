@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Extensions;
@@ -23,6 +25,7 @@ namespace ATI.Services.Common.Metrics
             MetricsConfig.Configure();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             AppHttpContext.Services = services.BuildServiceProvider(new ServiceProviderOptions().ValidateOnBuild);
+            services.ConfigureByName<MetricsOptions>();
             MetricsLabels.LabelsStatic = ConfigurationManager.GetSection(nameof(MetricsOptions))?.Get<MetricsOptions>()?.LabelsAndHeaders ?? new Dictionary<string, string>();
             MetricsLabels.UserLabels = MetricsLabels.LabelsStatic?.Keys.ToArray();
             MetricsLabels.UserHeaders = MetricsLabels.LabelsStatic?.Values.ToArray();

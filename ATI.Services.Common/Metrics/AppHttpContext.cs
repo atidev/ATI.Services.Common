@@ -51,7 +51,7 @@ namespace ATI.Services.Common.Metrics
             {
                 return ServiceVariables.ServiceVariables.ServiceAsClientName;
             }
-            
+
             if (context.Request.Headers.TryGetValue(labelName, out var headerValues))
             {
                 if (!headerValues[0].IsNullOrEmpty())
@@ -59,17 +59,12 @@ namespace ATI.Services.Common.Metrics
                     return headerValues[0];
                 }
             }
-            
+
             return "Empty";
         }
 
         private static string[] GetHeadersValues(HttpContext context, IEnumerable<string> headersNames)
         {
-            if (context == null || headersNames == null)
-            {
-                return Array.Empty<string>();
-            }
-
             var labels = headersNames.Select(label => GetHeaderValue(context, label)).ToArray();
             return labels;
         }
