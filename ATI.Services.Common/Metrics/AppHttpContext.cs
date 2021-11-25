@@ -49,7 +49,7 @@ namespace ATI.Services.Common.Metrics
         {
             if (context == null)
             {
-                return ServiceVariables.ServiceVariables.ServiceAsClientName;
+                return "This service";
             }
 
             if (context.Request.Headers.TryGetValue(labelName, out var headerValues))
