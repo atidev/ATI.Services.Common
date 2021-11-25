@@ -5,7 +5,7 @@ namespace ATI.Services.Common.Metrics
     public class MetricsOptions
     {
         /// <summary>
-        /// User's additioanal labels and headers
+        /// User's additional labels and headers
         /// Keys are labels
         /// Values are headers
         /// </summary>
