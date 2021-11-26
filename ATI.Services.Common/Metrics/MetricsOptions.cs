@@ -6,8 +6,8 @@ namespace ATI.Services.Common.Metrics
     {
         /// <summary>
         /// User's additional labels and headers
-        /// Keys are labels
-        /// Values are headers
+        /// Keys are labels' names
+        /// Values are headers' names
         /// </summary>
         public Dictionary<string, string> LabelsAndHeaders { get; set; }
     }

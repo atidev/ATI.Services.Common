@@ -42,17 +42,17 @@ namespace ATI.Services.Common.Metrics
             }
         }
 
-        public static string[] HeadersValues => GetHeadersValues(Current, MetricsLabels.UserLabels);
+        public static string[] HeadersValues => GetHeadersValues(Current, MetricsLabelsAndHeaders.UserHeaders);
 
 
-        private static string GetHeaderValue(HttpContext context, string labelName)
+        private static string GetHeaderValue(HttpContext context, string headerName)
         {
             if (context == null)
             {
                 return "This service";
             }
 
-            if (context.Request.Headers.TryGetValue(labelName, out var headerValues))
+            if (context.Request.Headers.TryGetValue(headerName, out var headerValues))
             {
                 if (!headerValues[0].IsNullOrEmpty())
                 {
@@ -65,8 +65,8 @@ namespace ATI.Services.Common.Metrics
 
         private static string[] GetHeadersValues(HttpContext context, IEnumerable<string> headersNames)
         {
-            var labels = headersNames.Select(label => GetHeaderValue(context, label)).ToArray();
-            return labels;
+            var headersValues = headersNames.Select(label => GetHeaderValue(context, label)).ToArray();
+            return headersValues;
         }
     }
 }
