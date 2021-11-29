@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using NLog;
@@ -32,6 +33,8 @@ namespace ATI.Services.Common.Caching.Redis
             _logger.Error($"В пуле нет базы {cacheName}");
             return null;
         }
+        
+        public List<RedisCache> GetAllCaches() => _redisCaches.Values.ToList();
 
         public async Task InitAsync()
         { 
