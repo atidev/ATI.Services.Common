@@ -25,11 +25,10 @@ namespace ATI.Services.Common.Metrics
             MetricsConfig.Configure();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             AppHttpContext.Services = services.BuildServiceProvider(new ServiceProviderOptions().ValidateOnBuild);
-            services.ConfigureByName<MetricsOptions>();
-            
+
             MetricsLabelsAndHeaders.LabelsStatic = ConfigurationManager.GetSection(nameof(MetricsOptions))?.Get<MetricsOptions>()?.LabelsAndHeaders ?? new Dictionary<string, string>();
-            MetricsLabelsAndHeaders.UserLabels = MetricsLabelsAndHeaders.LabelsStatic?.Keys.ToArray();
-            MetricsLabelsAndHeaders.UserHeaders = MetricsLabelsAndHeaders.LabelsStatic?.Values.ToArray();
+            MetricsLabelsAndHeaders.UserLabels = MetricsLabelsAndHeaders.LabelsStatic.Keys.ToArray();
+            MetricsLabelsAndHeaders.UserHeaders = MetricsLabelsAndHeaders.LabelsStatic.Values.ToArray();
         }
 
         public static void UseMetrics(this IApplicationBuilder app)
