@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Prometheus;
 
@@ -8,7 +9,7 @@ namespace ATI.Services.Common.Metrics
     {
         private static Counter counter = Prometheus.Metrics.CreateCounter("HttpStatusCodeCounter", "", new CounterConfiguration
         {
-            LabelNames = new[] { "http_status_code" }
+            LabelNames = new string[] {"http_status_code"}.Concat(MetricsLabelsAndHeaders.UserLabels).ToArray()
         });
 
         private readonly RequestDelegate _next;
@@ -20,7 +21,9 @@ namespace ATI.Services.Common.Metrics
         public async Task InvokeAsync(HttpContext context)
         {
             await _next(context);
-            counter.WithLabels(context.Response.StatusCode.ToString()).Inc();
+            var param = new string[] {context.Response.StatusCode.ToString()}.Concat(AppHttpContext.HeadersValues)
+                .ToArray();
+            counter.WithLabels(param).Inc();
         }
     }
 }
