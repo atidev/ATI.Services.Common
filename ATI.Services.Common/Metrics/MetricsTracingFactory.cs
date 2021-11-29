@@ -84,7 +84,7 @@ namespace ATI.Services.Common.Metrics
             double? longRequestTime = null,
             params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("route_template", "entity_name", null, null, additionalSummaryLabels);
+            var labels = ConcatLabelNames("route_template", "entity_name", null, "client_name", additionalSummaryLabels);
 
             return new MetricsTracingFactory(
                 LogSource.Controller,
