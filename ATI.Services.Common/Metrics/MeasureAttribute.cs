@@ -85,7 +85,7 @@ namespace ATI.Services.Common.Metrics
                     MetricsTracingFactory.CreateControllerMetricsFactory(controllerName, _longRequestTime, "client_header_name"));
 
             var serviceName = "Unknown";
-            
+            var clientName = "Unknown";
 
 
             if (context.HttpContext.Items.TryGetValue(CommonBehavior.ServiceNameItemKey, out var serviceNameValue))
@@ -93,17 +93,20 @@ namespace ATI.Services.Common.Metrics
                 serviceName = serviceNameValue as string;
             }
 
-            
+            if (context.HttpContext.Items.TryGetValue(CommonBehavior.ClientNameItemKey, out var clientNameValue))
+            {
+                clientName = clientNameValue as string;
+            }
 
             using (TryGetTrace(context.HttpContext, out var trace)
 
                 ? _longRequestLoggingEnabled
-                    ? metricsFactory.CreateTracingWithLoggingMetricsTimerOnExistingTrace(trace, _metricEntity, actionName, context.ActionArguments, serviceName)
-                    : metricsFactory.CreateTracingMetricsTimerOnExistingTrace(trace, _metricEntity, actionName, serviceName)
+                    ? metricsFactory.CreateTracingWithLoggingMetricsTimerOnExistingTrace(trace, _metricEntity, actionName, context.ActionArguments, serviceName, clientName)
+                    : metricsFactory.CreateTracingMetricsTimerOnExistingTrace(trace, _metricEntity, actionName, serviceName, clientName)
 
                 : _longRequestLoggingEnabled
-                    ? metricsFactory.CreateLoggingMetricsTimer(_metricEntity, actionName, context.ActionArguments, serviceName)
-                    : metricsFactory.CreateMetricsTimer(_metricEntity, actionName, serviceName))
+                    ? metricsFactory.CreateLoggingMetricsTimer(_metricEntity, actionName, context.ActionArguments, serviceName, clientName)
+                    : metricsFactory.CreateMetricsTimer(_metricEntity, actionName, serviceName, clientName))
             {
                 await next.Invoke();
             }
