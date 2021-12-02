@@ -36,10 +36,9 @@ namespace ATI.Services.Common.Caching.Redis
                 .OrResult(res => res == null)
                 .WaitAndRetryForeverAsync(_ => TimeSpan.FromSeconds(30));
 
-        public RedisCache(RedisOptions options, CacheHitRatioManager manager)
+        public RedisCache(RedisOptions options, CacheHitRatioManager manager) 
+            : base(SerializerFactory.GetSerializerByType(options.Serializer))
         {
-            SetSerializer(SerializerFactory.GetSerializerByType(options.Serializer));
-            
             Options = options;
             _metricsTracingFactory = MetricsTracingFactory.CreateRedisMetricsFactory(nameof(RedisCache), Options.LongRequestTime);
             _circuitBreakerPolicy = Policy.Handle<Exception>()

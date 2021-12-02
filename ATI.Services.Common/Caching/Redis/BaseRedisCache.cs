@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
 using ATI.Services.Common.Serializers;
-using ATI.Services.Common.Serializers.SystemTextJsonSerialization;
 using ATI.Services.Common.Tracing;
 using NLog;
 using Polly;
@@ -18,11 +16,11 @@ namespace ATI.Services.Common.Caching.Redis
     public abstract class BaseRedisCache
     {
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
-        protected ISerializer Serializer;
+        protected readonly ISerializer Serializer;
 
         protected RedisOptions Options;
 
-        protected void SetSerializer(ISerializer serializer)
+        protected BaseRedisCache(ISerializer serializer)
         {
             Serializer = serializer;
         }
