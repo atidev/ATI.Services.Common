@@ -17,7 +17,6 @@ namespace ATI.Services.Common.Metrics
         private readonly string _tracingServiceName;
         private readonly string _externalHttpServiceName;
         private readonly LogSource _logSource;
-
         private static TimeSpan _defaultLongRequestTime = TimeSpan.FromSeconds(1);
 
         //Время запроса считающегося достаточно долгим, что бы об этом доложить в кибану
@@ -30,9 +29,11 @@ namespace ATI.Services.Common.Metrics
                 _defaultLongRequestTime = defaultLongRequestTime.Value;
         }
 
-        public static MetricsTracingFactory CreateHttpClientMetricsFactory([NotNull]string summaryName, string externalHttpServiceName, TimeSpan? longRequestTime = null, params string[] additionalSummaryLabels)
+        public static MetricsTracingFactory CreateHttpClientMetricsFactory([NotNull] string summaryName,
+            string externalHttpServiceName, TimeSpan? longRequestTime = null, params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("route_template", "entity_name", "external_http_service_name", null, additionalSummaryLabels);
+            var labels = ConcatLabelNames("route_template", "entity_name", "external_http_service_name",
+                MetricsLabelsAndHeaders.UserLabels, additionalSummaryLabels);
 
             return new MetricsTracingFactory(
                 LogSource.HttpClient,
@@ -43,9 +44,11 @@ namespace ATI.Services.Common.Metrics
                 labels);
         }
 
-        public static MetricsTracingFactory CreateRedisMetricsFactory([NotNull]string summaryName, TimeSpan? longRequestTime = null, params string[] additionalSummaryLabels)
+        public static MetricsTracingFactory CreateRedisMetricsFactory([NotNull] string summaryName,
+            TimeSpan? longRequestTime = null, params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("method_name", "entity_name", null, null, additionalSummaryLabels);
+            var labels = ConcatLabelNames("method_name", "entity_name", null, MetricsLabelsAndHeaders.UserLabels,
+                additionalSummaryLabels);
 
             return new MetricsTracingFactory(
                 LogSource.Redis,
@@ -55,9 +58,11 @@ namespace ATI.Services.Common.Metrics
                 labels);
         }
 
-        public static MetricsTracingFactory CreateMongoMetricsFactory([NotNull]string summaryName, params string[] additionalSummaryLabels)
+        public static MetricsTracingFactory CreateMongoMetricsFactory([NotNull] string summaryName,
+            params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("method_name", "entity_name", null, null, additionalSummaryLabels);
+            var labels = ConcatLabelNames("method_name", "entity_name", null, MetricsLabelsAndHeaders.UserLabels,
+                additionalSummaryLabels);
 
             return new MetricsTracingFactory(
                 LogSource.Mongo,
@@ -67,9 +72,11 @@ namespace ATI.Services.Common.Metrics
                 labels);
         }
 
-        public static MetricsTracingFactory CreateSqlMetricsFactory([NotNull]string summaryName, TimeSpan? longTimeRequest = null, params string[] additionalSummaryLabels)
+        public static MetricsTracingFactory CreateSqlMetricsFactory([NotNull] string summaryName,
+            TimeSpan? longTimeRequest = null, params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("procedure_name", "entity_name", null, null, additionalSummaryLabels);
+            var labels = ConcatLabelNames("procedure_name", "entity_name", null, MetricsLabelsAndHeaders.UserLabels,
+                additionalSummaryLabels);
 
             return new MetricsTracingFactory(
                 LogSource.Sql,
@@ -80,11 +87,12 @@ namespace ATI.Services.Common.Metrics
         }
 
         public static MetricsTracingFactory CreateControllerMetricsFactory(
-            [NotNull]string summaryName,
+            [NotNull] string summaryName,
             double? longRequestTime = null,
             params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("route_template", "entity_name", null, "client_name", additionalSummaryLabels);
+            var labels = ConcatLabelNames("route_template", "entity_name", null, MetricsLabelsAndHeaders.UserLabels,
+                additionalSummaryLabels);
 
             return new MetricsTracingFactory(
                 LogSource.Controller,
@@ -94,9 +102,11 @@ namespace ATI.Services.Common.Metrics
                 labels);
         }
 
-        public static MetricsTracingFactory CreateRepositoryMetricsFactory([NotNull]string summaryName, TimeSpan? requestLongTime = null, params string[] additionalSummaryLabels)
+        public static MetricsTracingFactory CreateRepositoryMetricsFactory([NotNull] string summaryName,
+            TimeSpan? requestLongTime = null, params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("method_name", "entity_name", null, null, additionalSummaryLabels);
+            var labels = ConcatLabelNames("method_name", "entity_name", null, MetricsLabelsAndHeaders.UserLabels,
+                additionalSummaryLabels);
 
             return new MetricsTracingFactory(
                 LogSource.Repository,
@@ -106,7 +116,8 @@ namespace ATI.Services.Common.Metrics
                 labels);
         }
 
-        public static MetricsTracingFactory CreateTracingFactory([NotNull] string tracingService, TimeSpan? longRequestTime = null)
+        public static MetricsTracingFactory CreateTracingFactory([NotNull] string tracingService,
+            TimeSpan? longRequestTime = null)
         {
             return new(LogSource.Tracing, null, longRequestTime ?? _defaultLongRequestTime, tracingService);
         }
@@ -131,7 +142,7 @@ namespace ATI.Services.Common.Metrics
 
         private MetricsTracingFactory(
             LogSource logSource,
-            [CanBeNull]string summaryServiceName,
+            [CanBeNull] string summaryServiceName,
             TimeSpan longRequestTime,
             string tracingServiceName = null,
             params string[] summaryLabelNames)
@@ -146,7 +157,7 @@ namespace ATI.Services.Common.Metrics
         }
 
         public IDisposable CreateTracingWithLoggingMetricsTimer(
-            [NotNull]Dictionary<string, string> getTracingCallback,
+            [NotNull] Dictionary<string, string> getTracingCallback,
             string entityName,
             [CallerMemberName] string actionName = null,
             object requestParams = null,
@@ -157,6 +168,7 @@ namespace ATI.Services.Common.Metrics
             {
                 throw new NullReferenceException($"{nameof(_tracingServiceName)} is not initialized");
             }
+
 
             if (Summary == null)
             {
@@ -170,7 +182,7 @@ namespace ATI.Services.Common.Metrics
                     actionName,
                     entityName,
                     _externalHttpServiceName,
-                    null,
+                    AppHttpContext.HeadersValues,
                     additionalLabels),
                 longRequestTime ?? _longRequestTime,
                 requestParams,
@@ -178,7 +190,7 @@ namespace ATI.Services.Common.Metrics
 
             return new TimersWrapper(metricTimer, tracingTimer);
         }
-        
+
         /// <summary>
         /// В случае создания данного экземпляра таймер для метрик стартует не сразу, а только после вызова метода Restart()
         /// </summary>
@@ -191,7 +203,7 @@ namespace ATI.Services.Common.Metrics
         /// <returns></returns>
         /// <exception cref="NullReferenceException"></exception>
         public TimersWrapper CreateTracingWithDelayedLoggingMetricsTimer(
-            [NotNull]Dictionary<string, string> getTracingCallback,
+            [NotNull] Dictionary<string, string> getTracingCallback,
             string entityName,
             [CallerMemberName] string actionName = null,
             object requestParams = null,
@@ -215,7 +227,7 @@ namespace ATI.Services.Common.Metrics
                     actionName,
                     entityName,
                     _externalHttpServiceName,
-                    null,
+                    AppHttpContext.HeadersValues,
                     additionalLabels),
                 longRequestTime ?? _longRequestTime,
                 requestParams,
@@ -226,9 +238,9 @@ namespace ATI.Services.Common.Metrics
         }
 
         public IDisposable CreateTracingWithLoggingMetricsTimerOnExistingTrace(
-            [NotNull]Trace trace,
+            [NotNull] Trace trace,
             string entityName,
-            [CallerMemberName]string actionName = null,
+            [CallerMemberName] string actionName = null,
             IDictionary<string, object> requestParams = null,
             params string[] additionalLabels)
         {
@@ -249,7 +261,7 @@ namespace ATI.Services.Common.Metrics
                     actionName,
                     entityName,
                     _externalHttpServiceName,
-                    null,
+                    AppHttpContext.HeadersValues,
                     additionalLabels),
                 _longRequestTime,
                 requestParams,
@@ -260,9 +272,9 @@ namespace ATI.Services.Common.Metrics
         }
 
         public IDisposable CreateTracingMetricsTimerOnExistingTrace(
-            [NotNull]Trace trace,
+            [NotNull] Trace trace,
             string entityName,
-            [CallerMemberName]string actionName = null,
+            [CallerMemberName] string actionName = null,
             params string[] additionalLabels)
         {
             if (string.IsNullOrEmpty(_tracingServiceName))
@@ -282,14 +294,15 @@ namespace ATI.Services.Common.Metrics
                     actionName,
                     entityName,
                     _externalHttpServiceName,
-                    null,
+                    AppHttpContext.HeadersValues,
                     additionalLabels));
 
 
             return new TimersWrapper(metricTimer, tracingTimer);
         }
 
-        public IDisposable CreateTracingTimer([NotNull]Dictionary<string, string> getTracingTagsCallback, [CallerMemberName] string actionName = null)
+        public IDisposable CreateTracingTimer([NotNull] Dictionary<string, string> getTracingTagsCallback,
+            [CallerMemberName] string actionName = null)
         {
             if (string.IsNullOrEmpty(_tracingServiceName))
             {
@@ -304,7 +317,7 @@ namespace ATI.Services.Common.Metrics
 
         public IDisposable CreateLoggingMetricsTimer(
             string entityName,
-            [CallerMemberName]string actionName = null,
+            [CallerMemberName] string actionName = null,
             object requestParams = null,
             params string[] additionalLabels)
         {
@@ -315,7 +328,7 @@ namespace ATI.Services.Common.Metrics
                         actionName,
                         entityName,
                         _externalHttpServiceName,
-                        null,
+                        AppHttpContext.HeadersValues,
                         additionalLabels),
                     _longRequestTime,
                     requestParams,
@@ -326,7 +339,7 @@ namespace ATI.Services.Common.Metrics
 
         public IDisposable CreateMetricsTimer(
             string entityName,
-            [CallerMemberName]string actionName = null,
+            [CallerMemberName] string actionName = null,
             params string[] additionalLabels)
         {
             var metricsTimer =
@@ -336,7 +349,7 @@ namespace ATI.Services.Common.Metrics
                         actionName,
                         entityName,
                         _externalHttpServiceName,
-                        null,
+                        AppHttpContext.HeadersValues,
                         additionalLabels));
 
             return new TimersWrapper(metricsTimer);
@@ -349,10 +362,10 @@ namespace ATI.Services.Common.Metrics
             string actionName,
             string entityName = null,
             string externHttpService = null,
-            string clientName = null,
+            string[] userLabels = null,
             params string[] additionalLabels)
         {
-            return ConcatLabels(MachineName, actionName, entityName, externHttpService, clientName, additionalLabels);
+            return ConcatLabels(MachineName, actionName, entityName, externHttpService, userLabels, additionalLabels);
         }
 
         /// <summary>
@@ -362,10 +375,11 @@ namespace ATI.Services.Common.Metrics
             string actionName,
             string entityName = null,
             string externHttpService = null,
-            string clientName = null,
+            string[] userLabels = null,
             params string[] additionalLabels)
         {
-            return ConcatLabels("machine_name", actionName, entityName, externHttpService, clientName, additionalLabels);
+            return ConcatLabels("machine_name", actionName, entityName, externHttpService, userLabels,
+                additionalLabels);
         }
 
         /// <summary>
@@ -377,7 +391,7 @@ namespace ATI.Services.Common.Metrics
             string machineName,
             string entityName,
             string externHttpService,
-            string clientName,
+            string[] userLabels,
             params string[] additionalLabels)
         {
             var labels = new List<string>(4);
@@ -393,8 +407,8 @@ namespace ATI.Services.Common.Metrics
             if (externHttpService != null)
                 labels.Add(externHttpService);
 
-            if (clientName != null)
-                labels.Add(clientName);
+            if (userLabels != null && userLabels.Length !=0)
+                labels.AddRange(userLabels);
 
             if (additionalLabels.Length != 0)
                 labels.AddRange(additionalLabels);
