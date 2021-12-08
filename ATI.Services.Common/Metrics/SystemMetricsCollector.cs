@@ -12,7 +12,7 @@ namespace ATI.Services.Common.Metrics
     {
         private readonly string[] _labelValues = { Environment.MachineName };
         private readonly string[] _labelNames = { "machine_name" };
-        private readonly ILogger _logger = LogManager.GetLogger(nameof(SystemMetricsCollector));
+        private static readonly ILogger Logger = LogManager.GetLogger(nameof(SystemMetricsCollector));
         private readonly List<ICounter> _collectionCounts = new(GC.MaxGeneration + 1);
         private readonly int[] _gcCollectCounts = new int[GC.MaxGeneration + 1];
         private readonly Process _process;
@@ -81,7 +81,7 @@ namespace ATI.Services.Common.Metrics
             }
             catch (Exception e)
             {
-                _logger.Error(e);
+                Logger.Error(e);
             }
         }
     }
