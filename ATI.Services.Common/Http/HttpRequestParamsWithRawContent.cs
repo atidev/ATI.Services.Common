@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-
 namespace ATI.Services.Common.Http
 {
     /*/// <summary>
