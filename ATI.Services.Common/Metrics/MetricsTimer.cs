@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using ATI.Services.Common.Logging;
 using NLog;
+using NLog.Fluent;
 using Prometheus;
 
 namespace ATI.Services.Common.Metrics
@@ -62,6 +65,13 @@ namespace ATI.Services.Common.Metrics
                     _summary.Labels(_summaryLabels).Observe(_stopwatch.ElapsedMilliseconds);
                 }
                 _stopwatch.Stop();
+
+                if (_summaryLabels != null)
+                {
+                    Logger.Log(LogLevel.Warn,
+                        $"Время кастомного таймера: {_stopwatch.ElapsedMilliseconds} мс. Лейблы: {string.Join(",", _summaryLabels)}");
+                }
+                
 
                 if (_longRequestTime != null && _stopwatch.Elapsed > _longRequestTime && _context != null && _logSource != null)
                 { 
