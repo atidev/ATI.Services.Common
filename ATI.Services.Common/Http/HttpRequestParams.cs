@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using JetBrains.Annotations;
-
 namespace ATI.Services.Common.Http
 {
    /* public class HttpRequestParams

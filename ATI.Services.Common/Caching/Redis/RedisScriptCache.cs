@@ -6,8 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Metrics;
+using ATI.Services.Common.Serializers;
 using JetBrains.Annotations;
-using Newtonsoft.Json;
 using Polly;
 using Polly.CircuitBreaker;
 using StackExchange.Redis;
@@ -36,6 +36,7 @@ namespace ATI.Services.Common.Caching.Redis
             CircuitBreakerPolicy circuitBreakerPolicy,
             Policy policy
             )
+            : base(SerializerFactory.GetSerializerByType(redisOptions.Serializer))
         {
             Options = redisOptions;
             _redisDb = redisDb;
@@ -77,7 +78,7 @@ namespace ATI.Services.Common.Caching.Redis
             var i = 0;
             foreach (var value in values)
             {
-                redisValues[i] = JsonConvert.SerializeObject(value);
+                redisValues[i] = Serializer.Serialize(value);
                 i++;
             }
 
