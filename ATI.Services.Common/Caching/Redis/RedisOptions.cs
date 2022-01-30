@@ -1,4 +1,5 @@
 ﻿using System;
+using ATI.Services.Common.Serializers;
 
 namespace ATI.Services.Common.Caching.Redis
 {
@@ -14,5 +15,7 @@ namespace ATI.Services.Common.Caching.Redis
         public int CacheDbNumber { get; set; }
         public TimeSpan? LongRequestTime { get; set; }
         public bool MustConnectOnInit { get; set; }
+
+        public SerializerType Serializer { get; set; } = SerializerType.SystemTextJson;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using NLog;
 using System.Linq;
@@ -23,6 +24,7 @@ namespace ATI.Services.Common.Caching.Redis
             } 
         }
 
+        [PublicAPI]
         public RedisCache GetCache(string cacheName)
         {   
             var isDbConfigured = _redisCaches.TryGetValue(cacheName, out var cache);

@@ -7,8 +7,6 @@ using ATI.Services.Common.Extensions;
 using ATI.Services.Common.Logging;
 using ATI.Services.Common.Metrics;
 using JetBrains.Annotations;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using NLog;
 using Polly;
 using Polly.CircuitBreaker;
@@ -17,6 +15,7 @@ using StackExchange.Redis;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using ATI.Services.Common.Serializers;
 
 namespace ATI.Services.Common.Caching.Redis
 {
@@ -30,7 +29,6 @@ namespace ATI.Services.Common.Caching.Redis
         private readonly Policy _policy;
         private readonly HitRatioCounter _counter;
         private readonly MetricsTracingFactory _metricsTracingFactory;
-        private readonly JsonSerializerSettings _serializeSettings;
         private bool _connected;
 
         private RedisScriptCache _redisScriptCache;
@@ -41,15 +39,11 @@ namespace ATI.Services.Common.Caching.Redis
                 .OrResult(res => res == null)
                 .WaitAndRetryForeverAsync(_ => TimeSpan.FromSeconds(30));
 
-        public RedisCache(RedisOptions options, CacheHitRatioManager manager)
+        public RedisCache(RedisOptions options, CacheHitRatioManager manager) 
+            : base(SerializerFactory.GetSerializerByType(options.Serializer))
         {
             Options = options;
-            _metricsTracingFactory =
-                MetricsTracingFactory.CreateRedisMetricsFactory(nameof(RedisCache), Options.LongRequestTime);
-            _serializeSettings = new JsonSerializerSettings
-            {
-                ContractResolver = new DefaultContractResolver {IgnoreShouldSerializeMembers = true}
-            };
+            _metricsTracingFactory = MetricsTracingFactory.CreateRedisMetricsFactory(nameof(RedisCache), Options.LongRequestTime);
             _circuitBreakerPolicy = Policy.Handle<Exception>()
                 .CircuitBreakerAsync(Options.CircuitBreakerExceptionsCount, Options.CircuitBreakerSeconds);
             _policy = Policy.WrapAsync(Policy.TimeoutAsync(Options.RedisTimeout, TimeoutStrategy.Pessimistic),
@@ -158,8 +152,8 @@ namespace ATI.Services.Common.Caching.Redis
             return true;
         }
 
-        public async Task<OperationResult> InsertAsync(ICacheEntity redisValue, string metricEntity,
-            TimeSpan? longRequestTime = null)
+        public async Task<OperationResult> InsertAsync<T>(T redisValue, string metricEntity,
+            TimeSpan? longRequestTime = null) where T : ICacheEntity
             =>
                 await InsertPrivateAsync(redisValue, redisValue.GetKey(), Options.TimeToLive, metricEntity,
                     longRequestTime);
@@ -169,8 +163,8 @@ namespace ATI.Services.Common.Caching.Redis
             =>
                 await InsertPrivateAsync(redisValue, key, Options.TimeToLive, metricEntity, longRequestTime);
 
-        public async Task<OperationResult> InsertAsync(ICacheEntity redisValue, TimeSpan ttl, string metricEntity,
-            TimeSpan? longRequestTime = null)
+        public async Task<OperationResult> InsertAsync<T>(T redisValue, TimeSpan ttl, string metricEntity,
+            TimeSpan? longRequestTime = null) where T : ICacheEntity
             =>
                 await InsertPrivateAsync(redisValue, redisValue.GetKey(), ttl, metricEntity, longRequestTime);
 
@@ -185,8 +179,7 @@ namespace ATI.Services.Common.Caching.Redis
                 await InsertPrivateAsync(redisValue, key, Options.TimeToLive, metricEntity, longRequestTime,
                     When.NotExists);
 
-        public async Task<OperationResult<bool>> InsertIfNotExistsAsync(ICacheEntity redisValue, string metricEntity,
-            TimeSpan? longRequestTime = null)
+        public async Task<OperationResult<bool>> InsertIfNotExistsAsync<T>(T redisValue, string metricEntity, TimeSpan? longRequestTime = null) where T : ICacheEntity
             =>
                 await InsertPrivateAsync(redisValue, redisValue.GetKey(), Options.TimeToLive, metricEntity,
                     longRequestTime, When.NotExists);
@@ -204,8 +197,7 @@ namespace ATI.Services.Common.Caching.Redis
                 requestParams: new {RedisValues = redisValue}, longRequestTime: longRequestTime))
             {
                 var tasks = new List<Task>(redisValue.Select(async cacheEntity =>
-                    await _redisDb.StringSetAsync(cacheEntity.GetKey(),
-                        JsonConvert.SerializeObject(cacheEntity, _serializeSettings), Options.TimeToLive)));
+                    await _redisDb.StringSetAsync(cacheEntity.GetKey(), Serializer.Serialize(cacheEntity), Options.TimeToLive)));
 
                 var result = await ExecuteAsync(async () => await Task.WhenAll(tasks), redisValue);
 
@@ -228,8 +220,7 @@ namespace ATI.Services.Common.Caching.Redis
                         redisValues.Select(async value => await ExecuteAsync(
                             async () =>
                                 await _redisDb.StringSetAsync(value.Key,
-                                    JsonConvert.SerializeObject(value.Value, _serializeSettings), Options.TimeToLive),
-                            redisValues)
+                                    Serializer.Serialize(value.Value), Options.TimeToLive), redisValues)
                         ));
                 await Task.WhenAll(tasks);
             }
@@ -257,7 +248,7 @@ namespace ATI.Services.Common.Caching.Redis
                 }
 
                 _counter.Hit();
-                var value = JsonConvert.DeserializeObject<T>(operationResult.Value);
+                var value = Serializer.Deserialize<T>(operationResult.Value);
                 return new OperationResult<T>(value);
             }
         }
@@ -316,10 +307,8 @@ namespace ATI.Services.Common.Caching.Redis
                     return new OperationResult<List<T>>(operationResult);
 
                 var result = withNulls
-                    ? operationResult.Value
-                        .Select(value => value.HasValue ? JsonConvert.DeserializeObject<T>(value) : default).ToList()
-                    : operationResult.Value.Where(value => value.HasValue)
-                        .Select(value => JsonConvert.DeserializeObject<T>(value)).ToList();
+                    ? operationResult.Value.Select(value => value.HasValue ? Serializer.Deserialize<T>(value) : default).ToList()
+                    : operationResult.Value.Where(value => value.HasValue).Select(value => Serializer.Deserialize<T>(value)).ToList();
 
                 var amountOfFoundValues = operationResult.Value.Count(value => value.HasValue);
                 _counter.Hit(amountOfFoundValues);
@@ -485,8 +474,7 @@ namespace ATI.Services.Common.Caching.Redis
                 transaction.KeyDeleteAsync(setKey).Forget();
                 foreach (var redisValue in manyRedisValues)
                 {
-                    transaction.StringSetAsync(redisValue.GetKey(),
-                        JsonConvert.SerializeObject(redisValue, _serializeSettings),
+                    transaction.StringSetAsync(redisValue.GetKey(), Serializer.Serialize(redisValue),
                         Options.TimeToLive).Forget();
                 }
 
@@ -702,10 +690,7 @@ namespace ATI.Services.Common.Caching.Redis
                 requestParams: new {Value = redisValue, Key = key, TimeToLive = timeToLive},
                 longRequestTime: longTimeRequest))
             {
-                return await ExecuteAsync(
-                    async () => await _redisDb.StringSetAsync(key,
-                        JsonConvert.SerializeObject(redisValue, _serializeSettings), timeToLive, when),
-                    new {redisValue, key});
+                return await ExecuteAsync(async () => await _redisDb.StringSetAsync(key, Serializer.Serialize(redisValue), timeToLive, when), new { redisValue, key });
             }
         }
 
@@ -738,9 +723,7 @@ namespace ATI.Services.Common.Caching.Redis
                 requestParams: new {RedisValues = fieldsToInsert, HashKey = hashKey}, longRequestTime: longTimeRequest))
             {
                 return await ExecuteAsync(async () => await _redisDb.HashSetAsync(hashKey,
-                    fieldsToInsert
-                        .Select(kvp => new HashEntry(kvp.Key.ToString(), JsonConvert.SerializeObject(kvp.Value)))
-                        .ToArray()), new {hashKey, fieldsToInsert});
+                    fieldsToInsert.Select(kvp => new HashEntry(kvp.Key.ToString(), Serializer.Serialize(kvp.Value))).ToArray()), new { hashKey, fieldsToInsert });
             }
         }
 
@@ -763,8 +746,7 @@ namespace ATI.Services.Common.Caching.Redis
             foreach (var (hashKey, hashValues) in valuesByHashKeys)
             {
                 transaction.HashSetAsync(hashKey,
-                    hashValues.Select(kvp => new HashEntry(kvp.Key.ToString(), JsonConvert.SerializeObject(kvp.Value)))
-                        .ToArray()).Forget();
+                    hashValues.Select(kvp => new HashEntry(kvp.Key.ToString(), Serializer.Serialize(kvp.Value))).ToArray()).Forget();
             }
 
             return await ExecuteAsync(async () => await transaction.ExecuteAsync(),
@@ -786,9 +768,8 @@ namespace ATI.Services.Common.Caching.Redis
             {
                 return await ExecuteAsync(async () => await _redisDb.HashSetAsync(hashKey,
                     manyRedisValues
-                        .Select(value =>
-                            new HashEntry(value.GetKey(), JsonConvert.SerializeObject(value, _serializeSettings)))
-                        .ToArray()), new {manyRedisValues, hashKey});
+                                .Select(value => new HashEntry(value.GetKey(), Serializer.Serialize(value)))
+                                .ToArray()), new { manyRedisValues, hashKey });
             }
         }
 
@@ -814,7 +795,7 @@ namespace ATI.Services.Common.Caching.Redis
                 }
 
                 _counter.Hit();
-                var value = JsonConvert.DeserializeObject<T>(operationResult.Value);
+                var value = Serializer.Deserialize<T>(operationResult.Value);
                 return new OperationResult<T>(value);
             }
         }
@@ -871,11 +852,9 @@ namespace ATI.Services.Common.Caching.Redis
 
                 var result = operationResult.Value.Select(h =>
                 {
-                    if (!h.Name.ToString().TryConvert(out TKey key))
-                        throw new ArgumentException(
-                            $"Не удалось сконвертировать HashFieldName={h.Name} в тип {typeof(TKey)}");
-                    return new KeyValuePair<TKey, TValue>(key,
-                        JsonConvert.DeserializeObject<TValue>(h.Value, _serializeSettings));
+                    if(!h.Name.ToString().TryConvert(out TKey key))
+                        throw new ArgumentException($"Не удалось сконвертировать HashFieldName={h.Name} в тип {typeof(TKey)}");
+                    return new KeyValuePair<TKey, TValue>(key, Serializer.Deserialize<TValue>(h.Value));
                 }).ToList();
                 return new OperationResult<List<KeyValuePair<TKey, TValue>>>(result);
             }
@@ -900,9 +879,7 @@ namespace ATI.Services.Common.Caching.Redis
                     {
                         return new OperationResult<List<T>>(ActionStatus.NotFound);
                     }
-
-                    var result = operationResult.Value.Where(value => value.HasValue)
-                        .Select(value => JsonConvert.DeserializeObject<T>(value)).ToList();
+                    var result = operationResult.Value.Where(value => value.HasValue).Select(value => Serializer.Deserialize<T>(value)).ToList();
 
                     var amountOfFoundValues = operationResult.Value.Count(value => value.HasValue);
                     _counter.Hit(amountOfFoundValues);
@@ -990,8 +967,7 @@ namespace ATI.Services.Common.Caching.Redis
                 if (!propertyInfos.TryGetValue(hashEntry.Name, out var propertyInfo))
                     continue;
 
-                propertyInfo.SetValue(result,
-                    JsonConvert.DeserializeObject(hashEntry.Value, propertyInfo.PropertyType, _serializeSettings));
+                propertyInfo.SetValue(result, Serializer.Deserialize(hashEntry.Value, propertyInfo.PropertyType));
             }
 
             return result;
@@ -1003,7 +979,7 @@ namespace ATI.Services.Common.Caching.Redis
                 throw new ArgumentNullException(nameof(entity));
 
             return typeof(T).GetProperties().Select(p => new HashEntry(p.Name,
-                JsonConvert.SerializeObject(p.GetValue(entity), p.PropertyType, _serializeSettings)));
+                Serializer.Serialize(p.GetValue(entity), p.PropertyType)));
         }
     }
 }
