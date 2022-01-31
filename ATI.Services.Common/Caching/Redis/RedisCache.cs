@@ -374,7 +374,7 @@ namespace ATI.Services.Common.Caching.Redis
             using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(setKeys.FirstOrDefault()), metricEntity, requestParams: new { SetsKeys = setKeys, Value = value }, longRequestTime: longRequestTime))
             {
                 var setAddTasks = setKeys.Select(async setKey => await InsertEntityToSetWithPolicy(setKey, value));
-                return await ExecuteAsync(async () => await Task.WhenAll(setAddTasks), new {setKeys, value});
+                return await ExecuteAsync(async () => await Task.WhenAll(setAddTasks), new { setKeys, value });
             }
 
             async Task<OperationResult<bool>> InsertEntityToSetWithPolicy(string key, string val) => await ExecuteAsync(async () => await _redisDb.SetAddAsync(key, val), new { setKeys, value });
@@ -431,7 +431,7 @@ namespace ATI.Services.Common.Caching.Redis
                     transaction.StringSetAsync(redisValue.GetKey(), Serializer.Serialize(redisValue),
                         Options.TimeToLive).Forget();
                 }
-                transaction.SetAddAsync(setKey, manyRedisValues.Select(value => (RedisValue) value.GetKey()).ToArray()).Forget();
+                transaction.SetAddAsync(setKey, manyRedisValues.Select(value => (RedisValue)value.GetKey()).ToArray()).Forget();
                 transaction.KeyExpireAsync(setKey, Options.TimeToLive).Forget();
                 return await ExecuteAsync(async () => await transaction.ExecuteAsync(), new { manyRedisValues, setKey });
             }
