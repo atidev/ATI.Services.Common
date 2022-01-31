@@ -12,6 +12,9 @@ using Polly;
 using Polly.CircuitBreaker;
 using Polly.Timeout;
 using StackExchange.Redis;
+using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using ATI.Services.Common.Serializers;
 
 namespace ATI.Services.Common.Caching.Redis
@@ -59,8 +62,8 @@ namespace ATI.Services.Common.Caching.Redis
         {
             try
             {
-                var connection = await InitPolicy.ExecuteAsync(async () => await ConnectionMultiplexer.ConnectAsync(Options.ConnectionString));
-                _redisDb = connection.GetDatabase(Options.CacheDbNumber);
+                var connectionMultiplexer = await InitPolicy.ExecuteAsync(async () => await ConnectionMultiplexer.ConnectAsync(Options.ConnectionString));
+                _redisDb = connectionMultiplexer.GetDatabase(Options.CacheDbNumber);
                 _redisScriptCache = new RedisScriptCache(_redisDb, Options, _metricsTracingFactory, _circuitBreakerPolicy, _policy);
                 _connected = true;
             }
@@ -68,6 +71,57 @@ namespace ATI.Services.Common.Caching.Redis
             {
                 _logger.ErrorWithObject(e, "Ошибка подключения к редису в фоновой задаче.");
                 throw;
+            }
+        }
+
+        public async Task<OperationResult<byte[]>> ExecuteEvalShaAsync(
+            byte[] scriptSha,
+            string script,
+            RedisKey[] keys,
+            params RedisValue[] arguments)
+        {
+            if (!_connected)
+                return new OperationResult<byte[]>(ActionStatus.InternalOptionalServerUnavailable);
+
+            if (scriptSha != null)
+            {
+                var evalShaOperation = await ExecuteAsync(
+                    async () => await _redisDb.ScriptEvaluateAsync(scriptSha, keys, arguments),
+                    new
+                    {
+                        scriptSha,
+                        script,
+                        keys,
+                        arguments
+                    });
+                if (evalShaOperation.Success)
+                    return new OperationResult<byte[]>(scriptSha);
+            }
+
+            var evalOperation = await ExecuteAsync(
+                async () => await _redisDb.ScriptEvaluateAsync(script, keys, arguments), new
+                {
+                    script,
+                    keys,
+                    arguments
+                });
+
+            return evalOperation.Success
+                ? new OperationResult<byte[]>(SHA1.Create().ComputeHash(Encoding.UTF8.GetBytes(script)))
+                : new OperationResult<byte[]>(evalOperation);
+        }
+
+        public async Task<OperationResult> SlaveOf(string host, int port, EndPoint master)
+        {
+            try
+            {
+                await _redisDb.Multiplexer.GetServer(host, port).SlaveOfAsync(master);
+                return OperationResult.Ok;
+            }
+            catch (Exception e)
+            {
+                _logger.ErrorWithObject(e, new {host, port, master});
+                return new OperationResult(ActionStatus.InternalServerError);
             }
         }
 
@@ -94,22 +148,30 @@ namespace ATI.Services.Common.Caching.Redis
 
             return true;
         }
-        
+
         public async Task<OperationResult> InsertAsync<T>(T redisValue, string metricEntity, TimeSpan? longRequestTime = null) where T : ICacheEntity
-            =>
-            await InsertAsync(redisValue, redisValue.GetKey(), Options.TimeToLive, metricEntity, longRequestTime);
+            => 
+                await InsertPrivateAsync(redisValue, redisValue.GetKey(), Options.TimeToLive, metricEntity, longRequestTime);
 
         public async Task<OperationResult> InsertAsync<T>(T redisValue, string key, string metricEntity, TimeSpan? longRequestTime = null)
             =>
-            await InsertAsync(redisValue, key, Options.TimeToLive, metricEntity, longRequestTime);
+                await InsertPrivateAsync(redisValue, key, Options.TimeToLive, metricEntity, longRequestTime);
+
+        public async Task<OperationResult> InsertAsync<T>(T redisValue, TimeSpan ttl, string metricEntity, TimeSpan? longRequestTime = null) where T : ICacheEntity
+            =>
+                await InsertPrivateAsync(redisValue, redisValue.GetKey(), ttl, metricEntity, longRequestTime);
+
+        public async Task<OperationResult> InsertAsync<T>(T redisValue, string key, TimeSpan ttl, string metricEntity, TimeSpan? longRequestTime = null)
+            =>
+                await InsertPrivateAsync(redisValue, key, ttl, metricEntity, longRequestTime);
 
         public async Task<OperationResult<bool>> InsertIfNotExistsAsync<T>(T redisValue, string key, string metricEntity, TimeSpan? longRequestTime = null)
             =>
-            await InsertAsync(redisValue, key, Options.TimeToLive, metricEntity, longRequestTime, When.NotExists);
+                await InsertPrivateAsync(redisValue, key, Options.TimeToLive, metricEntity, longRequestTime, When.NotExists);
 
         public async Task<OperationResult<bool>> InsertIfNotExistsAsync<T>(T redisValue, string metricEntity, TimeSpan? longRequestTime = null) where T : ICacheEntity
             =>
-            await InsertAsync(redisValue, redisValue.GetKey(), Options.TimeToLive, metricEntity, longRequestTime, When.NotExists);
+                await InsertPrivateAsync(redisValue, redisValue.GetKey(), Options.TimeToLive, metricEntity, longRequestTime, When.NotExists);
 
         public async Task<OperationResult> InsertManyAsync<T>([NotNull] List<T> redisValue, string metricEntity, TimeSpan? longRequestTime = null) where T : ICacheEntity
         {
@@ -227,7 +289,6 @@ namespace ATI.Services.Common.Caching.Redis
                 _counter.Miss(keysArray.Length - amountOfFoundValues);
 
                 return new OperationResult<List<T>>(result);
-
             }
         }
 
@@ -465,13 +526,88 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(key))
                 return OperationResult.Ok;
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(key), metricEntity, requestParams: new { Key = key, Expiration = expiration }, longRequestTime: longRequestTime))
+            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(key), metricEntity, requestParams: new {Key = key, Expiration = expiration}, longRequestTime: longRequestTime))
             {
-                return await ExecuteAsync(async () => await _redisDb.KeyExpireAsync(key, expiration.ToUniversalTime()), new { key, expiration });
+                return await ExecuteAsync(async () => await _redisDb.KeyExpireAsync(key, expiration.ToUniversalTime()), new {key, expiration});
             }
         }
 
-        private async Task<OperationResult<bool>> InsertAsync<T>(T redisValue, string key, TimeSpan? timeToLive, string metricEntity, TimeSpan? longTimeRequest = null, When when = When.Always)
+        public async Task<OperationResult> ExpireAsync(string key, TimeSpan ttl, string metricEntity, TimeSpan? longRequestTime = null)
+        {
+            if (!_connected)
+                return new OperationResult(ActionStatus.InternalOptionalServerUnavailable);
+            if (string.IsNullOrEmpty(key))
+                return OperationResult.Ok;
+
+            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(key), metricEntity, requestParams: new {Key = key, TimeToLive = ttl}, longRequestTime: longRequestTime))
+            {
+                return await ExecuteAsync(async () => await _redisDb.KeyExpireAsync(key, ttl), new {key, ttl});
+            }
+        }
+
+        public async Task<OperationResult> SortedSetRemoveAsync(string sortedSetKey, string member, string metricEntity, TimeSpan? longTimeRequest = null)
+        {
+            if (!_connected)
+                return new OperationResult(ActionStatus.InternalOptionalServerUnavailable);
+
+            if (string.IsNullOrWhiteSpace(sortedSetKey))
+                return new OperationResult(ActionStatus.BadRequest, "sorted set key was not specified.");
+
+            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(
+                GetTracingInfo(sortedSetKey),
+                metricEntity,
+                requestParams: new
+                {
+                    Value = member,
+                    SortedSetKey = sortedSetKey
+                },
+                longRequestTime: longTimeRequest))
+            {
+                return await ExecuteAsync(async () => await _redisDb.SortedSetRemoveAsync(
+                        sortedSetKey,
+                        member),
+                    new
+                    {
+                        RedisValue = member,
+                        SortedSetKey = sortedSetKey,
+                        MetricEntity = metricEntity
+                    });
+            }
+        }
+
+        public async Task<OperationResult> SortedSetAddAsync(string sortedSetKey, string member, double valueScore, string metricEntity, TimeSpan? longTimeRequest = null)
+        {
+            if (!_connected)
+                return new OperationResult(ActionStatus.InternalOptionalServerUnavailable);
+
+            if (string.IsNullOrWhiteSpace(sortedSetKey))
+                return new OperationResult(ActionStatus.BadRequest, "sorted set key was not specified.");
+
+            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(
+                GetTracingInfo(sortedSetKey),
+                metricEntity,
+                requestParams: new
+                {
+                    Value = member,
+                    SortedSetKey = sortedSetKey,
+                    ValueScore = valueScore
+                },
+                longRequestTime: longTimeRequest))
+            {
+                return await ExecuteAsync(async () => await _redisDb.SortedSetAddAsync(
+                    sortedSetKey,
+                    member,
+                    valueScore), new
+                {
+                    RedisValue = member,
+                    SortedSetKey = sortedSetKey,
+                    ValueScore = valueScore,
+                    MetricEntity = metricEntity
+                });
+            }
+        }
+
+        private async Task<OperationResult<bool>> InsertPrivateAsync<T>(T redisValue, string key, TimeSpan? timeToLive, string metricEntity, TimeSpan? longTimeRequest = null, When when = When.Always)
         {
             if (!_connected)
                 return new OperationResult<bool>(ActionStatus.InternalOptionalServerUnavailable);
@@ -510,7 +646,7 @@ namespace ATI.Services.Common.Caching.Redis
                 return new OperationResult(ActionStatus.InternalOptionalServerUnavailable);
             if (string.IsNullOrEmpty(hashKey))
                 return OperationResult.Ok;
-        
+
             using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(hashKey), metricEntity,
                 requestParams: new {RedisValues = fieldsToInsert, HashKey = hashKey}, longRequestTime: longTimeRequest))
             {
@@ -520,8 +656,8 @@ namespace ATI.Services.Common.Caching.Redis
         }
 
         public async Task<OperationResult> InsertManyFieldsToManyHashesAsync<TKey, TValue>(
-            Dictionary<string, List<KeyValuePair<TKey, TValue>>> valuesByHashKeys, 
-            string metricEntity, 
+            Dictionary<string, List<KeyValuePair<TKey, TValue>>> valuesByHashKeys,
+            string metricEntity,
             TimeSpan? longTimeRequest = null)
         {
             if (!_connected)
@@ -539,7 +675,7 @@ namespace ATI.Services.Common.Caching.Redis
                 transaction.HashSetAsync(hashKey,
                     hashValues.Select(kvp => new HashEntry(kvp.Key.ToString(), Serializer.Serialize(kvp.Value))).ToArray()).Forget();
             }
-            
+
             return await ExecuteAsync(async () => await transaction.ExecuteAsync(), new { RedisValues = valuesByHashKeys, MetricEntity = metricEntity });
         }
 
@@ -597,11 +733,12 @@ namespace ATI.Services.Common.Caching.Redis
                 var operationResult = await ExecuteAsync(async () => await _redisDb.HashGetAllAsync(hashKey), hashKey);
                 if (!operationResult.Success)
                     return new OperationResult<T>(operationResult.ActionStatus);
-                
+
                 if (operationResult.Value.Length == 0)
                 {
                     return new OperationResult<T>(ActionStatus.NotFound);
                 }
+
                 _counter.Hit();
 
                 var result = FromRedisHash<T>(operationResult.Value);
@@ -615,20 +752,21 @@ namespace ATI.Services.Common.Caching.Redis
                 return new OperationResult<List<KeyValuePair<TKey, TValue>>>(ActionStatus.InternalOptionalServerUnavailable);
             if (string.IsNullOrEmpty(hashKey))
                 return new OperationResult<List<KeyValuePair<TKey, TValue>>>();
-        
+
             using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(hashKey), metricEntity,
                 requestParams: new {HashKey = hashKey}, longRequestTime: longTimeRequest))
             {
                 var operationResult = await ExecuteAsync(async () => await _redisDb.HashGetAllAsync(hashKey), hashKey);
                 if (!operationResult.Success)
                     return new OperationResult<List<KeyValuePair<TKey, TValue>>>(operationResult.ActionStatus);
-                
+
                 if (operationResult.Value.Length == 0)
                 {
                     return new OperationResult<List<KeyValuePair<TKey, TValue>>>(ActionStatus.NotFound);
                 }
+
                 _counter.Hit();
-                
+
                 var result = operationResult.Value.Select(h =>
                 {
                     if(!h.Name.ToString().TryConvert(out TKey key))
@@ -667,7 +805,7 @@ namespace ATI.Services.Common.Caching.Redis
                 return new OperationResult<List<T>>(operationResult.ActionStatus);
             }
         }
-        
+
         public async Task<OperationResult<double>> IncreaseAsync(string key, double value, string metricEntity, TimeSpan? longTimeRequest = null)
         {
             if (!_connected)
@@ -695,21 +833,21 @@ namespace ATI.Services.Common.Caching.Redis
         {
             if (!_connected)
                 return new OperationResult<T>(ActionStatus.InternalOptionalServerUnavailable);
-                
+
             return await _redisScriptCache.InsertManyByScriptAsync(redisValue, metricEntity, longRequestTime);
         }
-        
+
         public async Task<OperationResult> InsertManyByScriptAsync<T>(Dictionary<string, T> redisValues, string metricEntity, TimeSpan? longRequestTime = null)
         {
             if (!_connected)
                 return new OperationResult<T>(ActionStatus.InternalOptionalServerUnavailable);
-            
+
             return await _redisScriptCache.InsertManyByScriptAsync(redisValues, metricEntity, longRequestTime);
         }
 
         #endregion
-        
-        
+
+
         private async Task<OperationResult> ExecuteAsync(Func<Task> func, object context)
         {
             if (!_connected)
@@ -725,7 +863,7 @@ namespace ATI.Services.Common.Caching.Redis
 
             return await base.ExecuteAsync(func, context, _circuitBreakerPolicy, _policy);
         }
-        
+
 
         private T FromRedisHash<T>(HashEntry[] hashEntries) where T : class, new()
         {

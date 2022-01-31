@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using NLog;
+using System.Linq;
 
 namespace ATI.Services.Common.Caching.Redis
 {
@@ -34,7 +35,9 @@ namespace ATI.Services.Common.Caching.Redis
             _logger.Error($"В пуле нет базы {cacheName}");
             return null;
         }
-
+        
+        public List<RedisCache> GetAllCaches() => _redisCaches.Values.ToList();
+        
         public async Task InitAsync()
         { 
             foreach (var cache in _redisCaches.Values)
