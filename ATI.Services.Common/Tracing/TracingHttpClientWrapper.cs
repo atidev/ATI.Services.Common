@@ -152,14 +152,14 @@ namespace ATI.Services.Common.Tracing
             => await SendAsync(metricName, new HttpMessage(HttpMethod.Post, fullUri, headers));
 
 
-        public async Task<OperationResult<HttpContent>> PostAsync(string serviceAddress, string metricName, string url,
-                                                                  string rawContent, Dictionary<string, string> headers = null)
-            => await SendCustomContentAsync(metricName, new HttpMessage(HttpMethod.Post, FullUri(serviceAddress, url), headers) {Content = rawContent});
+        public async Task<OperationResult<string>> PostAsync(string serviceAddress, string metricName, string url,
+                                                             string rawContent, Dictionary<string, string> headers = null)
+            => await SendAsync(metricName, new HttpMessage(HttpMethod.Post, FullUri(serviceAddress, url), headers) {Content = rawContent});
 
 
-        public async Task<OperationResult<HttpContent>> PostAsync(Uri fullUri, string metricName, string rawContent,
-                                                                  Dictionary<string, string> headers = null)
-            => await SendCustomContentAsync(metricName, new HttpMessage(HttpMethod.Post, fullUri, headers) {Content = rawContent});
+        public async Task<OperationResult<string>> PostAsync(Uri fullUri, string metricName, string rawContent,
+                                                             Dictionary<string, string> headers = null)
+            => await SendAsync(metricName, new HttpMessage(HttpMethod.Post, fullUri, headers) {Content = rawContent});
 
 
         public async Task<OperationResult<HttpContent>> PostAsync(string serviceAddress,
