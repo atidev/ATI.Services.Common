@@ -131,61 +131,56 @@ namespace ATI.Services.Common.Tracing
                 Content = rawContent
             });
 
-        public async Task<OperationResult<TResult>> PostAsync<TResult>(string serviceAddress,
-                                                                       string metricName,
-                                                                       string url,
-                                                                       HttpContent customContent,
-                                                                       Dictionary<string, string> headers = null)
-            => await SendAsync<TResult>(metricName,
-                                        new HttpMessage(HttpMethod.Post, FullUri(serviceAddress, url), headers)
-                                        {
-                                            HttpContent = customContent
-                                        });
-
-
-        public async Task<OperationResult<TResult>> PostAsync<TResult>(Uri fullUrl,
-                                                                       string metricName,
-                                                                       HttpContent customContent,
-                                                                       Dictionary<string, string> headers = null)
-            => await SendAsync<TResult>(metricName,
-                                        new HttpMessage(HttpMethod.Post, fullUrl, headers)
-                                        {
-                                            HttpContent = customContent
-                                        });
-
         public async Task<OperationResult<TResult>> PostAsync<TResult>(string serviceAddress, string metricName,
-            string url, Dictionary<string, string> headers = null)
+                                                                       string url, Dictionary<string, string> headers = null)
             => await SendAsync<TResult>(metricName,
                 new HttpMessage(HttpMethod.Post, FullUri(serviceAddress, url), headers));
 
 
         public async Task<OperationResult<TResult>> PostAsync<TResult>(Uri fullUrl, string metricName,
-            Dictionary<string, string> headers = null)
+                                                                       Dictionary<string, string> headers = null)
             => await SendAsync<TResult>(metricName, new HttpMessage(HttpMethod.Post, fullUrl, headers));
 
 
         public async Task<OperationResult<string>> PostAsync(string serviceAddress, string metricName, string url,
-            Dictionary<string, string> headers = null)
+                                                             Dictionary<string, string> headers = null)
             => await SendAsync(metricName, new HttpMessage(HttpMethod.Post, FullUri(serviceAddress, url), headers));
 
 
         public async Task<OperationResult<string>> PostAsync(Uri fullUri, string metricName,
-            Dictionary<string, string> headers = null)
+                                                             Dictionary<string, string> headers = null)
             => await SendAsync(metricName, new HttpMessage(HttpMethod.Post, fullUri, headers));
 
 
         public async Task<OperationResult<HttpContent>> PostAsync(string serviceAddress, string metricName, string url,
-            string rawContent, Dictionary<string, string> headers = null)
+                                                                  string rawContent, Dictionary<string, string> headers = null)
             => await SendCustomContentAsync(metricName, new HttpMessage(HttpMethod.Post, FullUri(serviceAddress, url), headers) {Content = rawContent});
 
 
         public async Task<OperationResult<HttpContent>> PostAsync(Uri fullUri, string metricName, string rawContent,
-            Dictionary<string, string> headers = null)
+                                                                  Dictionary<string, string> headers = null)
             => await SendCustomContentAsync(metricName, new HttpMessage(HttpMethod.Post, fullUri, headers) {Content = rawContent});
 
 
+        public async Task<OperationResult<HttpContent>> PostAsync(string serviceAddress,
+                                                                  string metricName,
+                                                                  string url,
+                                                                  HttpContent customContent,
+                                                                  Dictionary<string, string> headers = null)
+            => await SendCustomContentAsync(metricName,
+                                            new HttpMessage(HttpMethod.Post, FullUri(serviceAddress, url), headers)
+                                                { HttpContent = customContent });
+
+        public async Task<OperationResult<HttpContent>> PostAsync(Uri fullUrl,
+                                                                  string metricName,
+                                                                  HttpContent customContent,
+                                                                  Dictionary<string, string> headers = null)
+            => await SendCustomContentAsync(metricName,
+                                            new HttpMessage(HttpMethod.Post, fullUrl, headers)
+                                                { HttpContent = customContent });
+
         public async Task<OperationResult<TResult>> PutAsync<TModel, TResult>(string serviceAddress, string metricName,
-            string url, TModel model, Dictionary<string, string> headers = null)
+                                                                              string url, TModel model, Dictionary<string, string> headers = null)
             => await SendAsync<TResult>(metricName,
                 new HttpMessage(HttpMethod.Put, FullUri(serviceAddress, url), headers)
                 {
@@ -194,7 +189,7 @@ namespace ATI.Services.Common.Tracing
 
 
         public async Task<OperationResult<TResult>> PutAsync<TModel, TResult>(Uri fullUri, string metricName,
-            TModel model, Dictionary<string, string> headers = null)
+                                                                              TModel model, Dictionary<string, string> headers = null)
             => await SendAsync<TResult>(metricName, new HttpMessage(HttpMethod.Put, fullUri, headers)
             {
                 Content = Config.Serializer.Serialize(model)
@@ -221,6 +216,22 @@ namespace ATI.Services.Common.Tracing
             Dictionary<string, string> headers = null)
             => await SendAsync(metricName, new HttpMessage(HttpMethod.Put, fullUri, headers));
 
+        public async Task<OperationResult<HttpContent>> PutAsync(string serviceAddress,
+                                                                 string metricName,
+                                                                 string url,
+                                                                 HttpContent customContent,
+                                                                 Dictionary<string, string> headers = null)
+            => await SendCustomContentAsync(metricName,
+                                            new HttpMessage(HttpMethod.Put, FullUri(serviceAddress, url), headers)
+                                                { HttpContent = customContent });
+
+        public async Task<OperationResult<HttpContent>> PutAsync(Uri fullUrl,
+                                                                 string metricName,
+                                                                 HttpContent customContent,
+                                                                 Dictionary<string, string> headers = null)
+            => await SendCustomContentAsync(metricName,
+                                            new HttpMessage(HttpMethod.Put, fullUrl, headers)
+                                                { HttpContent = customContent });
 
         public async Task<OperationResult<TResult>> DeleteAsync<TModel, TResult>(string serviceAddress,
             string metricName, string url, TModel model, Dictionary<string, string> headers = null)
@@ -250,7 +261,23 @@ namespace ATI.Services.Common.Tracing
             Dictionary<string, string> headers = null)
             => await SendAsync(metricName, new HttpMessage(HttpMethod.Delete, fullUri, headers));
 
+        public async Task<OperationResult<HttpContent>> DeleteAsync(string serviceAddress,
+                                                                    string metricName,
+                                                                    string url,
+                                                                    HttpContent customContent,
+                                                                    Dictionary<string, string> headers = null)
+            => await SendCustomContentAsync(metricName,
+                                            new HttpMessage(HttpMethod.Delete, FullUri(serviceAddress, url), headers)
+                                                { HttpContent = customContent });
 
+        public async Task<OperationResult<HttpContent>> DeleteAsync(Uri fullUrl,
+                                                                    string metricName,
+                                                                    HttpContent customContent,
+                                                                    Dictionary<string, string> headers = null)
+            => await SendCustomContentAsync(metricName,
+                                            new HttpMessage(HttpMethod.Delete, fullUrl, headers)
+                                                { HttpContent = customContent });
+        
         public async Task<OperationResult<HttpResponseMessage<TResult>>> SendAsync<TModel, TResult>(Uri fullUri,
             string metricName, TModel model,
             Dictionary<string, string> headers = null,
