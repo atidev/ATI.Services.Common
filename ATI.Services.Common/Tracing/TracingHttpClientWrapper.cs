@@ -25,7 +25,6 @@ namespace ATI.Services.Common.Tracing
         private readonly ILogger _logger;
         private readonly HttpClient _httpClient;
         private readonly MetricsTracingFactory _metricsTracingFactory;
-        private const string DefaultContentType = "application/json";
 
         public TracingHttpClientWrapper(TracedHttpClientConfig config)
         {
