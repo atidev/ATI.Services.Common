@@ -25,6 +25,7 @@ namespace ATI.Services.Common.Tracing
         private readonly ILogger _logger;
         private readonly HttpClient _httpClient;
         private readonly MetricsTracingFactory _metricsTracingFactory;
+        private const string DefaultContentType = "application/json";
 
         public TracingHttpClientWrapper(TracedHttpClientConfig config)
         {
@@ -130,6 +131,27 @@ namespace ATI.Services.Common.Tracing
                 Content = rawContent
             });
 
+        public async Task<OperationResult<TResult>> PostAsync<TResult>(string serviceAddress,
+                                                                       string metricName,
+                                                                       string url,
+                                                                       HttpContent customContent,
+                                                                       Dictionary<string, string> headers = null)
+            => await SendAsync<TResult>(metricName,
+                                        new HttpMessage(HttpMethod.Post, FullUri(serviceAddress, url), headers)
+                                        {
+                                            HttpContent = customContent
+                                        });
+
+
+        public async Task<OperationResult<TResult>> PostAsync<TResult>(Uri fullUrl,
+                                                                       string metricName,
+                                                                       HttpContent customContent,
+                                                                       Dictionary<string, string> headers = null)
+            => await SendAsync<TResult>(metricName,
+                                        new HttpMessage(HttpMethod.Post, fullUrl, headers)
+                                        {
+                                            HttpContent = customContent
+                                        });
 
         public async Task<OperationResult<TResult>> PostAsync<TResult>(string serviceAddress, string metricName,
             string url, Dictionary<string, string> headers = null)
@@ -388,6 +410,7 @@ namespace ATI.Services.Common.Tracing
 
             public HttpMethod Method { get; }
             public string Content { get; set; }
+            public HttpContent HttpContent { get; set; }
             public Uri FullUri { get; }
             public Dictionary<string, string> Headers { get; }
             public string ContentType { get; }
@@ -401,9 +424,9 @@ namespace ATI.Services.Common.Tracing
                     msg.Headers.Add(header.Key, header.Value);
                 }
 
-                if (string.IsNullOrEmpty(Content) == false)
+                if (HttpContent != null || Content != null)
                 {
-                    msg.Content = new StringContent(Content, Encoding.UTF8, ContentType);
+                    msg.Content = HttpContent ?? new StringContent(Content, Encoding.UTF8, ContentType);
                 }
 
                 return msg;
