@@ -174,15 +174,14 @@ namespace ATI.Services.Common.Tracing
             => await SendAsync(metricName, new HttpMessage(HttpMethod.Post, fullUri, headers));
 
 
-        public async Task<OperationResult<string>> PostAsync(string serviceAddress, string metricName, string url,
+        public async Task<OperationResult<HttpContent>> PostAsync(string serviceAddress, string metricName, string url,
             string rawContent, Dictionary<string, string> headers = null)
-            => await SendAsync(metricName,
-                new HttpMessage(HttpMethod.Post, FullUri(serviceAddress, url), headers) {Content = rawContent});
+            => await SendCustomContentAsync(metricName, new HttpMessage(HttpMethod.Post, FullUri(serviceAddress, url), headers) {Content = rawContent});
 
 
-        public async Task<OperationResult<string>> PostAsync(Uri fullUri, string metricName, string rawContent,
+        public async Task<OperationResult<HttpContent>> PostAsync(Uri fullUri, string metricName, string rawContent,
             Dictionary<string, string> headers = null)
-            => await SendAsync(metricName, new HttpMessage(HttpMethod.Post, fullUri, headers) {Content = rawContent});
+            => await SendCustomContentAsync(metricName, new HttpMessage(HttpMethod.Post, fullUri, headers) {Content = rawContent});
 
 
         public async Task<OperationResult<TResult>> PutAsync<TModel, TResult>(string serviceAddress, string metricName,
@@ -374,6 +373,38 @@ namespace ATI.Services.Common.Tracing
                 {
                     _logger.ErrorWithObject(e, new {Method = methodName, Message = message});
                     return new OperationResult<string>(ActionStatus.InternalServerError);
+                }
+            }
+        }
+        
+        private async Task<OperationResult<HttpContent>> SendCustomContentAsync(string methodName, HttpMessage message)
+        {
+            using (_metricsTracingFactory.CreateTracingTimer(
+                       TraceHelper.GetHttpTracingInfo(message.FullUri?.ToString() ?? "null", methodName, message.Content)))
+            {
+                try
+                {
+                    if (message.FullUri == null)
+                        return new OperationResult<HttpContent>(ActionStatus.InternalServerError,
+                                                                "Адрес сообщения не указан (message.FullUri==null)");
+
+                    using var requestMessage = message.ToRequestMessage();
+                    using var responseMessage = await _httpClient.SendAsync(requestMessage);
+
+                    if (responseMessage.IsSuccessStatusCode)
+                    {
+                        return new OperationResult<HttpContent>(responseMessage.Content);
+                    }
+
+                    _logger.Warn(
+                        $"Сервис:{Config.ServiceName} в ответ на запрос [HTTP {message.Method} {message.FullUri}] вернул ответ с статус кодом {responseMessage.StatusCode}.");
+
+                    return new OperationResult<HttpContent>(OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
+                }
+                catch (Exception e)
+                {
+                    _logger.ErrorWithObject(e, new {Method = methodName, Message = message});
+                    return new OperationResult<HttpContent>(ActionStatus.InternalServerError);
                 }
             }
         }
