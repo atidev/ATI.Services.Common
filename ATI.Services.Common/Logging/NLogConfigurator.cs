@@ -29,6 +29,7 @@ namespace ATI.Services.Common.Logging
             JsonAttributeHelper.CreateWithoutUnicodeEscaping("client", "${aspnet-request-ip}"),
             JsonAttributeHelper.CreateWithoutUnicodeEscaping("message", "${message}"),
             JsonAttributeHelper.CreateWithoutUnicodeEscaping("machinename", "${machinename}"),
+            JsonAttributeHelper.CreateWithoutUnicodeEscaping("exceptionPretty", "${onexception:${exception:format=ToString,Data:exceptionDataSeparator=\\r\\n}}"),
             JsonAttributeHelper.CreateWithoutUnicodeEscaping("exceptionString", "${onexception:${exception:format=@}}"),
             JsonAttributeHelper.CreateWithoutUnicodeEscaping("logContext", "${event-properties:logContext}"),
             JsonAttributeHelper.CreateWithoutUnicodeEscaping("metricString", "${event-properties:metricString}"),
