@@ -119,7 +119,6 @@ namespace ATI.Services.Common.Metrics
             }
 
             trace = Trace.Current = Trace.CreateFromId(traceContext);
-
             trace.Record(Annotations.ServiceName(_zipkinManager.Options.ServiceName));
             trace.Record(Annotations.ServerRecv());
             trace.Record(Annotations.Tag("http.host", httpContext.Request.Host.ToString()));
