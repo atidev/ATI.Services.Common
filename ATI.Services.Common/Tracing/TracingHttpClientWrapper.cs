@@ -228,22 +228,26 @@ namespace ATI.Services.Common.Tracing
         public async Task<OperationResult<string>> DeleteAsync(Uri fullUri, string metricName,
             Dictionary<string, string> headers = null)
             => await SendAsync(metricName, new HttpMessage(HttpMethod.Delete, fullUri, headers));
-        
-        public async Task<OperationResult<TResult>> PatchAsync<TModel, TResult>(string serviceAddress, string metricName,
+
+
+        public async Task<OperationResult<TResult>> PatchAsync<TModel, TResult>(string serviceAddress,
+            string metricName,
             string url, TModel model, Dictionary<string, string> headers = null)
             => await SendAsync<TResult>(metricName,
                 new HttpMessage(HttpMethod.Patch, FullUri(serviceAddress, url), headers)
                 {
                     Content = Config.Serializer.Serialize(model)
                 });
-        
+
+
         public async Task<OperationResult<TResult>> PatchAsync<TModel, TResult>(Uri fullUri, string metricName,
             TModel model, Dictionary<string, string> headers = null)
             => await SendAsync<TResult>(metricName, new HttpMessage(HttpMethod.Patch, fullUri, headers)
             {
                 Content = Config.Serializer.Serialize(model)
             });
-        
+
+
         public async Task<OperationResult<TResult>> PatchAsync<TResult>(string serviceAddress, string metricName,
             string url, Dictionary<string, string> headers = null)
             => await SendAsync<TResult>(metricName,
@@ -254,14 +258,23 @@ namespace ATI.Services.Common.Tracing
             Dictionary<string, string> headers = null)
             => await SendAsync<TResult>(metricName, new HttpMessage(HttpMethod.Patch, fullUri, headers));
 
-        
+
+        public async Task<OperationResult<string>> PatchAsync<TModel>(string serviceAddress, string metricName,
+            string url, TModel model, Dictionary<string, string> headers = null)
+            => await SendAsync<string>(metricName,
+                new HttpMessage(HttpMethod.Patch, FullUri(serviceAddress, url), headers)
+                {
+                    Content = Config.Serializer.Serialize(model)
+                });
+
+
         public async Task<OperationResult<string>> PatchAsync<TModel>(Uri fullUri, string metricName,
             TModel model, Dictionary<string, string> headers = null)
             => await SendAsync<string>(metricName, new HttpMessage(HttpMethod.Patch, fullUri, headers)
             {
                 Content = Config.Serializer.Serialize(model)
             });
-        
+
 
         public async Task<OperationResult<string>> PatchAsync(string serviceAddress, string metricName, string url,
             Dictionary<string, string> headers = null)
