@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ATI.Services.Common.Extensions;
+using ATI.Services.Common.Metrics;
 using Microsoft.AspNetCore.Http;
 
-
-namespace ATI.Services.Common.Metrics
+namespace ATI.Services.Common.ServiceVariables
 {
     internal static class AppHttpContext
     {
@@ -28,6 +28,8 @@ namespace ATI.Services.Common.Metrics
             }
         }
 
+        public static string[] MetricsHeadersValues => GetHeadersValues(Current, MetricsLabelsAndHeaders.UserHeaders);
+        public static Dictionary<string, string> GetHeadersAndValuesToProxy => GetHeadersAndValues(Current, ServiceVariables.HeadersToProxy);
 
         /// <summary>
         /// Provides static access to the current HttpContext
@@ -41,9 +43,6 @@ namespace ATI.Services.Common.Metrics
                 return httpContextAccessor?.HttpContext;
             }
         }
-
-        public static string[] HeadersValues => GetHeadersValues(Current, MetricsLabelsAndHeaders.UserHeaders);
-
 
         private static string GetHeaderValue(HttpContext context, string headerName)
         {
@@ -67,6 +66,22 @@ namespace ATI.Services.Common.Metrics
         {
             var headersValues = headersNames.Select(label => GetHeaderValue(context, label)).ToArray();
             return headersValues;
+        }
+
+        private static Dictionary<string, string> GetHeadersAndValues(HttpContext context, IEnumerable<string> headersNames)
+        {
+            return headersNames
+                .Select(header => context.Request.Headers.TryGetValue(header, out var headerValues)
+                                  && !string.IsNullOrEmpty(headerValues)
+                    ? new
+                    {
+                        Header = header,
+                        Value = headerValues[0]
+                    }
+                    : null)
+                .Where(headerAndValue => headerAndValue != null)
+                .ToDictionary(headerAndValue => headerAndValue.Header,
+                    headerAndValue => headerAndValue.Value);
         }
     }
 }

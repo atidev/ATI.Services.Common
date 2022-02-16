@@ -7,5 +7,7 @@ namespace ATI.Services.Common.ServiceVariables
         public static string ServiceAsClientName { get; set; }
         public static string ServiceAsClientHeaderName { get; set; }
         public static Dictionary<string, string> Variables { get; set; }
+        
+        public static List<string> HeadersToProxy { get; set; }
     }
 }

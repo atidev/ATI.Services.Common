@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using System.Text;
 using NLog;
 using ATI.Services.Common.Extensions;
+using ATI.Services.Common.ServiceVariables;
 using JetBrains.Annotations;
 
 namespace ATI.Services.Common.Tracing
@@ -249,6 +250,7 @@ namespace ATI.Services.Common.Tracing
                 using (_metricsTracingFactory.CreateTracingTimer(
                     TraceHelper.GetHttpTracingInfo(fullUri.ToString(), metricName, message.Content)))
                 {
+                    message.Headers.AddRange(AppHttpContext.GetHeadersAndValuesToProxy);
                     using var requestMessage = message.ToRequestMessage();
                     using var responseMessage = await _httpClient.SendAsync(requestMessage);
 
@@ -305,6 +307,7 @@ namespace ATI.Services.Common.Tracing
                         return new OperationResult<TResult>(ActionStatus.InternalServerError,
                             "Адрес сообщения не указан (message.FullUri==null)");
 
+                    message.Headers.AddRange(AppHttpContext.GetHeadersAndValuesToProxy);
                     using var requestMessage = message.ToRequestMessage();
                     using var responseMessage = await _httpClient.SendAsync(requestMessage);
 
@@ -341,6 +344,7 @@ namespace ATI.Services.Common.Tracing
                     if (message.FullUri == null)
                         return new OperationResult<string>(ActionStatus.InternalServerError);
 
+                    message.Headers.AddRange(AppHttpContext.GetHeadersAndValuesToProxy);
                     using var requestMessage = message.ToRequestMessage();
                     using var responseMessage = await _httpClient.SendAsync(requestMessage);
                     var responseContent = await responseMessage.Content.ReadAsStringAsync();

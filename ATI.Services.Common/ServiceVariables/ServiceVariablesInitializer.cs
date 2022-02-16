@@ -28,6 +28,8 @@ namespace ATI.Services.Common.ServiceVariables
             ServiceVariables.ServiceAsClientName = ServiceVariables.Variables.TryGetValue("ServiceAsClientName", out var name) ? name : "";
             ServiceVariables.ServiceAsClientHeaderName = ServiceVariables.Variables.TryGetValue("ServiceAsClientHeaderName", out var headerName) ? headerName : "";
 
+            ServiceVariables.HeadersToProxy = _options?.HeadersToProxy ?? new List<string>();
+
             _initialized = true;
             return Task.CompletedTask;
         }
