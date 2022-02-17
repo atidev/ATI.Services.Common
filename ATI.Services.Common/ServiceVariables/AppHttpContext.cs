@@ -29,8 +29,8 @@ namespace ATI.Services.Common.ServiceVariables
             }
         }
 
-        public static string[] MetricsHeadersValues => GetHeadersValues(Current, MetricsLabelsAndHeaders.UserHeaders);
-        public static Dictionary<string, string> HeadersAndValuesToProxy => GetHeadersAndValues(Current, ServiceVariables.HeadersToProxy);
+        public static string[] MetricsHeadersValues => GetHeadersValues(MetricsLabelsAndHeaders.UserHeaders);
+        public static Dictionary<string, string> HeadersAndValuesToProxy => GetHeadersAndValues(ServiceVariables.HeadersToProxy);
 
         /// <summary>
         /// Provides static access to the current HttpContext
@@ -45,6 +45,16 @@ namespace ATI.Services.Common.ServiceVariables
             }
         }
 
+        private static string[] GetHeadersValues(string[] headersNames)
+        {
+            if (headersNames == null || headersNames.Length == 0)
+                return headersNames;
+
+            var context = Current;
+            var headersValues = headersNames.Select(label => GetHeaderValue(context, label)).ToArray();
+            return headersValues;
+        }
+        
         private static string GetHeaderValue(HttpContext context, string headerName)
         {
             if (context == null)
@@ -63,14 +73,12 @@ namespace ATI.Services.Common.ServiceVariables
             return "Empty";
         }
 
-        private static string[] GetHeadersValues(HttpContext context, IEnumerable<string> headersNames)
+        private static Dictionary<string, string> GetHeadersAndValues(IReadOnlyCollection<string> headersNames)
         {
-            var headersValues = headersNames.Select(label => GetHeaderValue(context, label)).ToArray();
-            return headersValues;
-        }
-
-        private static Dictionary<string, string> GetHeadersAndValues(HttpContext context, IEnumerable<string> headersNames)
-        {
+            if (headersNames == null || headersNames.Count == 0)
+                return null;
+            
+            var context = Current;
             return headersNames
                 .Select(header => context.Request.Headers.TryGetValue(header, out var headerValues)
                                   && !StringValues.IsNullOrEmpty(headerValues)
