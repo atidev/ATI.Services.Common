@@ -4,6 +4,7 @@ using System.Linq;
 using ATI.Services.Common.Extensions;
 using ATI.Services.Common.Metrics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 
 namespace ATI.Services.Common.ServiceVariables
 {
@@ -29,7 +30,7 @@ namespace ATI.Services.Common.ServiceVariables
         }
 
         public static string[] MetricsHeadersValues => GetHeadersValues(Current, MetricsLabelsAndHeaders.UserHeaders);
-        public static Dictionary<string, string> GetHeadersAndValuesToProxy => GetHeadersAndValues(Current, ServiceVariables.HeadersToProxy);
+        public static Dictionary<string, string> HeadersAndValuesToProxy => GetHeadersAndValues(Current, ServiceVariables.HeadersToProxy);
 
         /// <summary>
         /// Provides static access to the current HttpContext
@@ -72,7 +73,7 @@ namespace ATI.Services.Common.ServiceVariables
         {
             return headersNames
                 .Select(header => context.Request.Headers.TryGetValue(header, out var headerValues)
-                                  && !string.IsNullOrEmpty(headerValues)
+                                  && !StringValues.IsNullOrEmpty(headerValues)
                     ? new
                     {
                         Header = header,
