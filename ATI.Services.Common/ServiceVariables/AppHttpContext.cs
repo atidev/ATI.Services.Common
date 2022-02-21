@@ -54,7 +54,7 @@ namespace ATI.Services.Common.ServiceVariables
             var headersValues = headersNames.Select(label => GetHeaderValue(context, label)).ToArray();
             return headersValues;
         }
-        
+
         private static string GetHeaderValue(HttpContext context, string headerName)
         {
             if (context == null)
@@ -77,8 +77,11 @@ namespace ATI.Services.Common.ServiceVariables
         {
             if (headersNames == null || headersNames.Count == 0)
                 return null;
-            
+
             var context = Current;
+            if (context == null)
+                return null;
+
             return headersNames
                 .Select(header => context.Request.Headers.TryGetValue(header, out var headerValues)
                                   && !StringValues.IsNullOrEmpty(headerValues)
