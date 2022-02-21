@@ -284,6 +284,7 @@ namespace ATI.Services.Common.Tracing
         public async Task<OperationResult<string>> PatchAsync(Uri fullUri, string metricName,
             Dictionary<string, string> headers = null)
             => await SendAsync(metricName, new HttpMessage(HttpMethod.Patch, fullUri, headers));
+        
 
 
         public async Task<OperationResult<HttpResponseMessage<TResult>>> SendAsync<TModel, TResult>(Uri fullUri,
