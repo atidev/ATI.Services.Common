@@ -385,24 +385,25 @@ nLogConfigurator.ConfigureNLog();
 }
 ```
 ---
-### ServiceVaribles
+### ServiceVariables
 Данный блок конфигурации используется для конфигурирования данных уровня всего приложения
 В приложении можно вызывать 
 ```csharp
-ServiceVaribles.Variables 
+ServiceVariables.Variables 
 ```
 Так же имеются предопределенные поля:
 ```csharp
-ServiceVaribles.ServiceAsClientHeaderName 
-ServiceVaribles.ServiceAsClientName 
+ServiceVariables.ServiceAsClientHeaderName 
+ServiceVariables.ServiceAsClientName 
 ```
-Структура секции ServiceVaribles
+Структура секции ServiceVariables
 ``` json
   "ServiceVariablesOptions": {
     "Variables": {
       //Передается в каждый исходящий HTTP Запрос ConsulMetricsHttpClientWrapper в качестве header'a со значением  ServiceAsClientName
       "ServiceAsClientHeaderName": "ClientNameHeader", 
       "ServiceAsClientName": "ServiceName", //имя сервиса при исходящих HTTP запросах
+      "HeadersToProxy": ["Header1", "Header2"] // входные http-headers, которые проксировать при походы в другие http-сервисы. Если в BaseServiceOptions передать "ProxyServiceVariablesHeaders": false, то для это http-client заголовки проксироваться не будут
       "VarName-3":"Var value 3", //Дополнительные параметры
       "VarName-4":"Var value 4" //Дополнительные параметры
     }

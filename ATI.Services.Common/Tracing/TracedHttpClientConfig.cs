@@ -21,5 +21,6 @@ namespace ATI.Services.Common.Tracing
         public string ServiceName { get; set; }
         public TimeSpan Timeout { get; set; }
         public Dictionary<string, string> Headers { get; [PublicAPI] set; } = new();
+        public bool ProxyServiceVariablesHeaders { get; [PublicAPI] set; } = true;
     }
 }

@@ -5,5 +5,6 @@ namespace ATI.Services.Common.ServiceVariables
     public class ServiceVariablesOptions
     {
         public Dictionary<string, string> Variables { get; set; }
+        public List<string> HeadersToProxy { get; set; }
     }
 }

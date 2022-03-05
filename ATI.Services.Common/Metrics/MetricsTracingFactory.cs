@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using ATI.Services.Common.Logging;
+using ATI.Services.Common.ServiceVariables;
 using JetBrains.Annotations;
 using Prometheus;
 using zipkin4net;
@@ -182,7 +183,7 @@ namespace ATI.Services.Common.Metrics
                     actionName,
                     entityName,
                     _externalHttpServiceName,
-                    AppHttpContext.HeadersValues,
+                    AppHttpContext.MetricsHeadersValues,
                     additionalLabels),
                 longRequestTime ?? _longRequestTime,
                 requestParams,
@@ -227,7 +228,7 @@ namespace ATI.Services.Common.Metrics
                     actionName,
                     entityName,
                     _externalHttpServiceName,
-                    AppHttpContext.HeadersValues,
+                    AppHttpContext.MetricsHeadersValues,
                     additionalLabels),
                 longRequestTime ?? _longRequestTime,
                 requestParams,
@@ -261,7 +262,7 @@ namespace ATI.Services.Common.Metrics
                     actionName,
                     entityName,
                     _externalHttpServiceName,
-                    AppHttpContext.HeadersValues,
+                    AppHttpContext.MetricsHeadersValues,
                     additionalLabels),
                 _longRequestTime,
                 requestParams,
@@ -294,7 +295,7 @@ namespace ATI.Services.Common.Metrics
                     actionName,
                     entityName,
                     _externalHttpServiceName,
-                    AppHttpContext.HeadersValues,
+                    AppHttpContext.MetricsHeadersValues,
                     additionalLabels));
 
 
@@ -328,7 +329,7 @@ namespace ATI.Services.Common.Metrics
                         actionName,
                         entityName,
                         _externalHttpServiceName,
-                        AppHttpContext.HeadersValues,
+                        AppHttpContext.MetricsHeadersValues,
                         additionalLabels),
                     _longRequestTime,
                     requestParams,
@@ -349,7 +350,7 @@ namespace ATI.Services.Common.Metrics
                         actionName,
                         entityName,
                         _externalHttpServiceName,
-                        AppHttpContext.HeadersValues,
+                        AppHttpContext.MetricsHeadersValues,
                         additionalLabels));
 
             return new TimersWrapper(metricsTimer);

@@ -13,5 +13,6 @@ namespace ATI.Services.Common.Options
         public TimeSpan? LongRequestTime { get; set; }
         
         public Dictionary<string, string> AdditionalHeaders { get; set; }
+        public bool ProxyServiceVariablesHeaders { get; set; } = true;
     }
 }
