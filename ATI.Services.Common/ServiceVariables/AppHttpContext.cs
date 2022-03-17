@@ -22,7 +22,7 @@ namespace ATI.Services.Common.ServiceVariables
             {
                 if (_services != null)
                 {
-                    throw new Exception("Can't set once a value has already been set.");
+                    return;
                 }
 
                 _services = value;
