@@ -11,16 +11,16 @@ namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization
 
         public SystemTextJsonSerializer(bool disableConverters = false)
         {
-            _jsonSerializerOptions = !disableConverters
-                ? new JsonSerializerOptions
+            _jsonSerializerOptions = disableConverters
+                ? new JsonSerializerOptions()
+                : new JsonSerializerOptions
                 {
                     Converters =
                     {
                         new TimeSpanConverter(),
                         new DictionaryKeyValueConverter()
                     }
-                }
-                : new JsonSerializerOptions();
+                };
         }
 
         public SystemTextJsonSerializer(JsonSerializerOptions serializerOptions)
