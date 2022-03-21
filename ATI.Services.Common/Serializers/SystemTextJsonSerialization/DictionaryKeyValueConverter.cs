@@ -7,12 +7,21 @@ using JetBrains.Annotations;
 
 namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization
 {
-    /// <summary>
-    /// https://github.com/dotnet/corefx/blob/master/src/System.Text.Json/tests/Serialization/CustomConverterTests.DictionaryKeyValueConverter.cs
-    /// </summary>
     [PublicAPI]
     public sealed class DictionaryKeyValueConverter : JsonConverterFactory
     {
+        private static readonly HashSet<Type> ValueTupleTypes = new(new[]
+        {
+            typeof(ValueTuple<>),
+            typeof(ValueTuple<,>),
+            typeof(ValueTuple<,,>),
+            typeof(ValueTuple<,,,>),
+            typeof(ValueTuple<,,,,>),
+            typeof(ValueTuple<,,,,,>),
+            typeof(ValueTuple<,,,,,,>),
+            typeof(ValueTuple<,,,,,,,>)
+        });
+        
         public override bool CanConvert(Type typeToConvert)
         {
             if (!typeToConvert.IsGenericType)
@@ -27,12 +36,18 @@ namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization
 
             // Don't change semantics of Dictionary<string, TValue> which uses JSON properties (not array of KeyValuePairs).
             var keyType = typeToConvert.GetGenericArguments()[0];
-            if (keyType == typeof(string))
+
+            if (keyType.IsEnum)
             {
                 return false;
             }
 
-            return true;
+            if (keyType.IsGenericType && ValueTupleTypes.Contains(keyType.GetGenericTypeDefinition()))
+            {
+                return false;
+            }
+
+            return keyType != typeof(string);
         }
 
         public override JsonConverter CreateConverter(Type type, JsonSerializerOptions options)
@@ -41,7 +56,7 @@ namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization
             var valueType = type.GetGenericArguments()[1];
 
             var converter = (JsonConverter) Activator.CreateInstance(
-                typeof(DictionaryKeyValueConverterInner<,>).MakeGenericType(new Type[] {keyType, valueType}),
+                typeof(DictionaryKeyValueConverterInner<,>).MakeGenericType(keyType, valueType),
                 BindingFlags.Instance | BindingFlags.Public,
                 binder: null,
                 args: new object[] {options},
@@ -64,38 +79,29 @@ namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization
             public override Dictionary<TKey, TValue> Read(ref Utf8JsonReader reader, Type typeToConvert,
                 JsonSerializerOptions options)
             {
-                if (reader.TokenType != JsonTokenType.StartArray)
+                var dictionaryWithStringKey = (Dictionary<string, TValue>)JsonSerializer.Deserialize(ref reader, typeof(Dictionary<string, TValue>), options);
+                
+                var dictionary = new Dictionary<TKey, TValue>();
+
+                foreach (var (key, value) in dictionaryWithStringKey)
                 {
-                    throw new JsonException();
+                    dictionary.Add((TKey)Convert.ChangeType(key, typeof(TKey)), value);
                 }
 
-                var value = new Dictionary<TKey, TValue>();
-
-                while (reader.Read())
-                {
-                    if (reader.TokenType == JsonTokenType.EndArray)
-                    {
-                        return value;
-                    }
-
-                    var kv = _converter.Read(ref reader, typeToConvert, options);
-                    value.Add(kv.Key, kv.Value);
-                }
-
-                throw new JsonException();
+                return dictionary;
             }
 
             public override void Write(Utf8JsonWriter writer, Dictionary<TKey, TValue> value,
                 JsonSerializerOptions options)
             {
-                writer.WriteStartArray();
+                var dictionary = new Dictionary<string, TValue>(value.Count);
 
-                foreach (var kvp in value)
+                foreach (var (key, value1) in value)
                 {
-                    _converter.Write(writer, kvp, options);
+                    dictionary.Add(key.ToString(), value1);
                 }
-
-                writer.WriteEndArray();
+                
+                JsonSerializer.Serialize(writer, dictionary, options);
             }
         }
     }
