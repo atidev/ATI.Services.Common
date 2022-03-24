@@ -12,7 +12,7 @@ namespace ATI.Services.Common.Serializers
             {
                 SerializerType.Newtonsoft => new NewtonsoftSerializer(),
                 SerializerType.SystemTextJson => new SystemTextJsonSerializer(),
-                SerializerType.SystemTextJsonClassic => new SystemTextJsonSerializer(true),
+                SerializerType.SystemTextJsonClassic => new SystemTextJsonSerializer(false),
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
         }
