@@ -22,7 +22,7 @@ namespace ATI.Services.Common.Extensions
                 return new OperationResult<TOut>(map(operationResult.Value));
             return new OperationResult<TOut>(operationResult);
         }
-        
+
         /// <summary>
         /// Проецирует значение OperationResult в новую форму с помощью функции map.
         /// Заменяет ошибку в исходном OperationResult на defaultValue
@@ -90,6 +90,11 @@ namespace ATI.Services.Common.Extensions
             return Task.FromResult(new OperationResult<TInternal>(operationResult));
         }
 
+        public static TInternal UnwrapOr<TInternal>(this OperationResult<TInternal> operationResult, TInternal defaultValue)
+        {
+            return operationResult.Success ? operationResult.Value : defaultValue;
+        }
+
         #region Async
         
         /// <summary>
@@ -102,7 +107,7 @@ namespace ATI.Services.Common.Extensions
                 return map(operationResult.Value);
             return Task.FromResult(new OperationResult<TOut>(operationResult));
         }
-        
+
         /// <summary>
         /// Проецирует значение OperationResult в асинхронную задачу с помощью функции map.
         /// Заменяет ошибку в исходном OperationResult на defaultValue
@@ -136,5 +141,6 @@ namespace ATI.Services.Common.Extensions
         }
 
         #endregion
+        
     }
 }
