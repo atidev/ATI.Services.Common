@@ -9,6 +9,7 @@ namespace ATI.Services.Common.Extensions
     /// <summary>
     /// Расширения для OperationResult 'T
     /// </summary>
+    [PublicAPI]
     public static class OperationResultExtensions
     {
         /// <summary>
@@ -80,6 +81,13 @@ namespace ATI.Services.Common.Extensions
         public static bool IsSuccessWith<TInternal>(this OperationResult<TInternal> operationResult, [NotNull] Func<TInternal, bool> predicate)
         {
             return operationResult.Select(predicate).Value;
+        }
+        
+        public static Task<OperationResult<TInternal>> Unwrap<TInternal>(this OperationResult<Task<OperationResult<TInternal>>> operationResult)
+        {
+            if (operationResult.Success)
+                return operationResult.Value;
+            return Task.FromResult(new OperationResult<TInternal>(operationResult));
         }
 
         #region Async
