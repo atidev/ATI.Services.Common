@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using JetBrains.Annotations;
@@ -121,10 +120,10 @@ namespace ATI.Services.Common.Extensions
         /// <summary>
         /// Проецирует ошибку из OperationResult в асинхронную операцию с помощью функции mapErrorToFallback
         /// </summary>
-        public static Task<OperationResult<TInternal>> FallbackAsync<TInternal>(this OperationResult<TInternal> operationResult, [NotNull] Func<IList<OperationError>, Task<OperationResult<TInternal>>> mapErrorToFallback)
+        public static Task<OperationResult<TInternal>> FallbackAsync<TInternal>(this OperationResult<TInternal> operationResult, [NotNull] Func<ActionStatus, IList<OperationError>, Task<OperationResult<TInternal>>> mapErrorToFallback)
         {
             if (!operationResult.Success)
-                return mapErrorToFallback(operationResult.Errors);
+                return mapErrorToFallback(operationResult.ActionStatus, operationResult.Errors);
             return Task.FromResult(operationResult);
         }
 
