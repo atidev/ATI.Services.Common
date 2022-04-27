@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using JetBrains.Annotations;
@@ -93,6 +94,30 @@ namespace ATI.Services.Common.Extensions
         public static TInternal UnwrapOr<TInternal>(this OperationResult<TInternal> operationResult, TInternal defaultValue)
         {
             return operationResult.Success ? operationResult.Value : defaultValue;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static OperationResult<TOut> Map2<TInternal, TSecond, TOut>(this OperationResult<TInternal> operationResult, OperationResult<TSecond> secondOperationResult, Func<TInternal, TSecond, TOut> map2)
+        {
+            return (operationResult.Success, secondOperationResult.Success) switch
+            {
+                (true, true) => new OperationResult<TOut>(map2(operationResult.Value, secondOperationResult.Value)),
+                (_, false) => new OperationResult<TOut>(secondOperationResult),
+                _ => new OperationResult<TOut>(operationResult)
+            };
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static OperationResult<TOut> Map3<TInternal, TSecond, TThird, TOut>(this OperationResult<TInternal> operationResult, OperationResult<TSecond> secondOperationResult, 
+            OperationResult<TThird> thirdOperationResult, Func<TInternal, TSecond, TThird, TOut> map2)
+        {
+            return (operationResult.Success, secondOperationResult.Success, thirdOperationResult.Success) switch
+            {
+                (true, true, true) => new OperationResult<TOut>(map2(operationResult.Value, secondOperationResult.Value, thirdOperationResult.Value)),
+                (_, _, false) => new OperationResult<TOut>(thirdOperationResult),
+                (_, false, true) => new OperationResult<TOut>(secondOperationResult),
+                _ => new OperationResult<TOut>(operationResult)
+            };
         }
 
         #region Async
