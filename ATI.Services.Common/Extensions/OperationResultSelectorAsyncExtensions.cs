@@ -18,9 +18,9 @@ namespace ATI.Services.Common.Extensions
             return new OperationResultAsyncSelector<OperationResult<TSource>, OperationResult>(source, opResult => opResult.SelectAsync(map).AsTaskOr(opResult));
         }
         
-        public static ILazyEvaluateAsync<IEnumerable<OperationResult>> SelectAsync<TSource>(this ILazyEvaluateAsync<OperationResult<TSource>> source, Func<TSource, Task<IEnumerable<OperationResult>>> map)
+        public static ILazyEvaluateAsync<IEnumerable<OperationResult>> SelectAsync<TSource>(this ILazyEvaluateAsync<OperationResult<IEnumerable<TSource>>> source, Func<IEnumerable<TSource>, Task<IEnumerable<OperationResult>>> map)
         {
-            return new OperationResultAsyncSelector<OperationResult<TSource>, IEnumerable<OperationResult>>(source, opResult => opResult.SelectAsync(map).AsTaskOr(new []{opResult}));
+            return new OperationResultAsyncSelector<OperationResult<IEnumerable<TSource>>, IEnumerable<OperationResult>>(source, opResult => opResult.SelectAsync(map).AsTaskOr(new []{opResult}));
         }
         
         public static ILazyEvaluateAsync<OperationResult<TResult>> SelectAsync<TSource, TResult>(this ILazyEvaluateAsync<OperationResult<TSource>> source, Func<TSource, Task<OperationResult<TResult>>> map)
@@ -65,12 +65,12 @@ namespace ATI.Services.Common.Extensions
 
         public static Task<OperationResult<TValue>> AsTask<TValue>(this ILazyEvaluateAsync<OperationResult<TValue>> source)
         {
-            return source.CanEvaluated() ? source.EvaluateOrThrowAsync() : Task.FromResult(new OperationResult<TValue>(source.GetInitialOperationResult()));
+            return source.AsTaskOr(initialErrOperation => new OperationResult<TValue>(initialErrOperation));
         }
         
         public static Task<OperationResult> AsTask(this ILazyEvaluateAsync<OperationResult> source)
         {
-            return source.CanEvaluated() ? source.EvaluateOrThrowAsync() : Task.FromResult(new OperationResult(source.GetInitialOperationResult()));
+            return source.AsTaskOr(initialErrOperation => initialErrOperation);
         }
         
         public static Task<TValue> AsTaskOr<TValue>(this ILazyEvaluateAsync<TValue> source, TValue defaultValue)
@@ -78,6 +78,14 @@ namespace ATI.Services.Common.Extensions
             return source.CanEvaluated() ? source.EvaluateOrThrowAsync() : Task.FromResult(defaultValue);
         }
         
+        public static Task<TValue> AsTaskOr<TValue>(this ILazyEvaluateAsync<TValue> source, Func<OperationResult, TValue> mapResultFromInitialError)
+        {
+            if (source.CanEvaluated())
+                return source.EvaluateOrThrowAsync();
+            
+            return Task.FromResult(mapResultFromInitialError(source.GetInitialOperationResult()));
+        }
+
         public static async Task<OperationResult<TOut>> ToOperationResultAsync<TOut>(this ILazyEvaluateAsync<TOut> source)
         {
             if (!source.CanEvaluated()) 
