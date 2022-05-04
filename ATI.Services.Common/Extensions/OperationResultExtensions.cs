@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using JetBrains.Annotations;
 
-namespace ATI.Services.Common.Extensions.OperationResult
+namespace ATI.Services.Common.Extensions
 {
     public static class OperationResultExtensions 
     {

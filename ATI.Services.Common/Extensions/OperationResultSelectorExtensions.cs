@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using JetBrains.Annotations;
 
-namespace ATI.Services.Common.Extensions.OperationResult
+namespace ATI.Services.Common.Extensions
 {
     public static class OperationResultSelectorExtensions
     {
@@ -60,7 +60,7 @@ namespace ATI.Services.Common.Extensions.OperationResult
             return source.CanEvaluated() ? source.EvaluateOrThrow() : new OperationResult<TValue>(source.GetInitialOperationResult());
         }
 
-        public static TOut EvaluateOr<TOut>(this ILazyEvaluate<TOut> source, TOut defaultValue)
+        public static TOut UnwrapOr<TOut>(this ILazyEvaluate<TOut> source, TOut defaultValue)
         {
             return source.CanEvaluated() ? source.EvaluateOrThrow() : defaultValue;
         }
