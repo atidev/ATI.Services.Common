@@ -42,18 +42,9 @@ namespace ATI.Services.Common.Extensions.OperationResult
             }
         }
 
-        public static async Task<TOut> AsTaskOr<TOut>(this ILazyEvaluateAsync<TOut> source, TOut defaultValue)
+        public static Task<OperationResult<TValue>> AsTask<TValue>(this ILazyEvaluateAsync<OperationResult<TValue>> source)
         {
-            if (!source.CanEvaluated())
-                return defaultValue;
-            try
-            {
-                return await source.EvaluateOrThrowAsync();
-            }
-            catch
-            {
-                return defaultValue;
-            }
+            return source.CanEvaluated() ? source.EvaluateOrThrowAsync() : Task.FromResult(new OperationResult<TValue>(source.GetInitialOperationResult()));
         }
         
         public static async Task<OperationResult<TOut>> ToOperationResultAsync<TOut>(this ILazyEvaluateAsync<TOut> source)

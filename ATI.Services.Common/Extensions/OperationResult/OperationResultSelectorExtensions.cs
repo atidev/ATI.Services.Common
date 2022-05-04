@@ -54,6 +54,11 @@ namespace ATI.Services.Common.Extensions.OperationResult
         {
             return source.CanEvaluated() ? new OperationResult<TOut>(source.EvaluateOrThrow()) : new OperationResult<TOut>(source.GetInitialOperationResult());
         }
+        
+        public static OperationResult<TValue> Unwrap<TValue>(this ILazyEvaluate<OperationResult<TValue>> source)
+        {
+            return source.CanEvaluated() ? source.EvaluateOrThrow() : new OperationResult<TValue>(source.GetInitialOperationResult());
+        }
 
         public static TOut EvaluateOr<TOut>(this ILazyEvaluate<TOut> source, TOut defaultValue)
         {
