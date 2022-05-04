@@ -49,30 +49,7 @@ namespace ATI.Services.Common.Extensions
                 return false;
             }
         }
-        
-        public static async Task<TOut> EvaluateOrAsync<TOut>(this ILazyEvaluateAsync<TOut> source, TOut defaultValue)
-        {
-            if (!source.CanEvaluated()) return defaultValue;
-            try
-            {
-                return await source.EvaluateOrThrowAsync();
-            }
-            catch
-            {
-                return defaultValue;
-            }
-        }
 
-        public static Task<OperationResult<TValue>> AsTask<TValue>(this ILazyEvaluateAsync<OperationResult<TValue>> source)
-        {
-            return source.AsTaskOr(initialErrOperation => new OperationResult<TValue>(initialErrOperation));
-        }
-        
-        public static Task<OperationResult> AsTask(this ILazyEvaluateAsync<OperationResult> source)
-        {
-            return source.AsTaskOr(initialErrOperation => initialErrOperation);
-        }
-        
         public static Task<TValue> AsTaskOr<TValue>(this ILazyEvaluateAsync<TValue> source, TValue defaultValue)
         {
             return source.CanEvaluated() ? source.EvaluateOrThrowAsync() : Task.FromResult(defaultValue);
@@ -84,6 +61,16 @@ namespace ATI.Services.Common.Extensions
                 return source.EvaluateOrThrowAsync();
             
             return Task.FromResult(mapResultFromInitialError(source.GetInitialOperationResult()));
+        }
+        
+        public static Task<OperationResult<TValue>> AsTask<TValue>(this ILazyEvaluateAsync<OperationResult<TValue>> source)
+        {
+            return source.AsTaskOr(initialErrOperation => new OperationResult<TValue>(initialErrOperation));
+        }
+        
+        public static Task<OperationResult> AsTask(this ILazyEvaluateAsync<OperationResult> source)
+        {
+            return source.AsTaskOr(initialErrOperation => initialErrOperation);
         }
 
         public static async Task<OperationResult<TOut>> ToOperationResultAsync<TOut>(this ILazyEvaluateAsync<TOut> source)
