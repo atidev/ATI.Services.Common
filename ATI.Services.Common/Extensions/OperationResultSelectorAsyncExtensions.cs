@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using JetBrains.Annotations;
@@ -17,9 +18,19 @@ namespace ATI.Services.Common.Extensions
             return new OperationResultAsyncSelector<OperationResult<TSource>, OperationResult>(source, opResult => opResult.SelectAsync(map).AsTaskOr(opResult));
         }
         
+        public static ILazyEvaluateAsync<IEnumerable<OperationResult>> SelectAsync<TSource>(this ILazyEvaluateAsync<OperationResult<TSource>> source, Func<TSource, Task<IEnumerable<OperationResult>>> map)
+        {
+            return new OperationResultAsyncSelector<OperationResult<TSource>, IEnumerable<OperationResult>>(source, opResult => opResult.SelectAsync(map).AsTaskOr(new []{opResult}));
+        }
+        
         public static ILazyEvaluateAsync<OperationResult<TResult>> SelectAsync<TSource, TResult>(this ILazyEvaluateAsync<OperationResult<TSource>> source, Func<TSource, Task<OperationResult<TResult>>> map)
         {
             return new OperationResultAsyncSelector<OperationResult<TSource>, OperationResult<TResult>>(source, opResult => opResult.SelectAsync(map).AsTaskOr(new OperationResult<TResult>(opResult)));
+        }
+        
+        public static ILazyEvaluateAsync<IEnumerable<OperationResult<TResult>>> SelectAsync<TSource, TResult>(this ILazyEvaluateAsync<OperationResult<TSource>> source, Func<TSource, Task<IEnumerable<OperationResult<TResult>>>> map)
+        {
+            return new OperationResultAsyncSelector<OperationResult<TSource>, IEnumerable<OperationResult<TResult>>>(source, opResult => opResult.SelectAsync(map).AsTaskOr(new []{new OperationResult<TResult>(opResult)}));
         }
         
         /// <summary>
