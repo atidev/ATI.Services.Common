@@ -13,6 +13,16 @@ namespace ATI.Services.Common.Extensions
             return new OperationResultSelector<TSource, TResult>(source, map);
         }
         
+        public static ILazyEvaluate<TResult> Select2<TFirst, TSecond, TResult>(this ILazyEvaluate<TFirst> first, ILazyEvaluate<TSecond> second, Func<TFirst, TSecond, TResult> map2)
+        {
+            return first.Select(f => second.Select(s => map2(f, s))).Unwrap(second.GetInitialOperationResult());
+        }        
+        
+        public static ILazyEvaluate<TResult> Select2<TFirst, TSecond, TResult>(this ILazyEvaluate<TFirst> first, OperationResult<TSecond> second, Func<TFirst, TSecond, TResult> map2)
+        {
+            return first.Select(f => second.Select(s => map2(f, s))).Unwrap(second);
+        }
+        
         /// <summary>
         /// Посещает значение OperationResult c помощью inspectAction
         /// </summary>
@@ -41,28 +51,52 @@ namespace ATI.Services.Common.Extensions
         {
             return new OperationResultAsyncSelector<TSource, TResult>(source, map);
         }
+        
+        public static ILazyEvaluateAsync<TResult> Select2Async<TFirst, TSecond, TResult>(this ILazyEvaluate<TFirst> first, ILazyEvaluate<TSecond> second, Func<TFirst, TSecond, Task<TResult>> map2)
+        {
+            return first.Select2(second, map2).AsAsyncEvaluate();
+        }
+        
+        public static ILazyEvaluateAsync<TResult> Select2Async<TFirst, TSecond, TResult>(this ILazyEvaluate<TFirst> first, OperationResult<TSecond> second, Func<TFirst, TSecond, Task<TResult>> map2)
+        {
+            return first.Select2(second, map2).AsAsyncEvaluate();
+        }
 
         /// <summary>
         /// Вычисляет является операции успешной и выполняется ли для нее предикат 
         /// </summary>
-        public static bool IsSuccessWith<TOut>(this ILazyEvaluate<TOut> source, [NotNull] Func<TOut, bool> predicate)
+        public static bool IsSuccessWith<TValue>(this ILazyEvaluate<TValue> source, [NotNull] Func<TValue, bool> predicate)
         {
             return source.CanEvaluated() && predicate(source.EvaluateOrThrow());
         }
 
-        public static OperationResult<TOut> ToOperationResult<TOut>(this ILazyEvaluate<TOut> source)
+        public static OperationResult<TValue> ToOperationResult<TValue>(this ILazyEvaluate<TValue> source)
         {
-            return source.CanEvaluated() ? new OperationResult<TOut>(source.EvaluateOrThrow()) : new OperationResult<TOut>(source.GetInitialOperationResult());
+            return source.CanEvaluated() ? new OperationResult<TValue>(source.EvaluateOrThrow()) : new OperationResult<TValue>(source.GetInitialOperationResult());
         }
         
         public static OperationResult<TValue> Unwrap<TValue>(this ILazyEvaluate<OperationResult<TValue>> source)
         {
             return source.CanEvaluated() ? source.EvaluateOrThrow() : new OperationResult<TValue>(source.GetInitialOperationResult());
         }
+        
+        internal static ILazyEvaluate<TValue> Unwrap<TValue>(this ILazyEvaluate<ILazyEvaluate<TValue>> source, OperationResult internalInitial)
+        {
+            if (source.CanEvaluated() && internalInitial.Success)
+                return new OperationResultSelector<ILazyEvaluate<TValue>, TValue>(source, internalLazy => internalLazy.EvaluateOrThrow());
 
-        public static TOut UnwrapOr<TOut>(this ILazyEvaluate<TOut> source, TOut defaultValue)
+            var errorOp = source.CanEvaluated() ? internalInitial : source.GetInitialOperationResult();
+            return new OperationResultSelector<TValue, TValue>(new OperationResult<TValue>(errorOp), i => i);
+        }
+
+        public static TValue UnwrapOr<TValue>(this ILazyEvaluate<TValue> source, TValue defaultValue)
         {
             return source.CanEvaluated() ? source.EvaluateOrThrow() : defaultValue;
+        }
+        
+        public static ILazyEvaluateAsync<TValue> AsAsyncEvaluate<TValue>(this ILazyEvaluate<Task<TValue>> source)
+        {
+            return source.SelectAsync(i => i);
         }
     }
 }
