@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using JetBrains.Annotations;
@@ -31,12 +30,12 @@ namespace ATI.Services.Common.Extensions
         
         public static ILazyEvaluateAsync<TResult> Select2Async<TFirst, TSecond, TResult>(this OperationResult<TFirst> first, OperationResult<TSecond> second, Func<TFirst, TSecond, Task<TResult>> map2)
         {
-            return first.Select2(second, map2).AsAsyncEvaluate();
+            return first.Select2(second, map2).AsAsync();
         }
         
         public static ILazyEvaluateAsync<TResult> Select2Async<TFirst, TSecond, TResult>(this OperationResult<TFirst> first, ILazyEvaluate<TSecond> second, Func<TFirst, TSecond, Task<TResult>> map2)
         {
-            return first.Select2(second, map2).AsAsyncEvaluate();
+            return first.Select2(second, map2).AsAsync();
         }
 
         public static Task<OperationResult<TSource>> FallbackAsync<TSource>(this OperationResult<TSource> source, Func<ActionStatus, IList<OperationError>, Task<OperationResult<TSource>>> map)
