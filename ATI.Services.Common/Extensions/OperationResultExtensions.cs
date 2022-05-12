@@ -8,34 +8,34 @@ namespace ATI.Services.Common.Extensions
 {
     public static class OperationResultExtensions 
     {
-        public static ILazyEvaluate<TResult> Select<TSource, TResult>(this OperationResult<TSource> source, Func<TSource, TResult> map)
+        public static ILazyEvaluate<TResult> Map<TSource, TResult>(this OperationResult<TSource> source, Func<TSource, TResult> map)
         {
             return new OperationResultSelector<TSource, TResult>(source, map);
         }
         
-        public static ILazyEvaluate<TResult> Select2<TFirst, TSecond, TResult>(this OperationResult<TFirst> first, OperationResult<TSecond> second, Func<TFirst, TSecond, TResult> map2)
+        public static ILazyEvaluate<TResult> Map2<TFirst, TSecond, TResult>(this OperationResult<TFirst> first, OperationResult<TSecond> second, Func<TFirst, TSecond, TResult> map2)
         {
-            return first.Select(f => second.Select(s => map2(f, s))).Unwrap(second);
+            return first.Map(f => second.Map(s => map2(f, s))).UnwrapLazy(second);
         }
         
-        public static ILazyEvaluate<TResult> Select2<TFirst, TSecond, TResult>(this OperationResult<TFirst> first, ILazyEvaluate<TSecond> second, Func<TFirst, TSecond, TResult> map2)
+        public static ILazyEvaluate<TResult> Map2<TFirst, TSecond, TResult>(this OperationResult<TFirst> first, ILazyEvaluate<TSecond> second, Func<TFirst, TSecond, TResult> map2)
         {
-            return first.Select(f => second.Select(s => map2(f, s))).Unwrap(second.GetInitialOperationResult());
+            return first.Map(f => second.Map(s => map2(f, s))).UnwrapLazy(second.GetInitialOperationResult());
         }
         
-        public static ILazyEvaluateAsync<TResult> SelectAsync<TSource, TResult>(this OperationResult<TSource> source, Func<TSource, Task<TResult>> map)
+        public static ILazyEvaluateAsync<TResult> MapAsync<TSource, TResult>(this OperationResult<TSource> source, Func<TSource, Task<TResult>> map)
         {
             return new OperationResultAsyncSelector<TSource, TResult>(source, map);
         }
         
-        public static ILazyEvaluateAsync<TResult> Select2Async<TFirst, TSecond, TResult>(this OperationResult<TFirst> first, OperationResult<TSecond> second, Func<TFirst, TSecond, Task<TResult>> map2)
+        public static ILazyEvaluateAsync<TResult> Map2Async<TFirst, TSecond, TResult>(this OperationResult<TFirst> first, OperationResult<TSecond> second, Func<TFirst, TSecond, Task<TResult>> map2)
         {
-            return first.Select2(second, map2).AsAsync();
+            return first.Map2(second, map2).AsAsync();
         }
         
-        public static ILazyEvaluateAsync<TResult> Select2Async<TFirst, TSecond, TResult>(this OperationResult<TFirst> first, ILazyEvaluate<TSecond> second, Func<TFirst, TSecond, Task<TResult>> map2)
+        public static ILazyEvaluateAsync<TResult> Map2Async<TFirst, TSecond, TResult>(this OperationResult<TFirst> first, ILazyEvaluate<TSecond> second, Func<TFirst, TSecond, Task<TResult>> map2)
         {
-            return first.Select2(second, map2).AsAsync();
+            return first.Map2(second, map2).AsAsync();
         }
 
         public static Task<OperationResult<TSource>> FallbackAsync<TSource>(this OperationResult<TSource> source, Func<ActionStatus, IList<OperationError>, Task<OperationResult<TSource>>> map)
