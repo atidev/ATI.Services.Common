@@ -37,10 +37,15 @@ namespace ATI.Services.Common.Extensions
         {
             return first.Map2(second, map2).AsAsync();
         }
-
-        public static Task<OperationResult<TSource>> FallbackAsync<TSource>(this OperationResult<TSource> source, Func<ActionStatus, IList<OperationError>, Task<OperationResult<TSource>>> map)
+        
+        public static OperationResult<TSource> Fallback<TSource>(this OperationResult<TSource> source, Func<ActionStatus, IList<OperationError>, OperationResult<TSource>> fallback)
         {
-            return !source.Success ? map(source.ActionStatus, source.Errors) : Task.FromResult(source);
+            return !source.Success ? fallback(source.ActionStatus, source.Errors) : source;
+        }
+
+        public static Task<OperationResult<TSource>> FallbackAsync<TSource>(this OperationResult<TSource> source, Func<ActionStatus, IList<OperationError>, Task<OperationResult<TSource>>> fallback)
+        {
+            return !source.Success ? fallback(source.ActionStatus, source.Errors) : Task.FromResult(source);
         }
 
         /// <summary>
