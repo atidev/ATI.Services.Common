@@ -257,7 +257,7 @@ namespace ATI.Services.Common.Sql
                            longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = GetTimeOut(procedureName);
-                    parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
+                    parameters.Add(ReturnValueFieldName, 0, DbType.Object, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
