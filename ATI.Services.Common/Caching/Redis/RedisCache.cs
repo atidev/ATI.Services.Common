@@ -438,19 +438,23 @@ namespace ATI.Services.Common.Caching.Redis
         }
 
 
-        public async Task<OperationResult> IncrementAsync(string key, DateTime expireAt, string metricEntity, TimeSpan? longTimeRequest = null)
+        public async Task<OperationResult<long>> IncrementAsync(string key, DateTime expireAt, string metricEntity, TimeSpan? longTimeRequest = null)
         {
             if (!_connected)
-                return new OperationResult(ActionStatus.InternalOptionalServerUnavailable);
+                return new OperationResult<long>(ActionStatus.InternalOptionalServerUnavailable);
             if (string.IsNullOrEmpty(key))
-                return OperationResult.Ok;
+                return new OperationResult<long>(ActionStatus.BadRequest);
 
             using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(key), metricEntity, requestParams: new { Key = key, ExpireAt = expireAt }, longRequestTime: longTimeRequest))
             {
                 var transaction = _redisDb.CreateTransaction();
-                transaction.StringIncrementAsync(key).Forget();
+                var incrementOperation = transaction.StringIncrementAsync(key);
                 transaction.KeyExpireAsync(key, expireAt).Forget();
-                return await ExecuteAsync(async () => await transaction.ExecuteAsync(), new { key, expireAt });
+                var operation = await ExecuteAsync(async () => await transaction.ExecuteAsync(), new { key, expireAt });
+                if (!operation.Success)
+                    return new OperationResult<long>(operation);
+
+                return new OperationResult<long>(incrementOperation.Result);
             }
         }
 
@@ -623,7 +627,7 @@ namespace ATI.Services.Common.Caching.Redis
         }
 
         public async Task<OperationResult> InsertTypeAsHashAsync<T>(string hashKey, T data, string metricEntity,
-            TimeSpan? longTimeRequest = null) where T : class, new()
+            TimeSpan? longTimeRequest = null, TimeSpan? ttl = null) where T : class, new()
         {
             if (!_connected)
                 return new OperationResult(ActionStatus.InternalOptionalServerUnavailable);
@@ -633,14 +637,19 @@ namespace ATI.Services.Common.Caching.Redis
             using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(hashKey), metricEntity,
                 requestParams: new {RedisValues = data, HashKey = hashKey}, longRequestTime: longTimeRequest))
             {
-                return await ExecuteAsync(async () => await _redisDb.HashSetAsync(hashKey,
-                    ToHashEntries(data).ToArray()), new { hashKey, data });
+                var fields = ToHashEntries(data).ToArray();
+
+                var transaction = _redisDb.CreateTransaction();
+                transaction.HashSetAsync(hashKey, fields).Forget();
+                transaction.KeyExpireAsync(hashKey, ttl ?? Options.TimeToLive).Forget();
+                
+                return await ExecuteAsync(async () => await transaction.ExecuteAsync(), new { hashKey, data });
             }
         }
 
         public async Task<OperationResult> InsertManyFieldsToHashAsync<TKey, TValue>(string hashKey,
             List<KeyValuePair<TKey, TValue>> fieldsToInsert, string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null, TimeSpan? ttl = null)
         {
             if (!_connected)
                 return new OperationResult(ActionStatus.InternalOptionalServerUnavailable);
@@ -650,8 +659,13 @@ namespace ATI.Services.Common.Caching.Redis
             using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(hashKey), metricEntity,
                 requestParams: new {RedisValues = fieldsToInsert, HashKey = hashKey}, longRequestTime: longTimeRequest))
             {
-                return await ExecuteAsync(async () => await _redisDb.HashSetAsync(hashKey,
-                    fieldsToInsert.Select(kvp => new HashEntry(kvp.Key.ToString(), Serializer.Serialize(kvp.Value))).ToArray()), new { hashKey, fieldsToInsert });
+                var fields = fieldsToInsert.Select(kvp => new HashEntry(kvp.Key.ToString(), Serializer.Serialize(kvp.Value))).ToArray();
+
+                var transaction = _redisDb.CreateTransaction();
+                transaction.HashSetAsync(hashKey, fields).Forget();
+                transaction.KeyExpireAsync(hashKey, ttl ?? Options.TimeToLive).Forget();
+                
+                return await ExecuteAsync(async () => await transaction.ExecuteAsync(), new { hashKey, fieldsToInsert });
             }
         }
 
@@ -674,6 +688,8 @@ namespace ATI.Services.Common.Caching.Redis
             {
                 transaction.HashSetAsync(hashKey,
                     hashValues.Select(kvp => new HashEntry(kvp.Key.ToString(), Serializer.Serialize(kvp.Value))).ToArray()).Forget();
+                if (Options.TimeToLive != null)
+                    transaction.KeyExpireAsync(hashKey, Options.TimeToLive).Forget();
             }
 
             return await ExecuteAsync(async () => await transaction.ExecuteAsync(), new { RedisValues = valuesByHashKeys, MetricEntity = metricEntity });
