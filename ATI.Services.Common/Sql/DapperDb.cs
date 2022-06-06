@@ -241,6 +241,46 @@ namespace ATI.Services.Common.Sql
                 return new OperationResult(ActionStatus.InternalServerError, e.Message);
             }
         }
+        
+        public async Task<OperationResult<TResult>> ExecuteWithReturnValueAsync<TResult>(
+            string procedureName,
+            DynamicParameters parameters,
+            string metricEntity,
+            TimeSpan? longTimeRequest = null)
+        {
+            try
+            {
+                var tracingInfo = GetTracingInfo(procedureName);
+                
+                using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
+                           metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                           longTimeRequest, FullMetricTypeLabel))
+                {
+                    var timeout = GetTimeOut(procedureName);
+                    parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
+                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    {
+                        using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
+                                   metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                                   longTimeRequest, QueryMetricTypeLabel))
+                        {
+                            await connection.ExecuteAsync(
+                                procedureName,
+                                parameters,
+                                commandType: CommandType.StoredProcedure,
+                                commandTimeout: timeout);
+                        }
+
+                        return new OperationResult<TResult>(parameters.Get<TResult>(ReturnValueFieldName));
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                LogWithParameters(e, procedureName, metricEntity, parameters);
+                return new OperationResult<TResult>(ActionStatus.InternalServerError, e.Message);
+            }
+        }
 
         public async Task<OperationResult<T>> ExecuteObjectAsync<T>(
             string procedureName,
