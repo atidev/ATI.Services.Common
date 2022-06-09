@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.Tracing;
-using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Tracing;
 using Microsoft.Extensions.Configuration;
 using Prometheus;
 using Prometheus.Advanced;
+using ConfigurationManager = ATI.Services.Common.Behaviors.ConfigurationManager;
 
 namespace ATI.Services.Common.Metrics
 {

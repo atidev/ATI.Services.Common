@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Extensions;
 using ATI.Services.Common.Initializers;
 using ATI.Services.Common.Tracing;
@@ -8,6 +7,7 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ConfigurationManager = ATI.Services.Common.Behaviors.ConfigurationManager;
 
 namespace ATI.Services.Common.Metrics
 {
