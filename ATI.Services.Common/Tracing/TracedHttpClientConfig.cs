@@ -6,6 +6,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace ATI.Services.Common.Tracing
 {
+    [PublicAPI]
     public class TracedHttpClientConfig
     {
         public JsonSerializer Serializer { get; set; } = new()
@@ -18,9 +19,12 @@ namespace ATI.Services.Common.Tracing
                 }
             }
         };
+
         public string ServiceName { get; set; }
         public TimeSpan Timeout { get; set; }
-        public Dictionary<string, string> Headers { get; [PublicAPI] set; } = new();
-        public bool ProxyServiceVariablesHeaders { get; [PublicAPI] set; } = true;
+        public Dictionary<string, string> Headers { get; set; } = new();
+        public bool ProxyServiceVariablesHeaders { get; set; } = true;
+        public bool AddCultureToRequest { get; set; } = true;
+        public List<string> HeadersToProxy { get; set; } = new();
     }
 }

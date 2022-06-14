@@ -10,7 +10,6 @@ namespace ATI.Services.Common.Extensions
 
         /// <summary>
         /// Пробует преобразовать строку тип <see cref="T"/>. Возвращает флаг, свидетельствующий об успешности преобразования.
-        /// Апасна, может что-нибудь и сломать, всегда использует ru_RU локаль.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="str"></param>
