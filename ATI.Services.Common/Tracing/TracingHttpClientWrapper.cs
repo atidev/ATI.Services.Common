@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -10,9 +9,11 @@ using ATI.Services.Common.Metrics;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Text;
+using ATI.Services.Common.Context;
 using NLog;
 using ATI.Services.Common.Extensions;
-using ATI.Services.Common.ServiceVariables;
+using ATI.Services.Common.Localization;
+using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
 
 namespace ATI.Services.Common.Tracing
@@ -42,12 +43,12 @@ namespace ATI.Services.Common.Tracing
         {
             var httpClient = new HttpClient { Timeout = Config.Timeout };
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            if (!ServiceVariables.ServiceVariables.ServiceAsClientName.IsNullOrEmpty() &&
-                !ServiceVariables.ServiceVariables.ServiceAsClientHeaderName.IsNullOrEmpty())
+            if (!ServiceVariables.ServiceAsClientName.IsNullOrEmpty() &&
+                !ServiceVariables.ServiceAsClientHeaderName.IsNullOrEmpty())
             {
                 httpClient.DefaultRequestHeaders.Add(
-                    ServiceVariables.ServiceVariables.ServiceAsClientHeaderName,
-                    ServiceVariables.ServiceVariables.ServiceAsClientName);
+                    ServiceVariables.ServiceAsClientHeaderName,
+                    ServiceVariables.ServiceAsClientName);
             }
 
             if (additionalHeaders != null && additionalHeaders.Count > 0)
@@ -465,10 +466,10 @@ namespace ATI.Services.Common.Tracing
                 foreach (var header in Headers)
                     msg.Headers.Add(header.Key, header.Value);
 
-                if (config.AddCultureToRequest)
-                    msg.Headers.AcceptLanguage.Add(
-                        new StringWithQualityHeaderValue(CultureInfo.CurrentCulture.Name,
-                            1));
+                string acceptLanguage;
+                if (config.AddCultureToRequest
+                    && (acceptLanguage = FlowContext<RequestMetaData>.Current.AcceptLanguage) != null)
+                    msg.Headers.Add("Accept-Language", acceptLanguage);
 
 
                 if (string.IsNullOrEmpty(Content) == false)

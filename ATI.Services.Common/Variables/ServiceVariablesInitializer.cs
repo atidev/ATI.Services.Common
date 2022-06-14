@@ -4,7 +4,7 @@ using ATI.Services.Common.Initializers;
 using ATI.Services.Common.Initializers.Interfaces;
 using Microsoft.Extensions.Options;
 
-namespace ATI.Services.Common.ServiceVariables
+namespace ATI.Services.Common.Variables
 {
     [InitializeOrder(Order = InitializeOrder.First)]
     public class ServiceVariablesInitializer : IInitializer
@@ -27,6 +27,8 @@ namespace ATI.Services.Common.ServiceVariables
             ServiceVariables.Variables = _options?.Variables ?? new Dictionary<string, string>();
             ServiceVariables.ServiceAsClientName = ServiceVariables.Variables.TryGetValue("ServiceAsClientName", out var name) ? name : "";
             ServiceVariables.ServiceAsClientHeaderName = ServiceVariables.Variables.TryGetValue("ServiceAsClientHeaderName", out var headerName) ? headerName : "";
+            ServiceVariables.DefaultLocale = ServiceVariables.Variables.TryGetValue("DefaultLocale", out var locale) ? locale : "ru";
+            ServiceVariables.SupportedLocales = _options?.SupportedLocales ?? new[] { ServiceVariables.DefaultLocale };
 
             _initialized = true;
             return Task.CompletedTask;

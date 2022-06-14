@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using ATI.Services.Common.Logging;
-using ATI.Services.Common.ServiceVariables;
+using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
 using Prometheus;
 using zipkin4net;

@@ -6,7 +6,7 @@ using ATI.Services.Common.Metrics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace ATI.Services.Common.ServiceVariables
+namespace ATI.Services.Common.Variables
 {
     internal static class AppHttpContext
     {
