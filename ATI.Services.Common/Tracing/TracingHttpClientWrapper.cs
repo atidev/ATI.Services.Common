@@ -460,7 +460,7 @@ namespace ATI.Services.Common.Tracing
             {
                 var msg = new HttpRequestMessage(Method, FullUri);
 
-                if (config.ProxyServiceVariablesHeaders)
+                if (config.HeadersToProxy.Count != 0)
                     Headers.AddRange(AppHttpContext.HeadersAndValuesToProxy(config.HeadersToProxy));
 
                 foreach (var header in Headers)

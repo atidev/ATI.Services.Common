@@ -23,7 +23,6 @@ namespace ATI.Services.Common.Tracing
         public string ServiceName { get; set; }
         public TimeSpan Timeout { get; set; }
         public Dictionary<string, string> Headers { get; set; } = new();
-        public bool ProxyServiceVariablesHeaders { get; set; } = true;
         public bool AddCultureToRequest { get; set; } = true;
         public List<string> HeadersToProxy { get; set; } = new();
     }
