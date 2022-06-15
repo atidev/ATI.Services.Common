@@ -4,12 +4,15 @@
 - `v1.0.0` - формат релизная версия на ветке master 
 - `v1.0.0-rc1` - формат тестовой/альфа/бета версии на любой ветке  
 
-Тег можно создать через git(нужно запушить его в origin) [создание тега и пуш в remote](https://git-scm.com/book/en/v2/Git-Basics-Tagging)  
+Тег можно создать через git(нужно запушить его в origin) [создание тега и пуш в remote](https://git-scm.com/book/en/v2/Git-Basics-Tagging) 
+
 или через раздел [releses](https://github.com/atidev/ATI.Services.Common/releases)(альфа версии нужно помечать соответсвующей галкой).
 
 #### Разработка теперь выглядит вот так:
 1. Создаем ветку, пушим изменения, создаем pull request.
 2. Вешаем на ветку тег например `v1.0.2-new-auth-12`
+ `git tag -a v1.0.0-rc-1 -m "your description" `
+ `git push origin v1.0.0-rc-1`
 3. Срабатывает workflow билдит и пушит версию(берёт из названия тега) в nuget.
 4. По готовности мерджим ветку в master.
 5. Вешаем релизный тег на нужный коммит мастера.
@@ -395,6 +398,8 @@ ServiceVariables.Variables
 ```csharp
 ServiceVariables.ServiceAsClientHeaderName 
 ServiceVariables.ServiceAsClientName 
+ServiceVariables.DefaultLocale
+ServiceVariables.SupportedLocales
 ```
 Структура секции ServiceVariables
 ``` json
@@ -403,13 +408,30 @@ ServiceVariables.ServiceAsClientName
       //Передается в каждый исходящий HTTP Запрос ConsulMetricsHttpClientWrapper в качестве header'a со значением  ServiceAsClientName
       "ServiceAsClientHeaderName": "ClientNameHeader", 
       "ServiceAsClientName": "ServiceName", //имя сервиса при исходящих HTTP запросах
-      "HeadersToProxy": ["Header1", "Header2"] // входные http-headers, которые проксировать при походы в другие http-сервисы. Если в BaseServiceOptions передать "ProxyServiceVariablesHeaders": false, то для это http-client заголовки проксироваться не будут
+      "DefaultLocale":"ru", //локаль, использующаяся по умолчанию
       "VarName-3":"Var value 3", //Дополнительные параметры
       "VarName-4":"Var value 4" //Дополнительные параметры
-    }
+    },
+    "SupportedLocales":["ru","en"] //список поддерживаемых сервисом локалей
   }
 ```
 В `Startup.cs` вызываем 
 ```c#
   services.AddServiceVariables();
+```
+
+### Localization
+
+Поддержана работа по локализации, для работы нужно добавить `DefaultLocale` и `SupportedLocales` в `ServiceVariablesOptions`
+и использовать в Startup (в самом начале)
+```csharp
+app.UseAcceptLanguageLocalization();
+```
+Теперь, если заголовок Accept-Language при http запросе или хэдер accept_language rmq сообщения будет передан, то получить значение культуры можно в любом месте приложения путем вызова 
+```csharp
+LocaleHelper.GetLocale();
+```
+Значение хэдеров, без парсинга, хранится в FlowContext и его можно получить
+```csharp
+FlowContext<RequestMetaData>.AccessLanguage;
 ```
