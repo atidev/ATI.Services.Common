@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 
@@ -12,9 +13,13 @@ namespace ATI.Services.Common.Localization
         /// <param name="requestContext"></param>
         /// <returns></returns>
         [PublicAPI]
-        public static string GetUserLanguage(this HttpContext requestContext)
+        public static string GetUserLanguage(this HttpContext requestContext, bool withDefaultLocale = true)
         {
-            return CultureInfo.CurrentCulture.Name;
+            return !string.IsNullOrEmpty(CultureInfo.CurrentCulture.Name)
+                ? CultureInfo.CurrentCulture.Name
+                : withDefaultLocale
+                    ? ServiceVariables.DefaultLocale
+                    : CultureInfo.CurrentCulture.Name;
         }
     }
 }

@@ -8,11 +8,15 @@ using JetBrains.Annotations;
 namespace ATI.Services.Common.Localization
 {
     [PublicAPI]
-    public static class LocalizationHelper
+    public static class LocaleHelper
     {
-        public static string GetLocale()
+        public static string GetLocale(bool withDefaultLocale = true)
         {
-            return CultureInfo.CurrentCulture.Name;
+            return !string.IsNullOrEmpty(CultureInfo.CurrentCulture.Name)
+                ? CultureInfo.CurrentCulture.Name
+                : withDefaultLocale
+                    ? ServiceVariables.DefaultLocale
+                    : CultureInfo.CurrentCulture.Name;
         }
 
         public static CultureInfo GetFromString(string acceptLanguage)
@@ -20,7 +24,8 @@ namespace ATI.Services.Common.Localization
             var language =
                 acceptLanguage.Split(',')
                     .Select(StringWithQualityHeaderValue.Parse)
-                    .Where(lang => ServiceVariables.SupportedLocales.Contains(lang.Value, StringComparer.OrdinalIgnoreCase))
+                    .Where(lang =>
+                        ServiceVariables.SupportedLocales.Contains(lang.Value, StringComparer.OrdinalIgnoreCase))
                     .MaxBy(lang => lang.Quality);
 
 
