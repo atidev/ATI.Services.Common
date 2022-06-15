@@ -16,13 +16,17 @@ namespace ATI.Services.Common.Localization
         {
             var requestLocalizationOptions = new RequestLocalizationOptions()
                 .SetDefaultCulture(ServiceVariables.DefaultLocale)
-                .AddSupportedCultures(ServiceVariables.SupportedLocales.ToArray())
                 .AddSupportedUICultures(ServiceVariables.SupportedLocales.ToArray());
+            requestLocalizationOptions.FallBackToParentUICultures = false;
 
             var providers = new List<IRequestCultureProvider>
             {
-                new AcceptLanguageHeaderRequestCultureProvider { MaximumAcceptLanguageHeaderValuesToTry = 10 }
+                new AcceptLanguageHeaderRequestCultureProvider
+                {
+                    MaximumAcceptLanguageHeaderValuesToTry = 10
+                }
             };
+            
             if (additionalProviders != null)
                 providers.AddRange(additionalProviders);
 
