@@ -19,23 +19,33 @@ namespace ATI.Services.Common.Localization
                     ? ServiceVariables.DefaultLocale
                     : CultureInfo.CurrentUICulture.Name;
         }
-        
+
         public static string GetUserLanguage(this HttpContext requestContext, bool withDefaultLocale = true)
         {
             return GetLocale(withDefaultLocale);
         }
-        
-        public static CultureInfo GetFromString(string acceptLanguage)
+
+        public static bool TryGetFromString(string acceptLanguage, out CultureInfo cultureInfo)
         {
-            var language =
-                acceptLanguage.Split(',')
-                    .Select(StringWithQualityHeaderValue.Parse)
-                    .Where(lang =>
-                        ServiceVariables.SupportedLocales.Contains(lang.Value, StringComparer.OrdinalIgnoreCase))
-                    .MaxBy(lang => lang.Quality);
-
-
-            return language != null ? new CultureInfo(language.Value) : null;
+            cultureInfo = null;
+            try
+            {
+                var language =
+                    acceptLanguage.Split(',')
+                        .Select(StringWithQualityHeaderValue.Parse)
+                        .Where(lang =>
+                            ServiceVariables.SupportedLocales.Contains(lang.Value, StringComparer.OrdinalIgnoreCase))
+                        .MaxBy(lang => lang.Quality);
+                
+                if (language != null)
+                    cultureInfo = new CultureInfo(language.Value);
+                
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }
