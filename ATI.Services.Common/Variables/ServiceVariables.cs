@@ -7,7 +7,7 @@ namespace ATI.Services.Common.Variables
         public static string ServiceAsClientName { get; set; }
         public static string ServiceAsClientHeaderName { get; set; }
         public static string DefaultLocale { get; set; }
-        public static string[] SupportedLocales { get; set; }
+        public static HashSet<string> SupportedLocales { get; set; }
         public static Dictionary<string, string> Variables { get; set; }
     }
 }

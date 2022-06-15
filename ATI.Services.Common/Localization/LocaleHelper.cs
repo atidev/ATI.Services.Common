@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http.Headers;
 using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.Http;
 
 namespace ATI.Services.Common.Localization
 {
@@ -12,13 +13,18 @@ namespace ATI.Services.Common.Localization
     {
         public static string GetLocale(bool withDefaultLocale = true)
         {
-            return !string.IsNullOrEmpty(CultureInfo.CurrentCulture.Name)
-                ? CultureInfo.CurrentCulture.Name
+            return !string.IsNullOrEmpty(CultureInfo.CurrentUICulture.Name)
+                ? CultureInfo.CurrentUICulture.Name
                 : withDefaultLocale
                     ? ServiceVariables.DefaultLocale
-                    : CultureInfo.CurrentCulture.Name;
+                    : CultureInfo.CurrentUICulture.Name;
         }
-
+        
+        public static string GetUserLanguage(this HttpContext requestContext, bool withDefaultLocale = true)
+        {
+            return GetLocale(withDefaultLocale);
+        }
+        
         public static CultureInfo GetFromString(string acceptLanguage)
         {
             var language =

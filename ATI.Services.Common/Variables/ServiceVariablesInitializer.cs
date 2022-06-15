@@ -28,7 +28,7 @@ namespace ATI.Services.Common.Variables
             ServiceVariables.ServiceAsClientName = ServiceVariables.Variables.TryGetValue("ServiceAsClientName", out var name) ? name : "";
             ServiceVariables.ServiceAsClientHeaderName = ServiceVariables.Variables.TryGetValue("ServiceAsClientHeaderName", out var headerName) ? headerName : "";
             ServiceVariables.DefaultLocale = ServiceVariables.Variables.TryGetValue("DefaultLocale", out var locale) ? locale : "ru";
-            ServiceVariables.SupportedLocales = _options?.SupportedLocales ?? new[] { ServiceVariables.DefaultLocale };
+            ServiceVariables.SupportedLocales = _options?.SupportedLocales ?? new HashSet<string>( new []{ServiceVariables.DefaultLocale} );
 
             _initialized = true;
             return Task.CompletedTask;

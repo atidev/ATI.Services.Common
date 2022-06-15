@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.Globalization;
+using System.Linq;
 using ATI.Services.Common.Context;
 using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
@@ -16,8 +16,8 @@ namespace ATI.Services.Common.Localization
         {
             var requestLocalizationOptions = new RequestLocalizationOptions()
                 .SetDefaultCulture(ServiceVariables.DefaultLocale)
-                .AddSupportedCultures(ServiceVariables.SupportedLocales)
-                .AddSupportedUICultures(ServiceVariables.SupportedLocales);
+                .AddSupportedCultures(ServiceVariables.SupportedLocales.ToArray())
+                .AddSupportedUICultures(ServiceVariables.SupportedLocales.ToArray());
 
             var providers = new List<IRequestCultureProvider>
             {
