@@ -21,7 +21,7 @@ namespace ATI.Services.Common.Localization
 
             var providers = new List<IRequestCultureProvider>
             {
-                new AcceptLanguageHeaderRequestCultureProvider()
+                new AcceptLanguageHeaderRequestCultureProvider { MaximumAcceptLanguageHeaderValuesToTry = 10 }
             };
             if (additionalProviders != null)
                 providers.AddRange(additionalProviders);
@@ -29,7 +29,7 @@ namespace ATI.Services.Common.Localization
             requestLocalizationOptions.RequestCultureProviders = providers;
 
             builder.UseRequestLocalization(requestLocalizationOptions);
-            
+
             builder.Use(async (context, next) =>
             {
                 var acceptLanguageHeader = context.Request.Headers.AcceptLanguage;

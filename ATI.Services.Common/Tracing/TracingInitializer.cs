@@ -39,9 +39,20 @@ namespace ATI.Services.Common.Tracing
         {
             TraceManager.Start(new TracingLogger(_loggerFactory, "zipkin_tracing"));
         }
+
         public void Stop()
         {
             TraceManager.Stop();
+        }
+
+        public string InitStartConsoleMessage()
+        {
+            return "Start Tracing initializer";
+        }
+
+        public string InitEndConsoleMessage()
+        {
+            return "End Tracing initializer";
         }
     }
 }

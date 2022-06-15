@@ -27,5 +27,15 @@ namespace ATI.Services.Common.Initializers
             await _redisProvider.InitAsync();
             _initialized = true;
         }
+        
+        public string InitStartConsoleMessage()
+        {
+            return "Start Redis initializer";
+        }
+
+        public string InitEndConsoleMessage()
+        {
+            return $"End Redis initializer, result {_initialized}";
+        }
     }
 }

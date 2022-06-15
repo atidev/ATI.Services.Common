@@ -33,5 +33,15 @@ namespace ATI.Services.Common.Variables
             _initialized = true;
             return Task.CompletedTask;
         }
+        
+        public string InitStartConsoleMessage()
+        {
+            return "Start Service Variables initializer";
+        }
+
+        public string InitEndConsoleMessage()
+        {
+            return $"End Service Variables initializer, result {_initialized}";
+        }
     }
 }

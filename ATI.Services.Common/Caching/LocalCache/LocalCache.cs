@@ -90,6 +90,16 @@ namespace ATI.Services.Common.Caching.LocalCache
             _logger.Trace($"{_typeName}.InitializeAsync finished");
         }
 
+        public string InitStartConsoleMessage()
+        {
+            return $"Start Local Cache {typeof(T).Name} initializer";
+        }
+
+        public string InitEndConsoleMessage()
+        {
+            return $"End Local Cache {typeof(T).Name} initializer, result {_initialized}";
+        }
+
         void IDisposable.Dispose()
         {
             _reloadTimer?.Dispose();

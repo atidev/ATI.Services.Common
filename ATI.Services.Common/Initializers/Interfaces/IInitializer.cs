@@ -20,5 +20,8 @@ namespace ATI.Services.Common.Initializers.Interfaces
     public interface IInitializer
     { 
         Task InitializeAsync();
+        string InitStartConsoleMessage();
+        string InitEndConsoleMessage();
+        
     }
 }
