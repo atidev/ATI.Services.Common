@@ -39,5 +39,15 @@ namespace ATI.Services.Common.Initializers
             _initialized = true;
             return Task.CompletedTask;
         }
+
+        public string InitStartConsoleMessage()
+        {
+            return "Start Metrics initializer";
+        }
+
+        public string InitEndConsoleMessage()
+        {
+            return $"End Metrics initializer, result {_initialized}";
+        }
     }
 }

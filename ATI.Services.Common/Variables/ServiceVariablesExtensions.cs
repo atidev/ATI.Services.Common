@@ -3,7 +3,7 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ATI.Services.Common.ServiceVariables
+namespace ATI.Services.Common.Variables
 {
     public static class ServiceVariablesExtensions
     {

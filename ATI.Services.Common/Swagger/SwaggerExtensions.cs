@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Extensions;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
@@ -13,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
+using ConfigurationManager = ATI.Services.Common.Behaviors.ConfigurationManager;
 
 namespace ATI.Services.Common.Swagger
 {

@@ -37,7 +37,9 @@ namespace ATI.Services.Common.Initializers
             {
                 if (_serviceProvider.GetService(initializerInfo.InitializerType) is IInitializer initializer)
                 {
+                    Console.WriteLine(initializer.InitStartConsoleMessage());
                     await initializer.InitializeAsync();
+                    Console.WriteLine(initializer.InitEndConsoleMessage());
                     _logger.Trace($"{initializer.GetType()} initialized");
                 }
             }

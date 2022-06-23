@@ -6,7 +6,7 @@ using ATI.Services.Common.Metrics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace ATI.Services.Common.ServiceVariables
+namespace ATI.Services.Common.Variables
 {
     internal static class AppHttpContext
     {
@@ -30,7 +30,7 @@ namespace ATI.Services.Common.ServiceVariables
         }
 
         public static string[] MetricsHeadersValues => GetHeadersValues(MetricsLabelsAndHeaders.UserHeaders);
-        public static Dictionary<string, string> HeadersAndValuesToProxy => GetHeadersAndValues(ServiceVariables.HeadersToProxy);
+        public static Dictionary<string, string> HeadersAndValuesToProxy(List<string> headersToProxy) => GetHeadersAndValues(headersToProxy);
 
         /// <summary>
         /// Provides static access to the current HttpContext

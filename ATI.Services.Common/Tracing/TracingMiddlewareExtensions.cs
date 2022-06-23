@@ -1,5 +1,5 @@
 ﻿using ATI.Services.Common.Extensions;
-using ATI.Services.Common.ServiceVariables;
+using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
