@@ -115,7 +115,7 @@ namespace ATI.Services.Common.Caching.Redis
         {
             try
             {
-                await _redisDb.Multiplexer.GetServer(host, port).SlaveOfAsync(master);
+                await _redisDb.Multiplexer.GetServer(host, port).ReplicaOfAsync(master);
                 return OperationResult.Ok;
             }
             catch (Exception e)
