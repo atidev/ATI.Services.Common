@@ -435,3 +435,62 @@ LocaleHelper.GetLocale();
 ```csharp
 FlowContext<RequestMetaData>.AccessLanguage;
 ```
+
+#### InCodeLocalizer
+
+Небольшой хелпер для локализации строк, переводы можно хранить прямо в коде. Подходит если строк для перевода относительно мало.  
+Работает только с локалями перечисленными в `ServiceVariables.SupportedLocales`, текущую локаль определяет через `LocaleHelper.GetLocale()`
+
+1. Добавить в Startup.cs
+```csharp
+services.AddInCodeLocalization(); 
+```
+
+2. Реализовать `IInCodeLocalization`, есть 2 варианта:
+   1. для всех локалей кроме дефолтной  
+     в качестве ключа использовать значение в дефолтной локали,
+    более наглядно, т.к. в коде по месту используются не "NortWestRegionId", а сам текст в дефолтной локали
+      ```csharp
+      public class EnLocalization : IInCodeLocalization
+      {
+          public string Locale { get; } = new("en");
+   
+          public ReadOnlyDictionary<string, string> LocalizedStrings =>
+              new(new Dictionary<string, string>
+              {
+                  { "Северо-Западный фед.округ", "Northwestern Federal District" },
+              });
+      }
+     
+      // использование
+      // в дефолтной локали вернёт переданный ключ "Северо-Западный фед.округ"
+      _inCodeLocalizer["Северо-Западный фед.округ"]
+      ```
+   2. для каждой поддерживаемой локали
+      ```csharp
+     
+      public class RuLocalization : IInCodeLocalization
+      {
+          public string Locale { get; } = new("ru");
+   
+          public ReadOnlyDictionary<string, string> LocalizedStrings =>
+              new(new Dictionary<string, string>
+              {
+                  { "NortWestRegionId", "Северо-Западный фед.округ" },
+              });
+      }
+     
+      public class EnLocalization : IInCodeLocalization
+      {
+          public string Locale { get; } = new("en");
+   
+          public ReadOnlyDictionary<string, string> LocalizedStrings =>
+              new(new Dictionary<string, string>
+              {
+                  { "NortWestRegionId", "Northwestern Federal District" },
+              });
+      }
+      
+      // использование
+      _inCodeLocalizer["NortWestRegionId", false]
+      ```
