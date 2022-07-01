@@ -8,8 +8,8 @@ using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Metrics;
 using ATI.Services.Common.Serializers;
 using JetBrains.Annotations;
-using Polly;
 using Polly.CircuitBreaker;
+using Polly.Wrap;
 using StackExchange.Redis;
 
 namespace ATI.Services.Common.Caching.Redis
@@ -18,8 +18,8 @@ namespace ATI.Services.Common.Caching.Redis
     {
         private readonly MetricsTracingFactory _metricsTracingFactory;
         private readonly IDatabase _redisDb;
-        private readonly CircuitBreakerPolicy _circuitBreakerPolicy;
-        private readonly Policy _policy;
+        private readonly AsyncCircuitBreakerPolicy _circuitBreakerPolicy;
+        private readonly AsyncPolicyWrap _policy;
         
         /// <summary>
         /// Инициализируем готовыми Policy, чтобы они разделяли общий CircuitBreaker - иначе у них будут разные State с RedisCache
@@ -33,8 +33,8 @@ namespace ATI.Services.Common.Caching.Redis
             IDatabase redisDb, 
             RedisOptions redisOptions, 
             MetricsTracingFactory metricsTracingFactory,
-            CircuitBreakerPolicy circuitBreakerPolicy,
-            Policy policy
+            AsyncCircuitBreakerPolicy circuitBreakerPolicy,
+            AsyncPolicyWrap policy
             )
             : base(SerializerFactory.GetSerializerByType(redisOptions.Serializer))
         {
@@ -89,16 +89,16 @@ namespace ATI.Services.Common.Caching.Redis
 
             var result = await ExecuteEvalShaAsync(scriptSha, RedisLuaScripts.InsertMany, redisKeys, redisValues);
             if (result.Success)
-                RedisMetadata.ScriptShaByScriptType.AddOrUpdate(RedisMetadata.InsertManyScriptKey, result.Value, (key, oldValue) => result.Value);
+                RedisMetadata.ScriptShaByScriptType.AddOrUpdate(RedisMetadata.InsertManyScriptKey, result.Value, (_, _) => result.Value);
 
             return result;
             
         }
 
         /// <summary>
-        /// Выполняет скрипт по хэшу <paramref name="scriptSha"/>.
+        /// Execute script by SHA <paramref name="scriptSha"/>.
         /// </summary>
-        /// <param name="scriptSha">Хэш скрипта.</param>
+        /// <param name="scriptSha">Script SHA.</param>
         /// <param name="script">Текст скрипта для загрузки.</param>
         /// <param name="keys">Список ключей.</param>
         /// <param name="arguments">Список параметров.</param>
