@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ATI.Services.Common.Context;
@@ -5,12 +6,27 @@ using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ATI.Services.Common.Localization
 {
     [PublicAPI]
     public static class LocalizationExtensions
     {
+        public static IServiceCollection AddInCodeLocalization(this IServiceCollection services)
+        {
+            foreach (var type in AppDomain.CurrentDomain.GetAssemblies()
+                                          .SelectMany(s => s.GetTypes())
+                                          .Where(p => p.IsClass && p.IsAssignableTo(typeof(IInCodeLocalization))))
+            {
+                services.AddSingleton(typeof(IInCodeLocalization), type);
+            }
+        
+            services.AddSingleton<InCodeLocalizer>();
+            return services;
+        }
+
+        
         public static void UseAcceptLanguageLocalization(this IApplicationBuilder builder,
             List<IRequestCultureProvider> additionalProviders = null)
         {
