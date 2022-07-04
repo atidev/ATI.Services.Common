@@ -1,126 +1,78 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using Newtonsoft.Json;
 using NLog;
 
-namespace ATI.Services.Common.Logging
+namespace ATI.Services.Common.Logging;
+
+[PublicAPI]
+public static class LoggerExtension
 {
-    public static class LoggerExtension
+    public static void ErrorWithObject(this ILogger logger, Exception ex, string message,
+        params object[] logObjects)
     {
-        private const string NullExceptionMessage = "Exception is null. No message provided.";
-        public static void ErrorWithObject(this ILogger logger, Exception ex, string message, params object[] logObjects)
+        logger.LogWithObjectInternal(LogLevel.Error, ex, message, logObjects: logObjects);
+    }
+
+    public static void ErrorWithObject(this ILogger logger, Exception ex, params object[] logObjects)
+    {
+        logger.LogWithObjectInternal(LogLevel.Error, ex, logObjects: logObjects);
+    }
+
+    public static void ErrorWithObject(this ILogger logger, params object[] logObjects)
+    {
+        logger.LogWithObjectInternal(LogLevel.Error, logObjects: logObjects);
+    }
+
+    public static void WarnWithObject(this ILogger logger, string message, params object[] logObjects)
+    {
+        logger.LogWithObjectInternal(LogLevel.Warn, null, message, null, logObjects);
+    }
+    
+    public static void LogWithObjectInternal(this ILogger logger,
+        LogLevel logLevel,
+        Exception ex = null,
+        string message = null,
+        Dictionary<object, object> additionalProperties = null,
+        params object[] logObjects)
+    {
+        try
         {
-            try
+            if (logger == null)
             {
-                if (logger == null)
+                Console.WriteLine(
+                    $"Логгер не инициализирован, stackTrace: {Environment.NewLine}{Environment.StackTrace}");
+                return;
+            }
+
+            var json = "";
+            if (logObjects != null && logObjects.Length != 0)
+                json = JsonConvert.SerializeObject(logObjects);
+
+
+            var eventInfo = new LogEventInfo(LogLevel.Error, logger.Name,
+                message ?? ex?.Message ?? "No message provided. Exception is null.")
+            {
+                Properties = { new KeyValuePair<object, object>("logContext", json) }
+            };
+
+            if (additionalProperties != null)
+                foreach (var additionalProperty in additionalProperties)
                 {
-                    Console.WriteLine($"Логгер не инициализирован, stackTrace: {Environment.NewLine}{Environment.StackTrace}");
-                    return;
+                    eventInfo.Properties.TryAdd(additionalProperty.Key, additionalProperty.Value);
                 }
-                
-                var json = "";
-                if (logObjects != null && logObjects.Length != 0)
-                    json = JsonConvert.SerializeObject(logObjects);
-                
-                var eventInfo = new LogEventInfo(LogLevel.Error, logger.Name, message ?? ex?.Message ?? NullExceptionMessage)
-                {
-                    Exception = ex,
-                    Properties = { new KeyValuePair<object, object>("logContext", json) }
-                };
-                logger.Log(eventInfo);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Exception occured in Logger");
-                Console.WriteLine(e);
-            }
+
+
+            if (ex != null)
+                eventInfo.Exception = ex;
+
+            logger.Log(eventInfo);
         }
-
-        public static void ErrorWithObject(this ILogger logger, Exception ex, params object[] logObjects)
+        catch (Exception e)
         {
-            try
-            {   
-                if (logger == null)
-                {
-                    Console.WriteLine($"Логгер не инициализирован, stackTrace: {Environment.NewLine}{Environment.StackTrace}");
-                    return;
-                }
-                
-                var json = "";
-                if (logObjects != null && logObjects.Length != 0)
-                    json = JsonConvert.SerializeObject(logObjects);
-                
-                var eventInfo = new LogEventInfo(LogLevel.Error, logger.Name, ex?.Message ?? NullExceptionMessage)
-                {
-                    Exception = ex,
-                    Properties = { new KeyValuePair<object, object>("logContext", json) }
-                };
-                logger.Log(eventInfo);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Exception occured in Logger");
-                Console.WriteLine(e);
-            }
-        }
-
-        public static void WarnWithObject(this ILogger logger, string message, params object[] logObjects)
-        {
-            try
-            {
-                if (logger == null)
-                {
-                    Console.WriteLine($"Логгер не инициализирован, stackTrace: {Environment.NewLine}{Environment.StackTrace}");
-                    return;
-                }
-                
-                var json = "";
-                if (logObjects != null && logObjects.Length != 0)
-                    json = JsonConvert.SerializeObject(logObjects);
-                
-                var eventInfo = new LogEventInfo(LogLevel.Warn, logger.Name, message)
-                {
-                    Properties = { new KeyValuePair<object, object>("logContext", json) }
-                };
-                logger.Log(eventInfo);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Exception occured in Logger");
-                Console.WriteLine(e);
-            }
-        }
-
-        internal static void LogLongRequest(this ILogger logger, LogSource logSource, object metricContext)
-        {
-            try
-            {
-                if (logger == null)
-                {
-                    Console.WriteLine($"Логгер не инициализирован, stackTrace: {Environment.NewLine}{Environment.StackTrace}");
-                    return;
-                }
-                
-                if (metricContext == null)
-                    return;
-
-                var json = JsonConvert.SerializeObject(metricContext);
-
-                var eventInfo = new LogEventInfo(LogLevel.Warn, logger.Name, "Long request WARN.")
-                {
-                    Properties =
-                    {
-                        new KeyValuePair<object, object>("metricSource", logSource.ToString()),
-                        new KeyValuePair<object, object>("metricString", json),
-                    }
-                };
-                logger.Log(eventInfo);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Exception occured in Logger");
-                Console.WriteLine(e);
-            }
+            Console.WriteLine("Exception occured in Logger");
+            Console.WriteLine(e);
         }
     }
 }
