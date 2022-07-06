@@ -42,24 +42,19 @@ public class InCodeLocalizer
     {
         get
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-            
             var locale = LocaleHelper.GetLocale();
             if (nameAsKey && locale == ServiceVariables.DefaultLocale)
             {
                 return name;
             }
 
-            if (_localizations.TryGetValue(locale, out var localization)
+            if (name != null && _localizations.TryGetValue(locale, out var localization)
                 && localization.LocalizedStrings.TryGetValue(name, out var localized))
             {
                 return localized;
             }
 
-            Logger.Error($"Missing translation for {name} in locale {locale}");
+            Logger.Error($"Missing translation for {name ?? string.Empty} in locale {locale}");
             return string.Empty;
         }
     }
