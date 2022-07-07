@@ -40,7 +40,7 @@ namespace ATI.Services.Common.Metrics
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
         {
             var exceptionType = eventData.Payload[ExceptionNameIndex].ToString();
-            _exceptionCounters.AddOrUpdate(exceptionType, _ => 1, (key, oldValue) => oldValue + 1);
+            _exceptionCounters.AddOrUpdate(exceptionType, _ => 1, (_, oldValue) => oldValue + 1);
         }
 
 
