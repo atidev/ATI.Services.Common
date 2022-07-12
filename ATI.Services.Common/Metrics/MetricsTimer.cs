@@ -68,7 +68,7 @@ namespace ATI.Services.Common.Metrics
                 if (_longRequestTime != null && _stopwatch.Elapsed > _longRequestTime && _context != null &&
                     _logSource != null)
                 {
-                    Logger.LogWithObjectInternal(LogLevel.Warn, null, "Long request WARN.",
+                    Logger.LogWithObject(LogLevel.Warn, null, "Long request WARN.",
                         new Dictionary<object, object>
                         {
                             { "metricSource", _logSource.Value.ToString() },

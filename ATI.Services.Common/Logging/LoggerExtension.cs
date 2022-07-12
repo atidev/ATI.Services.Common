@@ -12,25 +12,25 @@ public static class LoggerExtension
     public static void ErrorWithObject(this ILogger logger, Exception ex, string message,
         params object[] logObjects)
     {
-        logger.LogWithObjectInternal(LogLevel.Error, ex, message, logObjects: logObjects);
+        logger.LogWithObject(LogLevel.Error, ex, message, logObjects: logObjects);
     }
 
     public static void ErrorWithObject(this ILogger logger, Exception ex, params object[] logObjects)
     {
-        logger.LogWithObjectInternal(LogLevel.Error, ex, logObjects: logObjects);
+        logger.LogWithObject(LogLevel.Error, ex, logObjects: logObjects);
     }
 
     public static void ErrorWithObject(this ILogger logger, params object[] logObjects)
     {
-        logger.LogWithObjectInternal(LogLevel.Error, logObjects: logObjects);
+        logger.LogWithObject(LogLevel.Error, logObjects: logObjects);
     }
 
     public static void WarnWithObject(this ILogger logger, string message, params object[] logObjects)
     {
-        logger.LogWithObjectInternal(LogLevel.Warn, null, message, null, logObjects);
+        logger.LogWithObject(LogLevel.Warn, null, message, null, logObjects);
     }
     
-    public static void LogWithObjectInternal(this ILogger logger,
+    public static void LogWithObject(this ILogger logger,
         LogLevel logLevel,
         Exception ex = null,
         string message = null,
@@ -51,7 +51,7 @@ public static class LoggerExtension
                 json = JsonConvert.SerializeObject(logObjects);
 
 
-            var eventInfo = new LogEventInfo(LogLevel.Error, logger.Name,
+            var eventInfo = new LogEventInfo(logLevel, logger.Name,
                 message ?? ex?.Message ?? "No message provided. Exception is null.")
             {
                 Properties = { new KeyValuePair<object, object>("logContext", json) }
