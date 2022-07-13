@@ -177,5 +177,10 @@ namespace ATI.Services.Common.Behaviors
             Errors.Add(new OperationError(actionStatus, errorMessage, isPrivate));
             ActionStatus = actionStatus;
         }
+
+        public static implicit operator OperationResult<TValue>(TValue x)
+        {
+            return new OperationResult<TValue>(x);
+        }
     }
 }
