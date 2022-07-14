@@ -8,7 +8,7 @@ namespace ATI.Services.Common.Extensions
 {
     public static class OperationResultSelectorExtensions
     {
-        #region Select
+        #region Map
         public static ILazyEvaluate<TResult> Map<TSource, TResult>(this ILazyEvaluate<TSource> source, Func<TSource, TResult> map)
         {
             return new OperationResultSelector<TSource, TResult>(source, map);
@@ -35,7 +35,7 @@ namespace ATI.Services.Common.Extensions
         }
         #endregion
 
-        #region SelectAsync
+        #region MapAsync
         public static ILazyEvaluateAsync<TResult> MapAsync<TSource, TResult>(this ILazyEvaluate<TSource> source, Func<TSource, Task<TResult>> map)
         {
             return new OperationResultAsyncSelector<TSource, TResult>(source, map);
@@ -60,31 +60,6 @@ namespace ATI.Services.Common.Extensions
         {
             return source.MapAsync(i => i);
         }
-        #endregion
-
-        #region Fallback
-
-        public static ILazyEvaluate<TSource> Fallback<TSource>(this ILazyEvaluate<TSource> source, Func<ActionStatus, IList<OperationError>, TSource> fallback)
-        {
-            if (!source.CanEvaluated())
-            {
-                var initialOp = source.GetInitialOperationResult();
-                return new OperationResult<TSource>().Map(_ => fallback(initialOp.ActionStatus, initialOp.Errors));
-            }
-
-            return source;
-        }
-        public static ILazyEvaluateAsync<TSource> FallbackAsync<TSource>(this ILazyEvaluate<TSource> source, Func<ActionStatus, IList<OperationError>, Task<TSource>> fallback)
-        {
-            if (!source.CanEvaluated())
-            {
-                var initialOp = source.GetInitialOperationResult();
-                return new OperationResult<TSource>().MapAsync(_ => fallback(initialOp.ActionStatus, initialOp.Errors));
-            }
-
-            return new OperationResultAsyncSelector<TSource, TSource>(source, Task.FromResult);
-        }
-
         #endregion
 
         #region Evaluate

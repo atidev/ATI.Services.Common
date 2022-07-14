@@ -7,21 +7,11 @@ namespace ATI.Services.Common.Extensions
 {
     public static class OperationResultSelectorAsyncExtensions
     {
+        #region MapAsync
+
         public static ILazyEvaluateAsync<TResult> MapAsync<TSource, TResult>(this ILazyEvaluateAsync<TSource> source, Func<TSource, Task<TResult>> map)
         {
             return new OperationResultAsyncSelector<TSource, TResult>(source, map);
-        }
-
-        public static ILazyEvaluateAsync<TResult> Map2Async<TFirst, TSecond, TResult>(this ILazyEvaluateAsync<TFirst> first,
-            ILazyEvaluate<TSecond> second, Func<TFirst, TSecond, Task<TResult>> map2)
-        {
-            return first.Map(f => second.MapAsync(s => map2(f, s))).UnwrapLazy(second.GetInitialOperationResult());
-        }
-
-        public static ILazyEvaluateAsync<TResult> Map2Async<TFirst, TSecond, TResult>(this ILazyEvaluateAsync<TFirst> first,
-            OperationResult<TSecond> second, Func<TFirst, TSecond, Task<TResult>> map2)
-        {
-            return first.Map(f => second.MapAsync(s => map2(f, s))).UnwrapLazy(second);
         }
 
         public static ILazyEvaluateAsync<OperationResult> MapAsync<TSource>(this ILazyEvaluateAsync<OperationResult<TSource>> source, Func<TSource, Task<OperationResult>> map)
@@ -43,6 +33,20 @@ namespace ATI.Services.Common.Extensions
         {
             return new OperationResultAsyncSelector<OperationResult<TSource>, OperationResult<TResult>[]>(source, opResult => opResult.MapAsync(map).AsTask());
         }
+        
+        public static ILazyEvaluateAsync<TResult> Map2Async<TFirst, TSecond, TResult>(this ILazyEvaluateAsync<TFirst> first, ILazyEvaluate<TSecond> second, Func<TFirst, TSecond, Task<TResult>> map2)
+        {
+            return first.Map(f => second.MapAsync(s => map2(f, s))).UnwrapLazy(second.GetInitialOperationResult());
+        }
+
+        public static ILazyEvaluateAsync<TResult> Map2Async<TFirst, TSecond, TResult>(this ILazyEvaluateAsync<TFirst> first, OperationResult<TSecond> second, Func<TFirst, TSecond, Task<TResult>> map2)
+        {
+            return first.Map(f => second.MapAsync(s => map2(f, s))).UnwrapLazy(second);
+        }
+
+        #endregion
+        
+        #region Evaluate
         
         /// <summary>
         /// Вычисляет является операции успешной и выполняется ли для нее предикат 
@@ -93,6 +97,8 @@ namespace ATI.Services.Common.Extensions
                 ? new OperationResult<TValue>(await source.EvaluateOrThrowAsync())
                 : new OperationResult<TValue>(source.GetInitialOperationResult());
         }
+
+        #endregion
 
         private static ILazyEvaluateAsync<TValue> UnwrapLazy<TValue>(this ILazyEvaluateAsync<ILazyEvaluateAsync<TValue>> source, OperationResult initialInternalOperationResult)
         { 
