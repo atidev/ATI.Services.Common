@@ -19,6 +19,11 @@ namespace ATI.Services.Common.Extensions
             return new OperationResultSelector<OperationResult<TSource>, OperationResult<TResult>>(source, i => i.Map(map).Unwrap());
         }
         
+        public static ILazyEvaluate<OperationResult<TResult>> Map<TSource, TResult>(this ILazyEvaluate<OperationResult<TSource>> source, Func<TSource, TResult> map)
+        {
+            return new OperationResultSelector<OperationResult<TSource>, OperationResult<TResult>>(source, i => i.Map(map).ToOperationResult());
+        }
+
         public static ILazyEvaluate<TResult> Map2<TFirst, TSecond, TResult>(this ILazyEvaluate<TFirst> first, ILazyEvaluate<TSecond> second, Func<TFirst, TSecond, TResult> map2)
         {
             return first.Map(f => second.Map(s => map2(f, s))).UnwrapLazy(second.GetInitialOperationResult());
@@ -76,7 +81,7 @@ namespace ATI.Services.Common.Extensions
             return source.CanEvaluated() ? new OperationResult<TValue>(source.EvaluateOrThrow()) : new OperationResult<TValue>(source.GetInitialOperationResult());
         }
         
-        public static OperationResult<TValue> Unwrap<TValue>(this ILazyEvaluate<OperationResult<TValue>> source)
+        private static OperationResult<TValue> Unwrap<TValue>(this ILazyEvaluate<OperationResult<TValue>> source)
         {
             return source.CanEvaluated() ? source.EvaluateOrThrow() : new OperationResult<TValue>(source.GetInitialOperationResult());
         }
