@@ -67,7 +67,7 @@ namespace ATI.Services.Common.Extensions
         {
             return source.CanEvaluated() ? source.EvaluateOrThrowAsync() : defaultTask;
         }
-        
+
         public static Task<TValue> AsTaskOrDefault<TValue>(this ILazyEvaluateAsync<TValue> source, Func<OperationResult, TValue> mapResultFromInitialError)
         {
             if (source.CanEvaluated())
