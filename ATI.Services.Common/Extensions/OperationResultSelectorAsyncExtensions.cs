@@ -15,13 +15,13 @@ namespace ATI.Services.Common.Extensions
         public static ILazyEvaluateAsync<TResult> Map2Async<TFirst, TSecond, TResult>(this ILazyEvaluateAsync<TFirst> first,
             ILazyEvaluate<TSecond> second, Func<TFirst, TSecond, Task<TResult>> map2)
         {
-            return first.Map(f => second.MapAsync(s => map2(f, s))).Unwrap(second.GetInitialOperationResult());
+            return first.Map(f => second.MapAsync(s => map2(f, s))).UnwrapLazy(second.GetInitialOperationResult());
         }
 
         public static ILazyEvaluateAsync<TResult> Map2Async<TFirst, TSecond, TResult>(this ILazyEvaluateAsync<TFirst> first,
             OperationResult<TSecond> second, Func<TFirst, TSecond, Task<TResult>> map2)
         {
-            return first.Map(f => second.MapAsync(s => map2(f, s))).Unwrap(second);
+            return first.Map(f => second.MapAsync(s => map2(f, s))).UnwrapLazy(second);
         }
 
         public static ILazyEvaluateAsync<OperationResult> MapAsync<TSource>(this ILazyEvaluateAsync<OperationResult<TSource>> source, Func<TSource, Task<OperationResult>> map)
@@ -94,7 +94,7 @@ namespace ATI.Services.Common.Extensions
                 : new OperationResult<TValue>(source.GetInitialOperationResult());
         }
 
-        private static ILazyEvaluateAsync<TValue> Unwrap<TValue>(this ILazyEvaluateAsync<ILazyEvaluateAsync<TValue>> source, OperationResult initialInternalOperationResult)
+        private static ILazyEvaluateAsync<TValue> UnwrapLazy<TValue>(this ILazyEvaluateAsync<ILazyEvaluateAsync<TValue>> source, OperationResult initialInternalOperationResult)
         { 
             if(source.CanEvaluated() && initialInternalOperationResult.Success)
                 return new OperationResultAsyncSelector<ILazyEvaluateAsync<TValue>, TValue>(source, i => i.EvaluateOrThrowAsync());
@@ -108,13 +108,5 @@ namespace ATI.Services.Common.Extensions
         {
             return new OperationResultAsyncSelector<TSource, TResult>(source, i => Task.FromResult(map(i)));
         }
-
-        // public static ILazyEvaluateAsync<OperationResult> Map2Async<TFirst, TSecond>(this ILazyEvaluateAsync<OperationResult<TFirst>> first, OperationResult<TSecond> second, Func<TFirst, TSecond, Task<OperationResult>> map2)
-        // {
-        //     return first.MapAsync(f =>
-        //     {
-        //         return second.MapAsync(s => map2(f, s)).AsTaskOrDefault(second);
-        //     });
-        // }
     }
 }
