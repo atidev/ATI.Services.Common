@@ -45,6 +45,11 @@ namespace ATI.Services.Common.Extensions
         {
             return new OperationResultAsyncSelector<TSource, TResult>(source, map);
         }
+        
+        public static ILazyEvaluateAsync<OperationResult<TResult>> MapAsync<TSource, TResult>(this ILazyEvaluate<OperationResult<TSource>> source, Func<TSource, Task<OperationResult<TResult>>> map)
+        {
+            return new OperationResultAsyncSelector<OperationResult<TSource>, OperationResult<TResult>>(source, op => op.MapAsync(map).AsTask());
+        }
 
         public static ILazyEvaluateAsync<TResult> Map2Async<TFirst, TSecond, TResult>(this ILazyEvaluate<TFirst> first, ILazyEvaluate<TSecond> second, Func<TFirst, TSecond, Task<TResult>> map2)
         {
