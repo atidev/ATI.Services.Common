@@ -1,9 +1,9 @@
 ﻿using System;
-using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Initializers;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ConfigurationManager = ATI.Services.Common.Behaviors.ConfigurationManager;
 
 namespace ATI.Services.Common.Extensions
 {

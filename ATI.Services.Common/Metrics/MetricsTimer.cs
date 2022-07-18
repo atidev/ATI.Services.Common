@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using ATI.Services.Common.Logging;
+using Newtonsoft.Json;
 using NLog;
 using Prometheus;
 
@@ -19,12 +21,11 @@ namespace ATI.Services.Common.Metrics
         /// <summary>
         /// Конструктор таймера метрик, который считает только метрику (время выполнения + счётчик) для прометеуса
         /// </summary>
-        
         public MetricsTimer(
-            Summary summary, 
-            string[] additionSummaryLabels, 
-            TimeSpan? longRequestTime = null, 
-            object context = null, 
+            Summary summary,
+            string[] additionSummaryLabels,
+            TimeSpan? longRequestTime = null,
+            object context = null,
             LogSource? logSource = null,
             bool startTimerImmediately = true)
         {
@@ -61,18 +62,26 @@ namespace ATI.Services.Common.Metrics
                 {
                     _summary.Labels(_summaryLabels).Observe(_stopwatch.ElapsedMilliseconds);
                 }
+
                 _stopwatch.Stop();
 
-                if (_longRequestTime != null && _stopwatch.Elapsed > _longRequestTime && _context != null && _logSource != null)
-                { 
-                    Logger.LogLongRequest(
-                        _logSource.Value,
-                        new
+                if (_longRequestTime != null && _stopwatch.Elapsed > _longRequestTime && _context != null &&
+                    _logSource != null)
+                {
+                    Logger.LogWithObject(LogLevel.Warn, null, "Long request WARN.",
+                        new Dictionary<object, object>
                         {
-                            LogSource = _logSource,
-                            RequestTime = _stopwatch.Elapsed,
-                            Labels = _summaryLabels,
-                            Context = _context
+                            { "metricSource", _logSource.Value.ToString() },
+                            {
+                                "metricString", JsonConvert.SerializeObject(
+                                    new
+                                    {
+                                        LogSource = _logSource,
+                                        RequestTime = _stopwatch.Elapsed,
+                                        Labels = _summaryLabels,
+                                        Context = _context
+                                    })
+                            }
                         });
                 }
             }

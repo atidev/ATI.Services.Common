@@ -9,9 +9,11 @@ using ATI.Services.Common.Metrics;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Text;
+using ATI.Services.Common.Context;
 using NLog;
 using ATI.Services.Common.Extensions;
-using ATI.Services.Common.ServiceVariables;
+using ATI.Services.Common.Localization;
+using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
 
 namespace ATI.Services.Common.Tracing
@@ -39,14 +41,14 @@ namespace ATI.Services.Common.Tracing
 
         private HttpClient CreateHttpClient(Dictionary<string, string> additionalHeaders)
         {
-            var httpClient = new HttpClient {Timeout = Config.Timeout};
+            var httpClient = new HttpClient { Timeout = Config.Timeout };
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            if (!ServiceVariables.ServiceVariables.ServiceAsClientName.IsNullOrEmpty() &&
-                !ServiceVariables.ServiceVariables.ServiceAsClientHeaderName.IsNullOrEmpty())
+            if (!ServiceVariables.ServiceAsClientName.IsNullOrEmpty() &&
+                !ServiceVariables.ServiceAsClientHeaderName.IsNullOrEmpty())
             {
                 httpClient.DefaultRequestHeaders.Add(
-                    ServiceVariables.ServiceVariables.ServiceAsClientHeaderName,
-                    ServiceVariables.ServiceVariables.ServiceAsClientName);
+                    ServiceVariables.ServiceAsClientHeaderName,
+                    ServiceVariables.ServiceAsClientName);
             }
 
             if (additionalHeaders != null && additionalHeaders.Count > 0)
@@ -156,12 +158,12 @@ namespace ATI.Services.Common.Tracing
         public async Task<OperationResult<string>> PostAsync(string serviceAddress, string metricName, string url,
             string rawContent, Dictionary<string, string> headers = null)
             => await SendAsync(metricName,
-                new HttpMessage(HttpMethod.Post, FullUri(serviceAddress, url), headers) {Content = rawContent});
+                new HttpMessage(HttpMethod.Post, FullUri(serviceAddress, url), headers) { Content = rawContent });
 
 
         public async Task<OperationResult<string>> PostAsync(Uri fullUri, string metricName, string rawContent,
             Dictionary<string, string> headers = null)
-            => await SendAsync(metricName, new HttpMessage(HttpMethod.Post, fullUri, headers) {Content = rawContent});
+            => await SendAsync(metricName, new HttpMessage(HttpMethod.Post, fullUri, headers) { Content = rawContent });
 
 
         public async Task<OperationResult<TResult>> PutAsync<TModel, TResult>(string serviceAddress, string metricName,
@@ -285,7 +287,6 @@ namespace ATI.Services.Common.Tracing
         public async Task<OperationResult<string>> PatchAsync(Uri fullUri, string metricName,
             Dictionary<string, string> headers = null)
             => await SendAsync(metricName, new HttpMessage(HttpMethod.Patch, fullUri, headers));
-        
 
 
         public async Task<OperationResult<HttpResponseMessage<TResult>>> SendAsync<TModel, TResult>(Uri fullUri,
@@ -305,11 +306,10 @@ namespace ATI.Services.Common.Tracing
                 };
 
                 using (_metricsTracingFactory.CreateTracingTimer(
-                    TraceHelper.GetHttpTracingInfo(fullUri.ToString(), metricName, message.Content)))
+                           TraceHelper.GetHttpTracingInfo(fullUri.ToString(), metricName, message.Content)))
                 {
-                    if (Config.ProxyServiceVariablesHeaders)
-                        message.Headers.AddRange(AppHttpContext.HeadersAndValuesToProxy);
-                    using var requestMessage = message.ToRequestMessage();
+                    using var requestMessage = message.ToRequestMessage(Config);
+
                     using var responseMessage = await _httpClient.SendAsync(requestMessage);
 
                     if (!responseMessage.IsSuccessStatusCode)
@@ -349,7 +349,7 @@ namespace ATI.Services.Common.Tracing
             catch (Exception e)
             {
                 _logger.ErrorWithObject(e,
-                    new {MetricName = metricName, FullUri = fullUri, Model = model, Headers = headers});
+                    new { MetricName = metricName, FullUri = fullUri, Model = model, Headers = headers });
                 return new OperationResult<HttpResponseMessage<TResult>>(ActionStatus.InternalServerError);
             }
         }
@@ -357,7 +357,8 @@ namespace ATI.Services.Common.Tracing
         private async Task<OperationResult<TResult>> SendAsync<TResult>(string methodName, HttpMessage message)
         {
             using (_metricsTracingFactory.CreateTracingTimer(
-                TraceHelper.GetHttpTracingInfo(message.FullUri?.ToString() ?? "null", methodName, message.Content)))
+                       TraceHelper.GetHttpTracingInfo(message.FullUri?.ToString() ?? "null", methodName,
+                           message.Content)))
             {
                 try
                 {
@@ -365,9 +366,8 @@ namespace ATI.Services.Common.Tracing
                         return new OperationResult<TResult>(ActionStatus.InternalServerError,
                             "Адрес сообщения не указан (message.FullUri==null)");
 
-                    if (Config.ProxyServiceVariablesHeaders)
-                        message.Headers.AddRange(AppHttpContext.HeadersAndValuesToProxy);
-                    using var requestMessage = message.ToRequestMessage();
+                    using var requestMessage = message.ToRequestMessage(Config);
+
                     using var responseMessage = await _httpClient.SendAsync(requestMessage);
 
                     if (responseMessage.IsSuccessStatusCode)
@@ -387,7 +387,7 @@ namespace ATI.Services.Common.Tracing
                 }
                 catch (Exception e)
                 {
-                    _logger.ErrorWithObject(e, new {Method = methodName, Message = message});
+                    _logger.ErrorWithObject(e, new { Method = methodName, Message = message });
                     return new OperationResult<TResult>(ActionStatus.InternalServerError);
                 }
             }
@@ -396,16 +396,15 @@ namespace ATI.Services.Common.Tracing
         private async Task<OperationResult<string>> SendAsync(string methodName, HttpMessage message)
         {
             using (_metricsTracingFactory.CreateTracingTimer(
-                TraceHelper.GetHttpTracingInfo(message.FullUri.ToString(), methodName, message.Content)))
+                       TraceHelper.GetHttpTracingInfo(message.FullUri.ToString(), methodName, message.Content)))
             {
                 try
                 {
                     if (message.FullUri == null)
                         return new OperationResult<string>(ActionStatus.InternalServerError);
 
-                    if (Config.ProxyServiceVariablesHeaders)
-                        message.Headers.AddRange(AppHttpContext.HeadersAndValuesToProxy);
-                    using var requestMessage = message.ToRequestMessage();
+                    using var requestMessage = message.ToRequestMessage(Config);
+
                     using var responseMessage = await _httpClient.SendAsync(requestMessage);
                     var responseContent = await responseMessage.Content.ReadAsStringAsync();
 
@@ -414,7 +413,7 @@ namespace ATI.Services.Common.Tracing
                 }
                 catch (Exception e)
                 {
-                    _logger.ErrorWithObject(e, new {Method = methodName, Message = message});
+                    _logger.ErrorWithObject(e, new { Method = methodName, Message = message });
                     return new OperationResult<string>(ActionStatus.InternalServerError);
                 }
             }
@@ -433,37 +432,45 @@ namespace ATI.Services.Common.Tracing
                 FullUri = fullUri;
                 Headers = new Dictionary<string, string>();
                 ContentType = "application/json";
-                if (headers != null)
+
+                if (headers == null)
+                    return;
+
+                foreach (var header in headers)
                 {
-                    foreach (var header in headers)
-                    {
-                        if (string.Equals(header.Key, ContentTypeHeaderName,
+                    if (string.Equals(header.Key, ContentTypeHeaderName,
                             StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            ContentType = header.Value;
-                        }
-                        else
-                        {
-                            Headers.Add(header.Key, header.Value);
-                        }
+                    {
+                        ContentType = header.Value;
+                    }
+                    else
+                    {
+                        Headers.Add(header.Key, header.Value);
                     }
                 }
             }
 
             public HttpMethod Method { get; }
-            public string Content { get; set; }
+            public string Content { get; init; }
             public Uri FullUri { get; }
             public Dictionary<string, string> Headers { get; }
-            public string ContentType { get; }
+            private string ContentType { get; }
 
-            public HttpRequestMessage ToRequestMessage()
+            internal HttpRequestMessage ToRequestMessage(TracedHttpClientConfig config)
             {
                 var msg = new HttpRequestMessage(Method, FullUri);
 
+                if (config.HeadersToProxy.Count != 0)
+                    Headers.AddRange(AppHttpContext.HeadersAndValuesToProxy(config.HeadersToProxy));
+
                 foreach (var header in Headers)
-                {
                     msg.Headers.Add(header.Key, header.Value);
-                }
+
+                string acceptLanguage;
+                if (config.AddCultureToRequest
+                    && (acceptLanguage = FlowContext<RequestMetaData>.Current.AcceptLanguage) != null)
+                    msg.Headers.Add("Accept-Language", acceptLanguage);
+
 
                 if (string.IsNullOrEmpty(Content) == false)
                 {

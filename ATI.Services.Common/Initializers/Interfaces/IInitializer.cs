@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using ATI.Services.Common.Variables;
 
 namespace ATI.Services.Common.Initializers.Interfaces
 {
@@ -9,7 +10,7 @@ namespace ATI.Services.Common.Initializers.Interfaces
     /// Имеющийся порядок на данный момент:
     /// ATI.Services.Authorization.AuthorizationInitializer - InitializeOrder.First
     /// <see cref="Tracing.TracingInitializer"/> -  InitializeOrder.First
-    /// <see cref="ServiceVariables.ServiceVariablesInitializer"/> -  InitializeOrder.First
+    /// <see cref="ServiceVariablesInitializer"/> -  InitializeOrder.First
     /// <see cref="MetricsInitializer"/> -  InitializeOrder.Second
     /// <see cref="RedisInitializer"/> -  InitializeOrder.Third
     /// <see cref="TwoLevelCacheInitializer"/> -  InitializeOrder.Third
@@ -19,5 +20,8 @@ namespace ATI.Services.Common.Initializers.Interfaces
     public interface IInitializer
     { 
         Task InitializeAsync();
+        string InitStartConsoleMessage();
+        string InitEndConsoleMessage();
+        
     }
 }

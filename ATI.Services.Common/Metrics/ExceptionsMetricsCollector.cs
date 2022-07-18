@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.Tracing;
-using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Tracing;
 using Microsoft.Extensions.Configuration;
 using Prometheus;
 using Prometheus.Advanced;
+using ConfigurationManager = ATI.Services.Common.Behaviors.ConfigurationManager;
 
 namespace ATI.Services.Common.Metrics
 {
@@ -40,7 +40,7 @@ namespace ATI.Services.Common.Metrics
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
         {
             var exceptionType = eventData.Payload[ExceptionNameIndex].ToString();
-            _exceptionCounters.AddOrUpdate(exceptionType, _ => 1, (key, oldValue) => oldValue + 1);
+            _exceptionCounters.AddOrUpdate(exceptionType, _ => 1, (_, oldValue) => oldValue + 1);
         }
 
 

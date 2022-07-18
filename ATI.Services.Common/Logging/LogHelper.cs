@@ -1,5 +1,4 @@
 ﻿using System;
-using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging.Configuration;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Hosting;
@@ -7,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using NLog;
 using NLog.Layouts;
 using NLog.Web;
+using ConfigurationManager = ATI.Services.Common.Behaviors.ConfigurationManager;
 
 namespace ATI.Services.Common.Logging
 {

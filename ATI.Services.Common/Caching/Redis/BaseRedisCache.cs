@@ -6,9 +6,9 @@ using ATI.Services.Common.Logging;
 using ATI.Services.Common.Serializers;
 using ATI.Services.Common.Tracing;
 using NLog;
-using Polly;
 using Polly.CircuitBreaker;
 using Polly.Timeout;
+using Polly.Wrap;
 using StackExchange.Redis;
 
 namespace ATI.Services.Common.Caching.Redis
@@ -30,8 +30,8 @@ namespace ATI.Services.Common.Caching.Redis
         protected async Task<OperationResult> ExecuteAsync(
             Func<Task> func, 
             object context, 
-            CircuitBreakerPolicy circuitBreakerPolicy, 
-            Policy policy)
+            AsyncCircuitBreakerPolicy circuitBreakerPolicy, 
+            AsyncPolicyWrap policy)
         {
             try
             {
@@ -56,10 +56,11 @@ namespace ATI.Services.Common.Caching.Redis
             }
         }
 
-        protected async Task<OperationResult<T>> ExecuteAsync<T>(Func<Task<T>> func, 
+        protected async Task<OperationResult<T>> ExecuteAsync<T>(
+            Func<Task<T>> func, 
             object context,
-            CircuitBreakerPolicy circuitBreakerPolicy, 
-            Policy policy)
+            AsyncCircuitBreakerPolicy circuitBreakerPolicy, 
+            AsyncPolicyWrap policy)
         {
             try
             {

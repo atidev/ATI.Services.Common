@@ -16,6 +16,8 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using ATI.Services.Common.Serializers;
+using Polly.Retry;
+using Polly.Wrap;
 
 namespace ATI.Services.Common.Caching.Redis
 {
@@ -25,15 +27,15 @@ namespace ATI.Services.Common.Caching.Redis
         private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
         private IDatabase _redisDb;
 
-        private readonly CircuitBreakerPolicy _circuitBreakerPolicy;
-        private readonly Policy _policy;
+        private readonly AsyncCircuitBreakerPolicy _circuitBreakerPolicy;
+        private readonly AsyncPolicyWrap _policy;
         private readonly HitRatioCounter _counter;
         private readonly MetricsTracingFactory _metricsTracingFactory;
         private bool _connected;
 
         private RedisScriptCache _redisScriptCache;
 
-        private static readonly Policy<ConnectionMultiplexer> InitPolicy =
+        private static readonly AsyncRetryPolicy<ConnectionMultiplexer> InitPolicy =
             Policy<ConnectionMultiplexer>
                 .Handle<Exception>()
                 .OrResult(res => res == null)
@@ -115,7 +117,7 @@ namespace ATI.Services.Common.Caching.Redis
         {
             try
             {
-                await _redisDb.Multiplexer.GetServer(host, port).SlaveOfAsync(master);
+                await _redisDb.Multiplexer.GetServer(host, port).ReplicaOfAsync(master);
                 return OperationResult.Ok;
             }
             catch (Exception e)

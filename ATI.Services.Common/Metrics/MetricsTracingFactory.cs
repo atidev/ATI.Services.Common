@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using ATI.Services.Common.Logging;
-using ATI.Services.Common.ServiceVariables;
+using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
 using Prometheus;
 using zipkin4net;
@@ -89,7 +89,6 @@ namespace ATI.Services.Common.Metrics
 
         public static MetricsTracingFactory CreateControllerMetricsFactory(
             [NotNull] string summaryName,
-            double? longRequestTime = null,
             params string[] additionalSummaryLabels)
         {
             var labels = ConcatLabelNames("route_template", "entity_name", null, MetricsLabelsAndHeaders.UserLabels,
@@ -98,7 +97,7 @@ namespace ATI.Services.Common.Metrics
             return new MetricsTracingFactory(
                 LogSource.Controller,
                 _serviceName + summaryName,
-                longRequestTime == null ? _defaultLongRequestTime : TimeSpan.FromSeconds(longRequestTime.Value),
+                _defaultLongRequestTime,
                 $"{_serviceName}_{summaryName}",
                 labels);
         }
@@ -243,6 +242,7 @@ namespace ATI.Services.Common.Metrics
             string entityName,
             [CallerMemberName] string actionName = null,
             IDictionary<string, object> requestParams = null,
+            TimeSpan? longRequestTime = null,
             params string[] additionalLabels)
         {
             if (string.IsNullOrEmpty(_tracingServiceName))
@@ -264,7 +264,7 @@ namespace ATI.Services.Common.Metrics
                     _externalHttpServiceName,
                     AppHttpContext.MetricsHeadersValues,
                     additionalLabels),
-                _longRequestTime,
+                longRequestTime ?? _longRequestTime,
                 requestParams,
                 _logSource);
 
@@ -320,6 +320,7 @@ namespace ATI.Services.Common.Metrics
             string entityName,
             [CallerMemberName] string actionName = null,
             object requestParams = null,
+            TimeSpan? longRequestTime = null,
             params string[] additionalLabels)
         {
             var metricsTimer =
@@ -331,7 +332,7 @@ namespace ATI.Services.Common.Metrics
                         _externalHttpServiceName,
                         AppHttpContext.MetricsHeadersValues,
                         additionalLabels),
-                    _longRequestTime,
+                    longRequestTime ?? _longRequestTime,
                     requestParams,
                     _logSource);
 

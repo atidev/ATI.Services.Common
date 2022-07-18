@@ -18,7 +18,7 @@ namespace ATI.Services.Common.Metrics
     {
         private static ZipkinManager _zipkinManager;
         private string _metricEntity;
-        private readonly double? _longRequestTime;
+        private readonly TimeSpan? _longRequestTime;
         private readonly bool _longRequestLoggingEnabled = true;
 
 
@@ -41,16 +41,17 @@ namespace ATI.Services.Common.Metrics
         /// <param name="longRequestTimeSeconds">Время ответа после которого запрос считается достаточно долгим для логирования. В секундах</param>
         public MeasureAttribute(string metricEntity, double longRequestTimeSeconds) : this(metricEntity)
         {
-            _longRequestTime = longRequestTimeSeconds;
+            _longRequestTime = TimeSpan.FromSeconds(longRequestTimeSeconds);
         }
 
         public MeasureAttribute(string metricEntity, bool longRequestLoggingEnabled) : this(metricEntity)
         {
             _longRequestLoggingEnabled = longRequestLoggingEnabled;
         }
+
         public MeasureAttribute(double longRequestTimeSeconds)
         {
-            _longRequestTime = longRequestTimeSeconds;
+            _longRequestTime = TimeSpan.FromSeconds(longRequestTimeSeconds);
         }
 
         public MeasureAttribute(bool longRequestLoggingEnabled)
@@ -71,7 +72,8 @@ namespace ATI.Services.Common.Metrics
             }
 
             var controllerActionDescriptor = (ControllerActionDescriptor)context.ActionDescriptor;
-            var actionName = $"{context.HttpContext.Request.Method}:{controllerActionDescriptor.AttributeRouteInfo.Template}";
+            var actionName =
+                $"{context.HttpContext.Request.Method}:{controllerActionDescriptor.AttributeRouteInfo.Template}";
             var controllerName = controllerActionDescriptor.ControllerName + "Controller";
 
             if (string.IsNullOrEmpty(_metricEntity))
@@ -82,30 +84,39 @@ namespace ATI.Services.Common.Metrics
             var metricsFactory =
                 ControllerNameMetricsFactories.GetOrAdd(
                     controllerName,
-                    MetricsTracingFactory.CreateControllerMetricsFactory(controllerName, _longRequestTime, "client_header_name"));
-            
+                    MetricsTracingFactory.CreateControllerMetricsFactory(controllerName, "client_header_name"));
+
             var serviceName = "Unknown";
-            
 
 
             if (context.HttpContext.Items.TryGetValue(CommonBehavior.ServiceNameItemKey, out var serviceNameValue))
             {
                 serviceName = serviceNameValue as string;
             }
-            
 
-            using (TryGetTrace(context.HttpContext, out var trace)
-
-                ? _longRequestLoggingEnabled
-                    ? metricsFactory.CreateTracingWithLoggingMetricsTimerOnExistingTrace(trace, _metricEntity, actionName, context.ActionArguments, serviceName)
-                    : metricsFactory.CreateTracingMetricsTimerOnExistingTrace(trace, _metricEntity, actionName, serviceName)
-
-                : _longRequestLoggingEnabled
-                    ? metricsFactory.CreateLoggingMetricsTimer(_metricEntity, actionName, context.ActionArguments, serviceName)
-                    : metricsFactory.CreateMetricsTimer(_metricEntity, actionName, serviceName))
+            using (CreateTimer(context, metricsFactory, actionName, serviceName))
             {
                 await next.Invoke();
             }
+        }
+
+        private IDisposable CreateTimer(ActionExecutingContext context, MetricsTracingFactory metricsFactory,
+            string actionName, string serviceName)
+        {
+            var traceEnabled = TryGetTrace(context.HttpContext, out var trace);
+            if (traceEnabled)
+            {
+                return _longRequestLoggingEnabled
+                    ? metricsFactory.CreateTracingWithLoggingMetricsTimerOnExistingTrace(trace,_metricEntity,
+                        actionName, context.ActionArguments, _longRequestTime, serviceName)
+                    : metricsFactory.CreateTracingMetricsTimerOnExistingTrace(trace, _metricEntity, actionName,
+                        serviceName);
+            }
+
+            return _longRequestLoggingEnabled
+                ? metricsFactory.CreateLoggingMetricsTimer(_metricEntity, actionName, context.ActionArguments,
+                    _longRequestTime, serviceName)
+                : metricsFactory.CreateMetricsTimer(_metricEntity, actionName, serviceName);
         }
 
         private static bool TryGetTrace(HttpContext httpContext, out Trace trace)
@@ -138,7 +149,8 @@ namespace ATI.Services.Common.Metrics
             var pathBase = request.PathBase.Value ?? "";
             var path = request.Path.Value ?? "";
             var query = request.QueryString.Value ?? "";
-            return new StringBuilder(request.Scheme.Length + "://".Length + host.Length + pathBase.Length + path.Length + query.Length)
+            return new StringBuilder(request.Scheme.Length + "://".Length + host.Length + pathBase.Length +
+                                     path.Length + query.Length)
                 .Append(request.Scheme)
                 .Append("://")
                 .Append(host)
