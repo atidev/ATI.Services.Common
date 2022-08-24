@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
@@ -81,7 +82,7 @@ public static class OperationResultSelectorExtensions
     /// <summary>
     /// Вычисляет является операции успешной и выполняется ли для нее предикат 
     /// </summary>
-    public static bool IsSuccessWith<TValue>(this IOperationExecutor<TValue> source, [NotNull] Func<TValue, bool> predicate)
+    public static bool IsSuccessWith<TValue>(this IOperationExecutor<TValue> source, Func<TValue, bool> predicate)
     {
         return source.CanEvaluated() && predicate(source.Evaluate());
     }

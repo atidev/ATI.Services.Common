@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -50,33 +51,33 @@ public static class OperationResultExtensions
     }
 
     /// <summary>
-    ///     Посещает значение OperationResult c помощью inspectAction
+    /// Выполняет onSuccess для значения внутри OperationResult когда OperationResult.Success is true
     /// </summary>
-    public static OperationResult<TSource> InspectSuccess<TSource>(this OperationResult<TSource> source, [NotNull] Action<TSource> inspectAction)
+    public static OperationResult<TSource> InvokeOnSuccess<TSource>(this OperationResult<TSource> source, Action<TSource> onSuccess)
     {
         if (!source.Success)
             return source;
 
-        inspectAction(source.Value);
+        onSuccess(source.Value);
         return source;
     }
 
     /// <summary>
-    ///     Посещает значение OperationResult c помощью inspectAction
+    /// Выполняет onError для значения внутри OperationResult когда OperationResult.Success is false
     /// </summary>
-    public static OperationResult<TSource> InspectError<TSource>(this OperationResult<TSource> source, [NotNull] Action<ActionStatus, IList<OperationError>> inspectAction)
+    public static OperationResult<TSource> InvokeOnError<TSource>(this OperationResult<TSource> source, Action<ActionStatus, IList<OperationError>> onError)
     {
         if (source.Success)
             return source;
 
-        inspectAction(source.ActionStatus, source.Errors);
+        onError(source.ActionStatus, source.Errors);
         return source;
     }
 
     /// <summary>
-    ///     Вычисляет является операции успешной и выполняется ли для нее предикат
+    /// Вычисляет является операции успешной и выполняется ли для нее предикат
     /// </summary>
-    public static bool IsSuccessWith<TSource>(this OperationResult<TSource> source, [NotNull] Func<TSource, bool> predicate)
+    public static bool IsSuccessWith<TSource>(this OperationResult<TSource> source, Func<TSource, bool> predicate)
     {
         return source.Success && predicate(source.Value);
     }

@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
@@ -52,7 +53,7 @@ public static class OperationResultSelectorAsyncExtensions
     /// <summary>
     /// Вычисляет является операции успешной и выполняется ли для нее предикат 
     /// </summary>
-    public static async Task<bool> IsSuccessWithAsync<TOut>(this IOperationExecutorAsync<TOut> source, [NotNull] Func<TOut, bool> predicate)
+    public static async Task<bool> IsSuccessWithAsync<TOut>(this IOperationExecutorAsync<TOut> source, Func<TOut, bool> predicate)
     {
         if (!source.CanEvaluated()) return false;
         var evaluated = await source.ExecuteAsync();
