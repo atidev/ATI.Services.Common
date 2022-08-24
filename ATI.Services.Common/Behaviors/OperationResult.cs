@@ -15,6 +15,9 @@ namespace ATI.Services.Common.Behaviors
         /// Возвращает или задает флаг, указывающий, успешно ли была выполнена операция.
         /// </summary>
         public bool Success => ActionStatus == ActionStatus.Ok;
+
+        public bool IsNotSuccess => !Success;
+        
         public IList<OperationError> Errors { get; } = new List<OperationError>();
         public Dictionary<string, object> Details { get; } = new();
 
@@ -109,6 +112,8 @@ namespace ATI.Services.Common.Behaviors
         public new bool Success => ActionStatus == ActionStatus.Ok && Value != null &&
                                    (!UseCountSuccessCondition || !ValueIsArray || ((ICollection)Value).Count != 0);
 
+        public new bool IsNotSuccess => !Success;
+        
         /// <summary>
         /// Возвращает или задает результат выполнения операции.
         /// </summary>
