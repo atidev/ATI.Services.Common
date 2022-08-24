@@ -49,16 +49,6 @@ public static class OperationResultSelectorAsyncExtensions
     #endregion
         
     #region Evaluate
-        
-    /// <summary>
-    /// Вычисляет является операции успешной и выполняется ли для нее предикат 
-    /// </summary>
-    public static async Task<bool> IsSuccessWithAsync<TOut>(this IOperationExecutorAsync<TOut> source, Func<TOut, bool> predicate)
-    {
-        if (!source.CanEvaluated()) return false;
-        var evaluated = await source.ExecuteAsync();
-        return predicate(evaluated); 
-    }
 
     public static Task<TValue> AsTaskOrDefault<TValue>(this IOperationExecutorAsync<TValue> source, TValue defaultValue)
     {

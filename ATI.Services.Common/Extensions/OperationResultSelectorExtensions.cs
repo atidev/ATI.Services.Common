@@ -79,13 +79,6 @@ public static class OperationResultSelectorExtensions
     #endregion
 
     #region Evaluate
-    /// <summary>
-    /// Вычисляет является операции успешной и выполняется ли для нее предикат 
-    /// </summary>
-    public static bool IsSuccessWith<TValue>(this IOperationExecutor<TValue> source, Func<TValue, bool> predicate)
-    {
-        return source.CanEvaluated() && predicate(source.Evaluate());
-    }
 
     public static OperationResult<TValue> ToOperationResult<TValue>(this IOperationExecutor<TValue> source)
     {
