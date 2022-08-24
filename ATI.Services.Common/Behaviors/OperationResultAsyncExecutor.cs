@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace ATI.Services.Common.Behaviors;
 
-public class OperationResultAsyncSelector<TSource, TOut> : IOperationExecutorAsync<TOut>
+public sealed class OperationResultAsyncExecutor<TSource, TOut> : IOperationExecutorAsync<TOut>
 {
     private readonly IOperationExecutor<TSource>? _previousSync;
     private readonly IOperationExecutorAsync<TSource>? _previous;
@@ -13,7 +13,7 @@ public class OperationResultAsyncSelector<TSource, TOut> : IOperationExecutorAsy
     private bool IsFirst => _operationResult is not null;
     private bool IsAfterSync => _previousSync is not null;
 
-    public OperationResultAsyncSelector(IOperationExecutor<TSource> previousSync, Func<TSource, Task<TOut>> select)
+    public OperationResultAsyncExecutor(IOperationExecutor<TSource> previousSync, Func<TSource, Task<TOut>> select)
     {
         _previousSync = previousSync;
         _select = select;
@@ -21,7 +21,7 @@ public class OperationResultAsyncSelector<TSource, TOut> : IOperationExecutorAsy
         _previous = null;
     }
         
-    public OperationResultAsyncSelector(OperationResult<TSource> operationResult, Func<TSource, Task<TOut>> select)
+    public OperationResultAsyncExecutor(OperationResult<TSource> operationResult, Func<TSource, Task<TOut>> select)
     {
         _operationResult = operationResult;
         _select = select;
@@ -29,7 +29,7 @@ public class OperationResultAsyncSelector<TSource, TOut> : IOperationExecutorAsy
         _previousSync = null;
     }
 
-    public OperationResultAsyncSelector(IOperationExecutorAsync<TSource> previous, Func<TSource, Task<TOut>> select)
+    public OperationResultAsyncExecutor(IOperationExecutorAsync<TSource> previous, Func<TSource, Task<TOut>> select)
     {
         _select = select;
         _previous = previous;
@@ -43,21 +43,21 @@ public class OperationResultAsyncSelector<TSource, TOut> : IOperationExecutorAsy
             return await _select(_operationResult.Value);
 
         if (IsAfterSync)
-            return await _select(_previousSync.Evaluate());
+            return await _select(_previousSync.Execute());
 
         var previous = await _previous.ExecuteAsync();
         return await _select(previous);
     }
 
-    bool IOperationExecutorAsync<TOut>.CanEvaluated()
+    bool IOperationExecutorAsync<TOut>.CanExecuted()
     {
         if (IsFirst)
             return _operationResult.Success;
 
         if (IsAfterSync)
-            return _previousSync.CanEvaluated();
+            return _previousSync.CanExecuted();
 
-        return _previous.CanEvaluated();
+        return _previous.CanExecuted();
     }
 
     OperationResult IOperationExecutorAsync<TOut>.GetInitialOperationResult()

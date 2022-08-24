@@ -7,22 +7,22 @@ using JetBrains.Annotations;
 namespace ATI.Services.Common.Extensions;
 
 [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
-public static class OperationResultSelectorExtensions
+public static class OperationResultExecutorExtensions
 {
     #region Map
     public static IOperationExecutor<TResult> Map<TSource, TResult>(this IOperationExecutor<TSource> source, Func<TSource, TResult> map)
     {
-        return new OperationResultSelector<TSource, TResult>(source, map);
+        return new OperationResultExecutor<TSource, TResult>(source, map);
     }
         
     public static IOperationExecutor<OperationResult<TResult>> Map<TSource, TResult>(this IOperationExecutor<OperationResult<TSource>> source, Func<TSource, OperationResult<TResult>> map)
     {
-        return new OperationResultSelector<OperationResult<TSource>, OperationResult<TResult>>(source, i => i.Map(map).Unwrap());
+        return new OperationResultExecutor<OperationResult<TSource>, OperationResult<TResult>>(source, i => i.Map(map).Unwrap());
     }
         
     public static IOperationExecutor<OperationResult<TResult>> Map<TSource, TResult>(this IOperationExecutor<OperationResult<TSource>> source, Func<TSource, TResult> map)
     {
-        return new OperationResultSelector<OperationResult<TSource>, OperationResult<TResult>>(source, i => i.Map(map).ToOperationResult());
+        return new OperationResultExecutor<OperationResult<TSource>, OperationResult<TResult>>(source, i => i.Map(map).ToOperationResult());
     }
 
     public static IOperationExecutor<TResult> MapBi<TFirst, TSecond, TResult>(this IOperationExecutor<TFirst> first, IOperationExecutor<TSecond> second, Func<TFirst, TSecond, TResult> mapBi)
@@ -44,17 +44,17 @@ public static class OperationResultSelectorExtensions
     #region MapAsync
     public static IOperationExecutorAsync<TResult> MapAsync<TSource, TResult>(this IOperationExecutor<TSource> source, Func<TSource, Task<TResult>> map)
     {
-        return new OperationResultAsyncSelector<TSource, TResult>(source, map);
+        return new OperationResultAsyncExecutor<TSource, TResult>(source, map);
     }
         
     public static IOperationExecutorAsync<OperationResult<TResult>> MapAsync<TSource, TResult>(this IOperationExecutor<OperationResult<TSource>> source, Func<TSource, Task<OperationResult<TResult>>> map)
     {
-        return new OperationResultAsyncSelector<OperationResult<TSource>, OperationResult<TResult>>(source, op => op.MapAsync(map).AsTask());
+        return new OperationResultAsyncExecutor<OperationResult<TSource>, OperationResult<TResult>>(source, op => op.MapAsync(map).AsTask());
     }
         
     public static IOperationExecutorAsync<OperationResult> MapAsync<TSource, TResult>(this IOperationExecutor<OperationResult<TSource>> source, Func<TSource, Task<OperationResult>> map)
     {
-        return new OperationResultAsyncSelector<OperationResult<TSource>, OperationResult>(source, op => op.MapAsync(map).AsTask());
+        return new OperationResultAsyncExecutor<OperationResult<TSource>, OperationResult>(source, op => op.MapAsync(map).AsTask());
     }
 
     public static IOperationExecutorAsync<TResult> MapBiAsync<TFirst, TSecond, TResult>(this IOperationExecutor<TFirst> first, IOperationExecutor<TSecond> second, Func<TFirst, TSecond, Task<TResult>> mapBi)
@@ -82,26 +82,26 @@ public static class OperationResultSelectorExtensions
 
     public static OperationResult<TValue> ToOperationResult<TValue>(this IOperationExecutor<TValue> source)
     {
-        return source.CanEvaluated() ? new OperationResult<TValue>(source.Evaluate()) : new OperationResult<TValue>(source.GetInitialOperationResult());
+        return source.CanExecuted() ? new OperationResult<TValue>(source.Execute()) : new OperationResult<TValue>(source.GetInitialOperationResult());
     }
         
     public static OperationResult<TValue> Unwrap<TValue>(this IOperationExecutor<OperationResult<TValue>> source)
     {
-        return source.CanEvaluated() ? source.Evaluate() : new OperationResult<TValue>(source.GetInitialOperationResult());
+        return source.CanExecuted() ? source.Execute() : new OperationResult<TValue>(source.GetInitialOperationResult());
     }
 
     public static TValue UnwrapOrDefault<TValue>(this IOperationExecutor<TValue> source, TValue defaultValue)
     {
-        return source.CanEvaluated() ? source.Evaluate() : defaultValue;
+        return source.CanExecuted() ? source.Execute() : defaultValue;
     }
         
     internal static IOperationExecutor<TValue> UnwrapLazy<TValue>(this IOperationExecutor<IOperationExecutor<TValue>> source, OperationResult internalInitial)
     {
-        if (source.CanEvaluated() && internalInitial.Success)
-            return new OperationResultSelector<IOperationExecutor<TValue>, TValue>(source, internalLazy => internalLazy.Evaluate());
+        if (source.CanExecuted() && internalInitial.Success)
+            return new OperationResultExecutor<IOperationExecutor<TValue>, TValue>(source, internalLazy => internalLazy.Execute());
 
-        var errorOp = source.CanEvaluated() ? internalInitial : source.GetInitialOperationResult();
-        return new OperationResultSelector<TValue, TValue>(new OperationResult<TValue>(errorOp), i => i);
+        var errorOp = source.CanExecuted() ? internalInitial : source.GetInitialOperationResult();
+        return new OperationResultExecutor<TValue, TValue>(new OperationResult<TValue>(errorOp), i => i);
     }
 
     #endregion

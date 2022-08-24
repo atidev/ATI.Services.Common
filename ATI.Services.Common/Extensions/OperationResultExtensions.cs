@@ -12,7 +12,7 @@ public static class OperationResultExtensions
 {
     public static IOperationExecutor<TResult> Map<TSource, TResult>(this OperationResult<TSource> source, Func<TSource, TResult> map)
     {
-        return new OperationResultSelector<TSource, TResult>(source, map);
+        return new OperationResultExecutor<TSource, TResult>(source, map);
     }
 
     public static IOperationExecutor<TResult> MapBi<TFirst, TSecond, TResult>(this OperationResult<TFirst> first, OperationResult<TSecond> second, Func<TFirst, TSecond, TResult> mapBi)
@@ -27,7 +27,7 @@ public static class OperationResultExtensions
 
     public static IOperationExecutorAsync<TResult> MapAsync<TSource, TResult>(this OperationResult<TSource> source, Func<TSource, Task<TResult>> map)
     {
-        return new OperationResultAsyncSelector<TSource, TResult>(source, map);
+        return new OperationResultAsyncExecutor<TSource, TResult>(source, map);
     }
 
     public static IOperationExecutorAsync<TResult> MapBiAsync<TFirst, TSecond, TResult>(this OperationResult<TFirst> first, OperationResult<TSecond> second, Func<TFirst, TSecond, Task<TResult>> mapBi)

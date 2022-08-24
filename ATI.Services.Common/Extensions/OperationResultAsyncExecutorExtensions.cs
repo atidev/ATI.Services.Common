@@ -7,33 +7,33 @@ using JetBrains.Annotations;
 namespace ATI.Services.Common.Extensions;
 
 [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
-public static class OperationResultSelectorAsyncExtensions
+public static class OperationResultAsyncExecutorExtensions
 {
     #region MapAsync
 
     public static IOperationExecutorAsync<TResult> MapAsync<TSource, TResult>(this IOperationExecutorAsync<TSource> source, Func<TSource, Task<TResult>> map)
     {
-        return new OperationResultAsyncSelector<TSource, TResult>(source, map);
+        return new OperationResultAsyncExecutor<TSource, TResult>(source, map);
     }
 
     public static IOperationExecutorAsync<OperationResult> MapAsync<TSource>(this IOperationExecutorAsync<OperationResult<TSource>> source, Func<TSource, Task<OperationResult>> map)
     {
-        return new OperationResultAsyncSelector<OperationResult<TSource>, OperationResult>(source, opResult => opResult.MapAsync(map).AsTaskOrDefault(opResult));
+        return new OperationResultAsyncExecutor<OperationResult<TSource>, OperationResult>(source, opResult => opResult.MapAsync(map).AsTaskOrDefault(opResult));
     }
 
     public static IOperationExecutorAsync<OperationResult[]> MapAsync<TSource>(this IOperationExecutorAsync<OperationResult<TSource>> source, Func<TSource, Task<OperationResult[]>> map)
     {
-        return new OperationResultAsyncSelector<OperationResult<TSource>, OperationResult[]>(source, opResult => opResult.MapAsync(map).AsTaskOrDefault(new OperationResult[]{opResult}));
+        return new OperationResultAsyncExecutor<OperationResult<TSource>, OperationResult[]>(source, opResult => opResult.MapAsync(map).AsTaskOrDefault(new OperationResult[]{opResult}));
     }
         
     public static IOperationExecutorAsync<OperationResult<TResult>> MapAsync<TSource, TResult>(this IOperationExecutorAsync<OperationResult<TSource>> source, Func<TSource, Task<OperationResult<TResult>>> map)
     {
-        return new OperationResultAsyncSelector<OperationResult<TSource>, OperationResult<TResult>>(source, opResult => opResult.MapAsync(map).AsTask());
+        return new OperationResultAsyncExecutor<OperationResult<TSource>, OperationResult<TResult>>(source, opResult => opResult.MapAsync(map).AsTask());
     }
 
     public static IOperationExecutorAsync<OperationResult<TResult>[]> MapAsync<TSource, TResult>(this IOperationExecutorAsync<OperationResult<TSource>> source, Func<TSource, Task<OperationResult<TResult>[]>> map)
     {
-        return new OperationResultAsyncSelector<OperationResult<TSource>, OperationResult<TResult>[]>(source, opResult => opResult.MapAsync(map).AsTask());
+        return new OperationResultAsyncExecutor<OperationResult<TSource>, OperationResult<TResult>[]>(source, opResult => opResult.MapAsync(map).AsTask());
     }
         
     public static IOperationExecutorAsync<TResult> MapBiAsync<TFirst, TSecond, TResult>(this IOperationExecutorAsync<TFirst> first, IOperationExecutor<TSecond> second, Func<TFirst, TSecond, Task<TResult>> mapBi)
@@ -52,17 +52,17 @@ public static class OperationResultSelectorAsyncExtensions
 
     public static Task<TValue> AsTaskOrDefault<TValue>(this IOperationExecutorAsync<TValue> source, TValue defaultValue)
     {
-        return source.CanEvaluated() ? source.ExecuteAsync() : Task.FromResult(defaultValue);
+        return source.CanExecuted() ? source.ExecuteAsync() : Task.FromResult(defaultValue);
     }
         
     public static Task<TValue> AsTaskOrDefault<TValue>(this IOperationExecutorAsync<TValue> source, Task<TValue> defaultTask)
     {
-        return source.CanEvaluated() ? source.ExecuteAsync() : defaultTask;
+        return source.CanExecuted() ? source.ExecuteAsync() : defaultTask;
     }
 
     public static Task<TValue> AsTaskOrDefault<TValue>(this IOperationExecutorAsync<TValue> source, Func<OperationResult, TValue> mapResultFromInitialError)
     {
-        if (source.CanEvaluated())
+        if (source.CanExecuted())
             return source.ExecuteAsync();
             
         return Task.FromResult(mapResultFromInitialError(source.GetInitialOperationResult()));
@@ -85,7 +85,7 @@ public static class OperationResultSelectorAsyncExtensions
 
     public static async Task<OperationResult<TValue>> ToOperationResultAsync<TValue>(this IOperationExecutorAsync<TValue> source)
     {
-        return source.CanEvaluated()
+        return source.CanExecuted()
             ? new OperationResult<TValue>(await source.ExecuteAsync())
             : new OperationResult<TValue>(source.GetInitialOperationResult());
     }
@@ -94,16 +94,16 @@ public static class OperationResultSelectorAsyncExtensions
 
     private static IOperationExecutorAsync<TValue> UnwrapLazy<TValue>(this IOperationExecutorAsync<IOperationExecutorAsync<TValue>> source, OperationResult initialInternalOperationResult)
     { 
-        if(source.CanEvaluated() && initialInternalOperationResult.Success)
-            return new OperationResultAsyncSelector<IOperationExecutorAsync<TValue>, TValue>(source, i => i.ExecuteAsync());
+        if(source.CanExecuted() && initialInternalOperationResult.Success)
+            return new OperationResultAsyncExecutor<IOperationExecutorAsync<TValue>, TValue>(source, i => i.ExecuteAsync());
         
-        var errorOp = source.CanEvaluated() ? initialInternalOperationResult : source.GetInitialOperationResult();
+        var errorOp = source.CanExecuted() ? initialInternalOperationResult : source.GetInitialOperationResult();
         
-        return new OperationResultAsyncSelector<TValue, TValue>(new OperationResult<TValue>(errorOp), Task.FromResult);
+        return new OperationResultAsyncExecutor<TValue, TValue>(new OperationResult<TValue>(errorOp), Task.FromResult);
     }
         
     private static IOperationExecutorAsync<TResult> Map<TSource, TResult>(this IOperationExecutorAsync<TSource> source, Func<TSource, TResult> map)
     {
-        return new OperationResultAsyncSelector<TSource, TResult>(source, i => Task.FromResult(map(i)));
+        return new OperationResultAsyncExecutor<TSource, TResult>(source, i => Task.FromResult(map(i)));
     }
 }
