@@ -4,16 +4,16 @@ using System.Threading.Tasks;
 
 namespace ATI.Services.Common.Behaviors;
 
-public class OperationResultAsyncSelector<TInternal, TOut> : IOperationExecutorAsync<TOut>
+public class OperationResultAsyncSelector<TSource, TOut> : IOperationExecutorAsync<TOut>
 {
-    private readonly IOperationExecutor<TInternal>? _previousSync;
-    private readonly IOperationExecutorAsync<TInternal>? _previous;
-    private readonly OperationResult<TInternal>? _operationResult;
-    private readonly Func<TInternal, Task<TOut>> _select;
+    private readonly IOperationExecutor<TSource>? _previousSync;
+    private readonly IOperationExecutorAsync<TSource>? _previous;
+    private readonly OperationResult<TSource>? _operationResult;
+    private readonly Func<TSource, Task<TOut>> _select;
     private bool IsFirst => _operationResult is not null;
     private bool IsAfterSync => _previousSync is not null;
 
-    public OperationResultAsyncSelector(IOperationExecutor<TInternal> previousSync, Func<TInternal, Task<TOut>> select)
+    public OperationResultAsyncSelector(IOperationExecutor<TSource> previousSync, Func<TSource, Task<TOut>> select)
     {
         _previousSync = previousSync;
         _select = select;
@@ -21,7 +21,7 @@ public class OperationResultAsyncSelector<TInternal, TOut> : IOperationExecutorA
         _previous = null;
     }
         
-    public OperationResultAsyncSelector(OperationResult<TInternal> operationResult, Func<TInternal, Task<TOut>> select)
+    public OperationResultAsyncSelector(OperationResult<TSource> operationResult, Func<TSource, Task<TOut>> select)
     {
         _operationResult = operationResult;
         _select = select;
@@ -29,7 +29,7 @@ public class OperationResultAsyncSelector<TInternal, TOut> : IOperationExecutorA
         _previousSync = null;
     }
 
-    public OperationResultAsyncSelector(IOperationExecutorAsync<TInternal> previous, Func<TInternal, Task<TOut>> select)
+    public OperationResultAsyncSelector(IOperationExecutorAsync<TSource> previous, Func<TSource, Task<TOut>> select)
     {
         _select = select;
         _previous = previous;

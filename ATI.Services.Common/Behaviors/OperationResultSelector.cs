@@ -3,21 +3,21 @@ using System;
 
 namespace ATI.Services.Common.Behaviors;
 
-public class OperationResultSelector<TInternal, TOut> : IOperationExecutor<TOut>
+public class OperationResultSelector<TSource, TOut> : IOperationExecutor<TOut>
 {
-    private readonly IOperationExecutor<TInternal>? _previous;
-    private readonly OperationResult<TInternal>? _operationResult;
-    private readonly Func<TInternal, TOut> _select;
+    private readonly IOperationExecutor<TSource>? _previous;
+    private readonly OperationResult<TSource>? _operationResult;
+    private readonly Func<TSource, TOut> _select;
     private bool IsFirst => _previous is null;
 
-    public OperationResultSelector(OperationResult<TInternal> operationResult, Func<TInternal, TOut> select)
+    public OperationResultSelector(OperationResult<TSource> operationResult, Func<TSource, TOut> select)
     {
         _operationResult = operationResult;
         _select = select;
         _previous = null;
     }
         
-    public OperationResultSelector(IOperationExecutor<TInternal> previous, Func<TInternal, TOut> select)
+    public OperationResultSelector(IOperationExecutor<TSource> previous, Func<TSource, TOut> select)
     {
         _operationResult = null;
         _select = select;
