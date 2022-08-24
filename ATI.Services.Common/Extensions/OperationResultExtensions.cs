@@ -82,6 +82,14 @@ public static class OperationResultExtensions
         return source.Success && predicate(source.Value);
     }
 
+    /// <summary>
+    /// Вычисляет является операции успешной или выполняется предикат
+    /// </summary>
+    public static bool IsSuccessOr<TSource>(this OperationResult<TSource> source, Func<bool> predicate)
+    {
+        return source.Success || predicate();
+    }
+    
     public static OperationResult<TValue> Unwrap<TValue>(this OperationResult<OperationResult<TValue>> source)
     {
         return source.Success ? source.Value : new OperationResult<TValue>(source);
