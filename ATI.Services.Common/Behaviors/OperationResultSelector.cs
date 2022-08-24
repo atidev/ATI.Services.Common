@@ -1,51 +1,50 @@
+#nullable enable
 using System;
-using JetBrains.Annotations;
 
-namespace ATI.Services.Common.Behaviors
+namespace ATI.Services.Common.Behaviors;
+
+public class OperationResultSelector<TInternal, TOut> : IOperationExecutor<TOut>
 {
-    public class OperationResultSelector<TInternal, TOut> : ILazyEvaluate<TOut>
+    private readonly IOperationExecutor<TInternal>? _previous;
+    private readonly OperationResult<TInternal>? _operationResult;
+    private readonly Func<TInternal, TOut> _select;
+    private bool IsFirst => _previous is null;
+
+    public OperationResultSelector(OperationResult<TInternal> operationResult, Func<TInternal, TOut> select)
     {
-        [CanBeNull] private readonly ILazyEvaluate<TInternal> _previous;
-        [CanBeNull] private readonly OperationResult<TInternal> _operationResult;
-        private readonly Func<TInternal, TOut> _select;
-        private bool IsFirst => _previous is null;
-
-        public OperationResultSelector([NotNull] OperationResult<TInternal> operationResult, Func<TInternal, TOut> select)
-        {
-            _operationResult = operationResult;
-            _select = select;
-            _previous = null;
-        }
+        _operationResult = operationResult;
+        _select = select;
+        _previous = null;
+    }
         
-        public OperationResultSelector(ILazyEvaluate<TInternal> previous, Func<TInternal, TOut> select)
-        {
-            _operationResult = null;
-            _select = select;
-            _previous = previous;
-        }
+    public OperationResultSelector(IOperationExecutor<TInternal> previous, Func<TInternal, TOut> select)
+    {
+        _operationResult = null;
+        _select = select;
+        _previous = previous;
+    }
 
-        public TOut EvaluateOrThrow()
-        {
-            if (IsFirst)
-                return _select(_operationResult.Value);
+    TOut IOperationExecutor<TOut>.Evaluate()
+    {
+        if (IsFirst)
+            return _select(_operationResult.Value);
 
-            return _select(_previous.EvaluateOrThrow());
-        }
+        return _select(_previous.Evaluate());
+    }
 
-        public bool CanEvaluated()
-        {
-            if (IsFirst)
-                return _operationResult.Success;
+    bool IOperationExecutor<TOut>.CanEvaluated()
+    {
+        if (IsFirst)
+            return _operationResult.Success;
 
-            return _previous.CanEvaluated();
-        }
+        return _previous.CanEvaluated();
+    }
 
-        public OperationResult GetInitialOperationResult()
-        {
-            if (IsFirst)
-                return _operationResult;
+    OperationResult IOperationExecutor<TOut>.GetInitialOperationResult()
+    {
+        if (IsFirst)
+            return _operationResult;
 
-            return _previous.GetInitialOperationResult();
-        }
+        return _previous.GetInitialOperationResult();
     }
 }
