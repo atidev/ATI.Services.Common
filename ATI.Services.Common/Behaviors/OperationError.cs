@@ -7,9 +7,14 @@ namespace ATI.Services.Common.Behaviors
     public class OperationError
     {
         /// <summary>
-        /// Сообщение об ошибке
+        /// Причина ошибки (reason)
         /// </summary>
         public string ErrorMessage { get; }
+        
+        /// <summary>
+        /// Ошибка (error)
+        /// </summary>
+        public string Error { get; }
         public ActionStatus ActionStatus { get; set; }
 
         [JsonIgnore]
@@ -23,6 +28,14 @@ namespace ATI.Services.Common.Behaviors
         public OperationError(ActionStatus status, string errorMessage, bool isInternal = true)
         {
             ActionStatus = status;
+            ErrorMessage = errorMessage;
+            IsInternal = isInternal;
+        }
+        
+        public OperationError(ActionStatus status, string errorMessage, string error, bool isInternal = true)
+        {
+            ActionStatus = status;
+            Error = error;
             ErrorMessage = errorMessage;
             IsInternal = isInternal;
         }

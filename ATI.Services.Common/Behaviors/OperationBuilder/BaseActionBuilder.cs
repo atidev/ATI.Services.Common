@@ -50,7 +50,7 @@ namespace ATI.Services.Common.Behaviors.OperationBuilder
                     operationResult.ActionStatus,
                     operationResult.DumpAllErrors(),
                     operationResult.DumpPublicErrors(),
-                    CommonBehavior.GetDefaultMessage(operationResult.ActionStatus),
+                    operationResult.Errors.FirstOrDefault()?.Error ?? CommonBehavior.GetDefaultMessage(operationResult.ActionStatus),
                     isInternal)
             };
             var errorList = new List<ErrorResponse>(operationResult.Errors.Count);
@@ -64,7 +64,7 @@ namespace ATI.Services.Common.Behaviors.OperationBuilder
                         res.ActionStatus,
                         res.ErrorMessage,
                         res.IsInternal ? null : res.ErrorMessage,
-                        CommonBehavior.GetDefaultMessage(res.ActionStatus),
+                        res.Error ?? CommonBehavior.GetDefaultMessage(res.ActionStatus),
                         isInternal)
                 }).ToList();
             }

@@ -38,6 +38,11 @@ namespace ATI.Services.Common.Behaviors
             Errors.Add(new OperationError(actionStatus, errorMessage, isPrivate));
             ActionStatus = actionStatus;
         }
+        public OperationResult(ActionStatus actionStatus, string errorMessage, string error, bool isPrivate = true)
+        {
+            Errors.Add(new OperationError(actionStatus, errorMessage, error, isPrivate));
+            ActionStatus = actionStatus;
+        }
 
         public OperationResult(ActionStatus actionStatus, List<OperationError> errors)
         {
