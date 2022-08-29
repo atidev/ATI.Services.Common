@@ -44,7 +44,7 @@ namespace ATI.Services.Common.Behaviors.OperationBuilder
         {
             var mainError = new ErrorResponse
             {
-                Error = CommonBehavior.GetError(operationResult.ActionStatus, customErrorCodeFunc),
+                Error = operationResult.Errors.FirstOrDefault()?.Error ?? CommonBehavior.GetError(operationResult.ActionStatus, customErrorCodeFunc),
                 Reason = CommonBehavior.GetMessage(
                     beautifulMessageFunc,
                     operationResult.ActionStatus,
@@ -58,7 +58,7 @@ namespace ATI.Services.Common.Behaviors.OperationBuilder
             {
                 errorList = operationResult.Errors.Select(res => new ErrorResponse
                 {
-                    Error = CommonBehavior.GetError(res.ActionStatus, customErrorCodeFunc),
+                    Error = res.Error ?? CommonBehavior.GetError(res.ActionStatus, customErrorCodeFunc),
                     Reason = CommonBehavior.GetMessage(
                         beautifulMessageFunc,
                         res.ActionStatus,
