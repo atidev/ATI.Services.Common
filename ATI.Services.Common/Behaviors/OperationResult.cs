@@ -38,6 +38,14 @@ namespace ATI.Services.Common.Behaviors
             Errors.Add(new OperationError(actionStatus, errorMessage, isPrivate));
             ActionStatus = actionStatus;
         }
+        
+        /// <summary>
+        /// Создает экземпляр класса и добавляет ошибку <param name="errorMessage"/> с кодом <param name="error"/> в коллекцию ошибок/> .
+        /// </summary>
+        /// <param name="actionStatus"></param>
+        /// <param name="errorMessage"></param>
+        /// <param name="error"></param>
+        /// <param name="isPrivate"></param>
         public OperationResult(ActionStatus actionStatus, string errorMessage, string error, bool isPrivate = true)
         {
             Errors.Add(new OperationError(actionStatus, errorMessage, error, isPrivate));
@@ -129,16 +137,13 @@ namespace ATI.Services.Common.Behaviors
         public OperationResult(TValue value, ActionStatus actionStatus = ActionStatus.Ok, bool useCountSuccessCondition = false) : base(actionStatus)
         {
             Value = value;
-            ActionStatus = actionStatus;
             UseCountSuccessCondition = useCountSuccessCondition;
-
         }
 
         /// <param name="actionStatus"></param>
         /// <param name="useCountSuccessCondition">Success вернет false, если этот флаг установлен и <see cref="Value"/> .Count = 0</param>
         public OperationResult(ActionStatus actionStatus = ActionStatus.Ok, bool useCountSuccessCondition = false) : base(actionStatus)
         {
-            ActionStatus = actionStatus;
             UseCountSuccessCondition = useCountSuccessCondition;
         }
 
@@ -165,11 +170,9 @@ namespace ATI.Services.Common.Behaviors
         /// <param name="value"></param>
         /// <param name="actionStatus"></param>
         /// <param name="useCountSuccessCondition">Success вернет false, если этот флаг установлен и <see cref="Value"/> .Count = 0</param>
-        public OperationResult(string errorMessage, TValue value, ActionStatus actionStatus, bool useCountSuccessCondition = false, bool isPrivate = true) : base(actionStatus)
+        public OperationResult(string errorMessage, TValue value, ActionStatus actionStatus, bool useCountSuccessCondition = false, bool isPrivate = true) : base(actionStatus, errorMessage, isPrivate)
         {
             Value = value;
-            Errors.Add(new OperationError(actionStatus, errorMessage, isPrivate));
-            ActionStatus = actionStatus;
             UseCountSuccessCondition = useCountSuccessCondition;
         }
         /// <summary>
@@ -177,10 +180,21 @@ namespace ATI.Services.Common.Behaviors
         /// </summary>
         /// <param name="errorMessage"></param>
         /// <param name="actionStatus"></param>
-        public OperationResult(ActionStatus actionStatus, string errorMessage, bool isPrivate = true) : base(actionStatus)
+        public OperationResult(ActionStatus actionStatus, string errorMessage, bool isPrivate = true) 
+            : base(actionStatus, errorMessage, isPrivate)
         {
-            Errors.Add(new OperationError(actionStatus, errorMessage, isPrivate));
-            ActionStatus = actionStatus;
+        }
+
+        /// <summary>
+        /// Создает экземпляр класса и добавляет ошибку <param name="errorMessage"/> с кодом <param name="error"/> в коллекцию ошибок/> .
+        /// </summary>
+        /// <param name="actionStatus"></param>
+        /// <param name="errorMessage"></param>
+        /// <param name="error"></param>
+        /// <param name="isPrivate"></param>
+        public OperationResult(ActionStatus actionStatus, string errorMessage, string error, bool isPrivate = true) :
+            base(actionStatus, errorMessage, error, isPrivate)
+        {
         }
     }
 }
