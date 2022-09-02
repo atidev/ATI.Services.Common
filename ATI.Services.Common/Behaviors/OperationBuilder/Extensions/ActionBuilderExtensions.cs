@@ -20,8 +20,7 @@ namespace ATI.Services.Common.Behaviors.OperationBuilder.Extensions
             return new(operation);
         }
 
-        public static async Task<IActionResult> AsActionResultAsync(this Task<OperationResult> operationTask,
-            bool? internalFlag = null)
+        public static async Task<IActionResult> AsActionResultAsync(this Task<OperationResult> operationTask, bool? internalFlag = false)
         {
             var actionBuilder = new ActionBuilder(operationTask);
             if (internalFlag.HasValue)
@@ -32,7 +31,7 @@ namespace ATI.Services.Common.Behaviors.OperationBuilder.Extensions
             return await new ActionBuilder(operationTask).ExecuteAsync();
         }
 
-        public static IActionResult AsActionResult(this OperationResult operation, bool? internalFlag = null)
+        public static IActionResult AsActionResult(this OperationResult operation, bool? internalFlag = false)
         {
             var actionBuilder = new ActionBuilder(operation);
             if (internalFlag.HasValue)
