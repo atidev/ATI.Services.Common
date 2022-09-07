@@ -46,10 +46,20 @@ namespace ATI.Services.Common.Behaviors
         /// <param name="errorMessage"></param>
         /// <param name="error"></param>
         /// <param name="isPrivate"></param>
-        public OperationResult(ActionStatus actionStatus, string errorMessage, string error, bool isPrivate = true)
+        public OperationResult(ActionStatus actionStatus, string errorMessage, string error, bool isPrivate = false)
         {
             Errors.Add(new OperationError(actionStatus, errorMessage, error, isPrivate));
             ActionStatus = actionStatus;
+        }
+        
+        /// <summary>
+        /// Создает экземпляр класса на основе ошибки <param name="operationError"/>.
+        /// </summary>
+        /// <param name="operationError"></param>
+        public OperationResult(OperationError operationError)
+        {
+            Errors.Add(operationError);
+            ActionStatus = operationError.ActionStatus;
         }
 
         public OperationResult(ActionStatus actionStatus, List<OperationError> errors)

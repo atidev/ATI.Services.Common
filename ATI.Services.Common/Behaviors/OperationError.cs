@@ -32,7 +32,15 @@ namespace ATI.Services.Common.Behaviors
             IsInternal = isInternal;
         }
         
-        public OperationError(ActionStatus status, string errorMessage, string error, bool isInternal = true)
+        /// <summary>
+        /// Создает экземпляр класса с ошибкой <param name="errorMessage"/>, кодом <param name="error"/>
+        /// и флагом <param name="isInternal"/> равным false
+        /// </summary>
+        /// <param name="status"></param>
+        /// <param name="errorMessage"></param>
+        /// <param name="isInternal"></param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public OperationError(ActionStatus status, string errorMessage, string error, bool isInternal = false)
         {
             ActionStatus = status;
             Error = error;
