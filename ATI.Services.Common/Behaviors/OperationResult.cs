@@ -202,7 +202,7 @@ namespace ATI.Services.Common.Behaviors
         /// <param name="errorMessage"></param>
         /// <param name="error"></param>
         /// <param name="isPrivate"></param>
-        public OperationResult(ActionStatus actionStatus, string errorMessage, string error, bool isPrivate = true) :
+        public OperationResult(ActionStatus actionStatus, string errorMessage, string error, bool isPrivate = false) :
             base(actionStatus, errorMessage, error, isPrivate)
         {
         }
