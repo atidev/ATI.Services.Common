@@ -206,5 +206,13 @@ namespace ATI.Services.Common.Behaviors
             base(actionStatus, errorMessage, error, isPrivate)
         {
         }
+
+        /// <summary>
+        /// Создает экземпляр класса на основе ошибки <param name="operationError"/>.
+        /// </summary>
+        /// <param name="operationError"></param>
+        public OperationResult(OperationError operationError) : base(operationError)
+        {
+        }
     }
 }
