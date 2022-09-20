@@ -185,6 +185,7 @@ namespace ATI.Services.Common.Behaviors
             Value = value;
             UseCountSuccessCondition = useCountSuccessCondition;
         }
+        
         /// <summary>
         /// Создает экземпляр класса со значениями полей <see cref="OperationResult.Success"/> , переданными в параметрах <param name="errorMessage"></param>  соответственно и добавляет ошибку <param name="errorMessage"/> в коллекцию ошибок/> .
         /// </summary>
