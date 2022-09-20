@@ -185,6 +185,7 @@ namespace ATI.Services.Common.Behaviors
             Value = value;
             UseCountSuccessCondition = useCountSuccessCondition;
         }
+        
         /// <summary>
         /// Создает экземпляр класса со значениями полей <see cref="OperationResult.Success"/> , переданными в параметрах <param name="errorMessage"></param>  соответственно и добавляет ошибку <param name="errorMessage"/> в коллекцию ошибок/> .
         /// </summary>
@@ -204,6 +205,14 @@ namespace ATI.Services.Common.Behaviors
         /// <param name="isPrivate"></param>
         public OperationResult(ActionStatus actionStatus, string errorMessage, string error, bool isPrivate = false) :
             base(actionStatus, errorMessage, error, isPrivate)
+        {
+        }
+
+        /// <summary>
+        /// Создает экземпляр класса на основе ошибки <param name="operationError"/>.
+        /// </summary>
+        /// <param name="operationError"></param>
+        public OperationResult(OperationError operationError) : base(operationError)
         {
         }
     }
