@@ -315,6 +315,9 @@ namespace ATI.Services.Common.Behaviors
             { StatusCode = (int)GetStatusCode(status, customStatusFunc) };
         }
 
+        private static readonly IActionResult OkResult = new OkResult();
+        private static readonly IActionResult OkResultWithEmptyArray = new OkObjectResult(EmptyArray);
+        
         internal static IActionResult GetActionResult<T>(ActionStatus status, bool isInternal, string reason = null,
             Func<ActionStatus, HttpStatusCode?> customStatusFunc = null,
             Func<ActionStatus, string> customErrorCodeFunc = null)
@@ -322,11 +325,12 @@ namespace ATI.Services.Common.Behaviors
             switch (status)
             {
                 case ActionStatus.Ok:
-                    return new OkResult();
+                    return OkResult;
                 case ActionStatus.NotFound:
                 case ActionStatus.NoContent:
-                    if (typeof(IEnumerable).IsAssignableFrom(typeof(T)))
-                        return new OkObjectResult(EmptyArray);
+                    var tType = typeof(T);
+                    if (typeof(IEnumerable).IsAssignableFrom(tType) && !typeof(IDictionary).IsAssignableFrom(tType))
+                        return OkResultWithEmptyArray;
                     break;
             }
 
