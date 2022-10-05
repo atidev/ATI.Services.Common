@@ -9,10 +9,12 @@ using ATI.Services.Common.Metrics;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Text;
+using System.Text.Json;
 using ATI.Services.Common.Context;
 using NLog;
 using ATI.Services.Common.Extensions;
 using ATI.Services.Common.Localization;
+using ATI.Services.Common.Serializers.SystemTextJsonSerialization;
 using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
 
@@ -28,6 +30,11 @@ namespace ATI.Services.Common.Tracing
         private readonly ILogger _logger;
         private readonly HttpClient _httpClient;
         private readonly MetricsTracingFactory _metricsTracingFactory;
+
+        private static readonly JsonSerializerOptions Options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = new SnakeCaseNamingPolicy()
+        };
 
         public TracingHttpClientWrapper(TracedHttpClientConfig config)
         {
@@ -372,9 +379,11 @@ namespace ATI.Services.Common.Tracing
 
                     if (responseMessage.IsSuccessStatusCode)
                     {
-                        using var streamReader = new StreamReader(await responseMessage.Content.ReadAsStreamAsync());
-                        using var jsonReader = new JsonTextReader(streamReader);
-                        var result = Config.Serializer.Deserialize<TResult>(jsonReader);
+                        // using var streamReader = new StreamReader(await responseMessage.Content.ReadAsStreamAsync());
+                        // using var jsonReader = new JsonTextReader(streamReader);
+                        // var result = Config.Serializer.Deserialize<TResult>(jsonReader);
+                        var contentStream = await responseMessage.Content.ReadAsStreamAsync();
+                        var result = await System.Text.Json.JsonSerializer.DeserializeAsync<TResult>(contentStream, Options);
 
                         return new OperationResult<TResult>(result);
                     }
