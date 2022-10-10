@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 
 namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization
@@ -51,6 +53,11 @@ namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization
         public object Deserialize(string value, Type type)
         {
             return JsonSerializer.Deserialize(value, type, _jsonSerializerOptions);
+        }
+
+        public async Task<T> DeserializeAsync<T>(Stream stream)
+        {
+            return await JsonSerializer.DeserializeAsync<T>(stream);
         }
     }
 }

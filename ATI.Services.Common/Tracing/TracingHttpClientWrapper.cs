@@ -1,20 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
 using ATI.Services.Common.Metrics;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using System.Text;
-using System.Text.Json;
 using ATI.Services.Common.Context;
 using NLog;
 using ATI.Services.Common.Extensions;
 using ATI.Services.Common.Localization;
-using ATI.Services.Common.Serializers.SystemTextJsonSerialization;
 using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
 
@@ -31,10 +28,6 @@ namespace ATI.Services.Common.Tracing
         private readonly HttpClient _httpClient;
         private readonly MetricsTracingFactory _metricsTracingFactory;
 
-        private static readonly JsonSerializerOptions Options = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = new SnakeCaseNamingPolicy()
-        };
 
         public TracingHttpClientWrapper(TracedHttpClientConfig config)
         {
@@ -321,8 +314,16 @@ namespace ATI.Services.Common.Tracing
 
                     if (!responseMessage.IsSuccessStatusCode)
                     {
-                        _logger.Warn(
-                            $"Сервис:{Config.ServiceName} в ответ на запрос [HTTP {message.Method} {message.FullUri}] вернул ответ с статус кодом {responseMessage.StatusCode}.");
+                        var logMessage = $"Сервис:{Config.ServiceName} в ответ на запрос [HTTP {message.Method} {message.FullUri}] вернул ответ с статус кодом {responseMessage.StatusCode}.";
+
+                        if (responseMessage.StatusCode == HttpStatusCode.InternalServerError)
+                        {
+                            _logger.ErrorWithObject(logMessage);
+                        }
+                        else
+                        {
+                            _logger.Warn(logMessage);
+                        }
                     }
 
                     var result = new HttpResponseMessage<TResult>
@@ -337,8 +338,7 @@ namespace ATI.Services.Common.Tracing
 
                     try
                     {
-                        using var reader = new JsonTextReader(new StringReader(result.RawContent));
-                        result.Content = Config.Serializer.Deserialize<TResult>(reader);
+                        result.Content = Config.Serializer.Deserialize<TResult>(result.RawContent);
                     }
                     catch (Exception e)
                     {
@@ -379,18 +379,22 @@ namespace ATI.Services.Common.Tracing
 
                     if (responseMessage.IsSuccessStatusCode)
                     {
-                        // using var streamReader = new StreamReader(await responseMessage.Content.ReadAsStreamAsync());
-                        // using var jsonReader = new JsonTextReader(streamReader);
-                        // var result = Config.Serializer.Deserialize<TResult>(jsonReader);
-                        var contentStream = await responseMessage.Content.ReadAsStreamAsync();
-                        var result = await System.Text.Json.JsonSerializer.DeserializeAsync<TResult>(contentStream, Options);
-
+                        var stream = await responseMessage.Content.ReadAsStreamAsync();
+                        var result = await Config.Serializer.DeserializeAsync<TResult>(stream);
                         return new OperationResult<TResult>(result);
                     }
 
-                    _logger.Warn(
-                        $"Сервис:{Config.ServiceName} в ответ на запрос [HTTP {message.Method} {message.FullUri}] вернул ответ с статус кодом {responseMessage.StatusCode}.");
+                    var logMessage = $"Сервис:{Config.ServiceName} в ответ на запрос [HTTP {message.Method} {message.FullUri}] вернул ответ с статус кодом {responseMessage.StatusCode}.";
 
+                    if (responseMessage.StatusCode == HttpStatusCode.InternalServerError)
+                    {
+                        _logger.ErrorWithObject(logMessage);
+                    }
+                    else
+                    {
+                        _logger.Warn(logMessage);
+                    }
+                    
                     return new OperationResult<TResult>(
                         OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
                 }

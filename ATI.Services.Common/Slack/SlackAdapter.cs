@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
+using ATI.Services.Common.Serializers;
 using ATI.Services.Common.Tracing;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
@@ -21,24 +22,10 @@ namespace ATI.Services.Common.Slack
         public SlackAdapter(SlackAdapterOptions options)
         {
             _slackOptions = options;
-            _httpClient = new TracingHttpClientWrapper(new TracedHttpClientConfig
-            {
-                ServiceName = ServiceName,
-                Serializer = new JsonSerializer
-                {
-                    ContractResolver = new DefaultContractResolver
-                    {
-                        NamingStrategy = new SnakeCaseNamingStrategy
-                        {
-                            OverrideSpecifiedNames = true,
-                            ProcessDictionaryKeys = true
-                        }
-                    }
-                },
-                Timeout = TimeSpan.FromSeconds(5)
-            });
+            var config = new TracedHttpClientConfig(ServiceName, TimeSpan.FromSeconds(5), SerializerType.Newtonsoft);
+            _httpClient = new TracingHttpClientWrapper(config);
         }
-        
+
         public async Task<OperationResult> SendAlertAsync(string alert)
         {
             try
