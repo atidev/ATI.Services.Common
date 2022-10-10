@@ -57,7 +57,7 @@ namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization
 
         public async Task<T> DeserializeAsync<T>(Stream stream)
         {
-            return await JsonSerializer.DeserializeAsync<T>(stream);
+            return await JsonSerializer.DeserializeAsync<T>(stream, _jsonSerializerOptions);
         }
     }
 }
