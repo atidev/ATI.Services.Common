@@ -41,7 +41,8 @@ namespace ATI.Services.Common.Sql
             string procedureName,
             DynamicParameters parameters,
             string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null,
+            int? timeoutInSeconds = null)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -52,7 +53,7 @@ namespace ATI.Services.Common.Sql
                     metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                     longTimeRequest, FullMetricTypeLabel))
                 {
-                    var timeout = GetTimeOut(procedureName);
+                    var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
@@ -93,7 +94,8 @@ namespace ATI.Services.Common.Sql
             string procedureName,
             DynamicParameters parameters,
             string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null,
+            int? timeoutInSeconds = null)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -104,7 +106,7 @@ namespace ATI.Services.Common.Sql
                     metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                     longTimeRequest, FullMetricTypeLabel))
                 {
-                    var timeout = GetTimeOut(procedureName);
+                    var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
@@ -154,7 +156,8 @@ namespace ATI.Services.Common.Sql
             Func<dynamic, TValue> valueSelector,
             DynamicParameters parameters,
             string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null,
+            int? timeoutInSeconds = null)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -165,7 +168,7 @@ namespace ATI.Services.Common.Sql
                     metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                     longTimeRequest, FullMetricTypeLabel))
                 {
-                    var timeout = GetTimeOut(procedureName);
+                    var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
@@ -206,7 +209,8 @@ namespace ATI.Services.Common.Sql
             string procedureName,
             DynamicParameters parameters,
             string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null,
+            int? timeoutInSeconds = null)
         {
             try
             {
@@ -216,7 +220,7 @@ namespace ATI.Services.Common.Sql
                     metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                     longTimeRequest, FullMetricTypeLabel))
                 {
-                    var timeout = GetTimeOut(procedureName);
+                    var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
@@ -246,7 +250,8 @@ namespace ATI.Services.Common.Sql
             string procedureName,
             DynamicParameters parameters,
             string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null,
+            int? timeoutInSeconds = null)
         {
             try
             {
@@ -256,7 +261,7 @@ namespace ATI.Services.Common.Sql
                            metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                            longTimeRequest, FullMetricTypeLabel))
                 {
-                    var timeout = GetTimeOut(procedureName);
+                    var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Object, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
@@ -286,7 +291,8 @@ namespace ATI.Services.Common.Sql
             string procedureName,
             DynamicParameters parameters,
             string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null,
+            int? timeoutInSeconds = null)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -297,7 +303,7 @@ namespace ATI.Services.Common.Sql
                     metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                     longTimeRequest, FullMetricTypeLabel))
                 {
-                    var timeout = GetTimeOut(procedureName);
+                    var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
@@ -338,7 +344,8 @@ namespace ATI.Services.Common.Sql
             string procedureName,
             DynamicParameters parameters,
             string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null,
+            int? timeoutInSeconds = null)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -349,7 +356,7 @@ namespace ATI.Services.Common.Sql
                     metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                     longTimeRequest, FullMetricTypeLabel))
                 {
-                    var timeout = GetTimeOut(procedureName);
+                    var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
@@ -395,7 +402,8 @@ namespace ATI.Services.Common.Sql
             DynamicParameters parameters,
             Func<SqlMapper.GridReader, Task<List<T>>> convertData,
             string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null,
+            int? timeoutInSeconds = null)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -405,7 +413,7 @@ namespace ATI.Services.Common.Sql
                 using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
-                    var timeout = GetTimeOut(procedureName);
+                    var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
@@ -463,7 +471,8 @@ namespace ATI.Services.Common.Sql
             DynamicParameters parameters,
             Func<SqlMapper.GridReader, TimersWrapper, Task<List<T>>> convertData,
             string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null,
+            int? timeoutInSeconds = null)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -473,7 +482,7 @@ namespace ATI.Services.Common.Sql
                 using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
-                    var timeout = GetTimeOut(procedureName);
+                    var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
@@ -524,7 +533,8 @@ namespace ATI.Services.Common.Sql
             DynamicParameters parameters,
             Func<SqlMapper.GridReader, Task<List<T>>> convertData,
             string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null,
+            int? timeoutInSeconds = null)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -534,7 +544,7 @@ namespace ATI.Services.Common.Sql
                 using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
-                    var timeout = GetTimeOut(procedureName);
+                    var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
@@ -586,7 +596,8 @@ namespace ATI.Services.Common.Sql
             DynamicParameters parameters,
             Func<SqlMapper.GridReader, TimersWrapper, Task<List<T>>> convertData,
             string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null,
+            int? timeoutInSeconds = null)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -596,7 +607,7 @@ namespace ATI.Services.Common.Sql
                 using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
-                    var timeout = GetTimeOut(procedureName);
+                    var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
@@ -640,7 +651,8 @@ namespace ATI.Services.Common.Sql
             string procedureName,
             DynamicParameters parameters,
             string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null,
+            int? timeoutInSeconds = null)
         {
             try
             {
@@ -649,7 +661,7 @@ namespace ATI.Services.Common.Sql
                 using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
-                    var timeout = GetTimeOut(procedureName);
+                    var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
@@ -676,7 +688,8 @@ namespace ATI.Services.Common.Sql
             string procedureName,
             DynamicParameters parameters,
             string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null,
+            int? timeoutInSeconds = null)
         {
             try
             {
@@ -685,7 +698,7 @@ namespace ATI.Services.Common.Sql
                 using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
-                    var timeout = GetTimeOut(procedureName);
+                    var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
@@ -721,7 +734,8 @@ namespace ATI.Services.Common.Sql
             string procedureName,
             DynamicParameters parameters,
             string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null,
+            int? timeoutInSeconds = null)
         {
             try
             {
@@ -730,7 +744,7 @@ namespace ATI.Services.Common.Sql
                 using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
-                    var timeout = GetTimeOut(procedureName);
+                    var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
                         using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo,
@@ -759,7 +773,8 @@ namespace ATI.Services.Common.Sql
             string procedureName,
             DynamicParameters parameters,
             string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null,
+            int? timeoutInSeconds = null)
         {
             try
             {
@@ -768,7 +783,7 @@ namespace ATI.Services.Common.Sql
                 using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
-                    var timeout = GetTimeOut(procedureName);
+                    var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
@@ -801,7 +816,8 @@ namespace ATI.Services.Common.Sql
             DynamicParameters parameters,
             Func<SqlMapper.GridReader, Task<T>> convertData,
             string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null,
+            int? timeoutInSeconds = null)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -811,7 +827,7 @@ namespace ATI.Services.Common.Sql
                 using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
-                    var timeout = GetTimeOut(procedureName);
+                    var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
 
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
@@ -864,7 +880,8 @@ namespace ATI.Services.Common.Sql
             DynamicParameters parameters,
             Func<SqlMapper.GridReader, TimersWrapper, Task<T>> convertData,
             string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null,
+            int? timeoutInSeconds = null)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -874,7 +891,7 @@ namespace ATI.Services.Common.Sql
                 using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
-                    var timeout = GetTimeOut(procedureName);
+                    var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
 
                     await using (var connection = new SqlConnection(_options.ConnectionString))
                     {
@@ -920,7 +937,8 @@ namespace ATI.Services.Common.Sql
             DynamicParameters parameters,
             Func<SqlMapper.GridReader, Task<T>> convertData,
             string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null,
+            int? timeoutInSeconds = null)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -930,7 +948,7 @@ namespace ATI.Services.Common.Sql
                 using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
-                    var timeout = GetTimeOut(procedureName);
+                    var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
 
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
@@ -989,7 +1007,8 @@ namespace ATI.Services.Common.Sql
             DynamicParameters parameters,
             Func<SqlMapper.GridReader, TimersWrapper, Task<T>> convertData,
             string metricEntity,
-            TimeSpan? longTimeRequest = null)
+            TimeSpan? longTimeRequest = null,
+            int? timeoutInSeconds = null)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -999,7 +1018,7 @@ namespace ATI.Services.Common.Sql
                 using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(tracingInfo, metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
-                    var timeout = GetTimeOut(procedureName);
+                    var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
 
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(_options.ConnectionString))
