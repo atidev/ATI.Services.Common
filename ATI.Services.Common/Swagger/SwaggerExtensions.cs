@@ -34,6 +34,7 @@ namespace ATI.Services.Common.Swagger
             
             services.AddSwaggerGen(c =>
             {
+                c.UseAllOfToExtendReferenceSchemas();
                 foreach (var tag in Enum.GetNames(typeof(SwaggerTag)))
                 {
                     c.SwaggerDoc(tag, new OpenApiInfo { Title = $"{swaggerOptions.ServiceName} {tag} API", 
