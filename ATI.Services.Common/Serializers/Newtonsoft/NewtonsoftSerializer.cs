@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -9,6 +11,7 @@ namespace ATI.Services.Common.Serializers.Newtonsoft
     public class NewtonsoftSerializer : ISerializer
     {
         private JsonSerializerSettings _serializeSettings;
+        private JsonSerializer _serializer;
 
         public NewtonsoftSerializer()
         {
@@ -17,17 +20,20 @@ namespace ATI.Services.Common.Serializers.Newtonsoft
                 // Для приватной логики (работа с редисом и тд) игнорируем ShouldSerialize для корректной работы
                 ContractResolver = new DefaultContractResolver { IgnoreShouldSerializeMembers = true }
             };
+            SetJsonSerializer();
         }
-
-        public NewtonsoftSerializer(JsonSerializerSettings serializeSettings)
+        
+        public NewtonsoftSerializer(JsonSerializerSettings settings)
         {
-            _serializeSettings = serializeSettings;
+            _serializeSettings = settings;
+            SetJsonSerializer();
         }
 
         public void SetSerializeSettings(object settings)
         {
             var set = (JsonSerializerSettings) settings;
             _serializeSettings = set;
+            SetJsonSerializer();
         }
 
         public string Serialize<T>(T value)
@@ -48,6 +54,18 @@ namespace ATI.Services.Common.Serializers.Newtonsoft
         public object Deserialize(string value, Type type)
         {
             return JsonConvert.DeserializeObject(value, type, _serializeSettings);
+        }
+
+        public Task<T> DeserializeAsync<T>(Stream stream)
+        {
+            using var streamReader = new StreamReader(stream);
+            using var jsonReader = new JsonTextReader(streamReader);
+            return Task.FromResult(_serializer.Deserialize<T>(jsonReader));
+        }
+
+        private void SetJsonSerializer()
+        {
+            _serializer = JsonSerializer.Create(_serializeSettings);
         }
     }
 }

@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 
 namespace ATI.Services.Common.Serializers
@@ -13,5 +15,6 @@ namespace ATI.Services.Common.Serializers
         
         T Deserialize<T>(string value);
         object Deserialize(string value, Type type);
+        Task<T> DeserializeAsync<T>(Stream stream);
     }
 }
