@@ -114,6 +114,8 @@ namespace ATI.Services.Common.Swagger
             });
             app.UseSwaggerUI(c =>
             {
+                c.EnableDeepLinking();
+                c.DisplayOperationId();
                 foreach (var tag in Enum.GetNames(typeof(SwaggerTag)))
                 {
                     c.SwaggerEndpoint($"/swagger/{tag}/swagger.json", $"{swaggerOptions.ServiceName} {tag} API");
