@@ -16,8 +16,8 @@ namespace ATI.Services.Common.Slack;
 [PublicAPI]
 public class SlackApiAdapter
 {
-    private const string SlackApiBaseAddress = "https://slack.com/api";
-    private const string SlackPostMessageUrl = "/chat.postMessage";
+    private const string SlackApiBaseAddress = "https://slack.com";
+    private const string SlackPostMessageUrl = "/api/chat.postMessage";
     private const string SlackApiMetric = "SlackApi";
     private const string ServiceName = "Slack";
 
