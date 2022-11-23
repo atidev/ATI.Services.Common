@@ -15,10 +15,7 @@ namespace ATI.Services.Common.Behaviors.OperationBuilder.Extensions
             return new(operation);
         }
 
-        public static ActionBuilder AsActionBuilder(this OperationResult operation)
-        {
-            return new(operation);
-        }
+        public static ActionBuilder AsActionBuilder(this OperationResult operation) => new(operation);
 
         public static async Task<IActionResult> AsActionResultAsync(this Task<OperationResult> operationTask, bool? internalFlag = false)
         {
@@ -28,7 +25,7 @@ namespace ATI.Services.Common.Behaviors.OperationBuilder.Extensions
                 actionBuilder.WithInternalFlag(internalFlag.Value);
             }
 
-            return await new ActionBuilder(operationTask).ExecuteAsync();
+            return await actionBuilder.ExecuteAsync();
         }
 
         public static IActionResult AsActionResult(this OperationResult operation, bool? internalFlag = false)
