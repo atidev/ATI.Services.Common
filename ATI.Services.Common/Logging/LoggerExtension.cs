@@ -30,6 +30,11 @@ public static class LoggerExtension
         logger.LogWithObject(LogLevel.Warn, null, message, null, logObjects);
     }
     
+    public static void WarnWithObject(this ILogger logger, Exception ex, params object[] logObjects)
+    {
+        logger.LogWithObject(LogLevel.Warn, ex, logObjects: logObjects);
+    }
+    
     public static void LogWithObject(this ILogger logger,
         LogLevel logLevel,
         Exception ex = null,
