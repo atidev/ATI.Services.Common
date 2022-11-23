@@ -33,6 +33,7 @@ namespace ATI.Services.Common.Tracing
         
         public Dictionary<string, string> Headers { get; set; } = new();
         public List<string> HeadersToProxy { get; set; } = new();
+        public bool LogTimeoutsAsWarn { get; set; }
 
         private void SetSerializer(
             SerializerType serializerType,

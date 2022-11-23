@@ -27,6 +27,7 @@ namespace ATI.Services.Common.Tracing
         private readonly ILogger _logger;
         private readonly HttpClient _httpClient;
         private readonly MetricsTracingFactory _metricsTracingFactory;
+        private readonly LogLevel _timeoutLogLevel;
 
 
         public TracingHttpClientWrapper(TracedHttpClientConfig config)
@@ -35,6 +36,7 @@ namespace ATI.Services.Common.Tracing
             _logger = LogManager.GetLogger(Config.ServiceName);
             _httpClient = CreateHttpClient(config.Headers);
             _metricsTracingFactory = MetricsTracingFactory.CreateTracingFactory(config.ServiceName);
+            _timeoutLogLevel = Config.LogTimeoutsAsWarn ? LogLevel.Warn : LogLevel.Error;
         }
 
         public TracedHttpClientConfig Config { get; }
@@ -340,6 +342,17 @@ namespace ATI.Services.Common.Tracing
                     {
                         result.Content = Config.Serializer.Deserialize<TResult>(result.RawContent);
                     }
+                    catch (TaskCanceledException e) when (e.InnerException is TimeoutException)
+                    {
+                        _logger.LogWithObject(_timeoutLogLevel,
+                                              e,
+                                              logObjects: new
+                                              {
+                                                  MetricName = metricName, FullUri = fullUri, Model = model,
+                                                  Headers = headers
+                                              });
+                        return new OperationResult<HttpResponseMessage<TResult>>(ActionStatus.Timeout);
+                    }
                     catch (Exception e)
                     {
                         _logger.ErrorWithObject(e,
@@ -398,6 +411,13 @@ namespace ATI.Services.Common.Tracing
                     return new OperationResult<TResult>(
                         OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
                 }
+                catch (TaskCanceledException e) when (e.InnerException is TimeoutException)
+                {
+                    _logger.LogWithObject(_timeoutLogLevel,
+                                          e,
+                                          logObjects: new { Method = methodName, Message = message });
+                    return new OperationResult<TResult>(ActionStatus.Timeout);
+                }
                 catch (Exception e)
                 {
                     _logger.ErrorWithObject(e, new { Method = methodName, Message = message });
@@ -423,6 +443,13 @@ namespace ATI.Services.Common.Tracing
 
                     return new OperationResult<string>(responseContent,
                         OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
+                }
+                catch (TaskCanceledException e) when (e.InnerException is TimeoutException)
+                {
+                    _logger.LogWithObject(_timeoutLogLevel,
+                                          e,
+                                          logObjects: new { Method = methodName, Message = message });
+                    return new OperationResult<string>(ActionStatus.Timeout);
                 }
                 catch (Exception e)
                 {
