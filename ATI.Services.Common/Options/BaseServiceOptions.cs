@@ -10,6 +10,7 @@ public class BaseServiceOptions
 {
     public string ConsulName { get; set; }
     public TimeSpan TimeOut { get; set; }
+    public bool LogTimeoutsAsWarn { get; set; }
     public string Environment { get; set; }
     public TimeSpan? LongRequestTime { get; set; }
 
