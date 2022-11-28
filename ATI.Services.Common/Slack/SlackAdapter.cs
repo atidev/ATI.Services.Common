@@ -5,12 +5,13 @@ using ATI.Services.Common.Logging;
 using ATI.Services.Common.Serializers;
 using ATI.Services.Common.Tracing;
 using JetBrains.Annotations;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using NLog;
 
 namespace ATI.Services.Common.Slack
 {
+    /// <summary>
+    /// Adapter use Slack Incoming Webhooks 
+    /// </summary>
     [PublicAPI]
     public class SlackAdapter
     {
@@ -25,7 +26,7 @@ namespace ATI.Services.Common.Slack
             var config = new TracedHttpClientConfig(ServiceName, TimeSpan.FromSeconds(5), SerializerType.Newtonsoft);
             _httpClient = new TracingHttpClientWrapper(config);
         }
-
+        
         public async Task<OperationResult> SendAlertAsync(string alert)
         {
             try
