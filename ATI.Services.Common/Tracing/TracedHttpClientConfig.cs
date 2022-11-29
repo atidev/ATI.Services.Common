@@ -6,6 +6,7 @@ using ATI.Services.Common.Serializers.SystemTextJsonSerialization;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using NLog;
 
 namespace ATI.Services.Common.Tracing
 {
@@ -33,7 +34,8 @@ namespace ATI.Services.Common.Tracing
         
         public Dictionary<string, string> Headers { get; set; } = new();
         public List<string> HeadersToProxy { get; set; } = new();
-        public bool LogTimeoutsAsWarn { get; set; }
+
+        public Func<LogLevel, LogLevel> LogLevelOverride { get; set; } = level => level;
 
         private void SetSerializer(
             SerializerType serializerType,
