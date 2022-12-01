@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ATI.Services.Common.Serializers;
 using JetBrains.Annotations;
+using NLog;
 
 namespace ATI.Services.Common.Options;
 
@@ -18,4 +19,5 @@ public class BaseServiceOptions
     public bool AddCultureToRequest { get; set; } = true;
     public List<string> HeadersToProxy { get; set; } = new();
     public SerializerType SerializerType { get; set; } = SerializerType.Newtonsoft;
+    public virtual Func<LogLevel, LogLevel> LogLevelOverride => level => level;
 }

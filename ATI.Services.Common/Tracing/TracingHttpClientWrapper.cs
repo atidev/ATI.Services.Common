@@ -27,6 +27,7 @@ namespace ATI.Services.Common.Tracing
         private readonly ILogger _logger;
         private readonly HttpClient _httpClient;
         private readonly MetricsTracingFactory _metricsTracingFactory;
+        private readonly Func<LogLevel, LogLevel> _logLevelOverride;
 
 
         public TracingHttpClientWrapper(TracedHttpClientConfig config)
@@ -35,6 +36,7 @@ namespace ATI.Services.Common.Tracing
             _logger = LogManager.GetLogger(Config.ServiceName);
             _httpClient = CreateHttpClient(config.Headers);
             _metricsTracingFactory = MetricsTracingFactory.CreateTracingFactory(config.ServiceName);
+            _logLevelOverride = Config.LogLevelOverride;
         }
 
         public TracedHttpClientConfig Config { get; }
@@ -318,11 +320,11 @@ namespace ATI.Services.Common.Tracing
 
                         if (responseMessage.StatusCode == HttpStatusCode.InternalServerError)
                         {
-                            _logger.ErrorWithObject(logMessage);
+                            _logger.LogWithObject(_logLevelOverride(LogLevel.Error), logObjects: logMessage);
                         }
                         else
                         {
-                            _logger.Warn(logMessage);
+                            _logger.Log(_logLevelOverride(LogLevel.Warn), logMessage);
                         }
                     }
 
@@ -340,14 +342,28 @@ namespace ATI.Services.Common.Tracing
                     {
                         result.Content = Config.Serializer.Deserialize<TResult>(result.RawContent);
                     }
+                    catch (TaskCanceledException e) when (e.InnerException is TimeoutException)
+                    {
+                        _logger.LogWithObject(_logLevelOverride(LogLevel.Warn),
+                                              e,
+                                              logObjects: new
+                                              {
+                                                  MetricName = metricName, FullUri = fullUri, Model = model,
+                                                  Headers = headers
+                                              });
+                        return new OperationResult<HttpResponseMessage<TResult>>(ActionStatus.Timeout);
+                    }
                     catch (Exception e)
                     {
-                        _logger.ErrorWithObject(e,
-                            new
-                            {
-                                MetricName = metricName, FullUri = fullUri, Model = model, Headers = headers,
-                                ResponseBody = result.RawContent
-                            });
+                        _logger.LogWithObject(_logLevelOverride(LogLevel.Error),
+                                              e,
+                                              logObjects:
+                                              new
+                                              {
+                                                  MetricName = metricName, FullUri = fullUri, Model = model,
+                                                  Headers = headers,
+                                                  ResponseBody = result.RawContent
+                                              });
                     }
 
                     return new OperationResult<HttpResponseMessage<TResult>>(result);
@@ -355,8 +371,9 @@ namespace ATI.Services.Common.Tracing
             }
             catch (Exception e)
             {
-                _logger.ErrorWithObject(e,
-                    new { MetricName = metricName, FullUri = fullUri, Model = model, Headers = headers });
+                _logger.LogWithObject(_logLevelOverride(LogLevel.Error),
+                                      e,
+                                      logObjects: new { MetricName = metricName, FullUri = fullUri, Model = model, Headers = headers });
                 return new OperationResult<HttpResponseMessage<TResult>>(ActionStatus.InternalServerError);
             }
         }
@@ -388,19 +405,28 @@ namespace ATI.Services.Common.Tracing
 
                     if (responseMessage.StatusCode == HttpStatusCode.InternalServerError)
                     {
-                        _logger.ErrorWithObject(logMessage);
+                        _logger.Log(_logLevelOverride(LogLevel.Error), logMessage);
                     }
                     else
                     {
-                        _logger.Warn(logMessage);
+                        _logger.Log(_logLevelOverride(LogLevel.Warn), logMessage);
                     }
                     
                     return new OperationResult<TResult>(
                         OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
                 }
+                catch (TaskCanceledException e) when (e.InnerException is TimeoutException)
+                {
+                    _logger.LogWithObject(_logLevelOverride(LogLevel.Error),
+                                          e,
+                                          logObjects: new { Method = methodName, Message = message });
+                    return new OperationResult<TResult>(ActionStatus.Timeout);
+                }
                 catch (Exception e)
                 {
-                    _logger.ErrorWithObject(e, new { Method = methodName, Message = message });
+                    _logger.LogWithObject(_logLevelOverride(LogLevel.Error),
+                                          e,
+                                          logObjects: new { Method = methodName, Message = message });
                     return new OperationResult<TResult>(ActionStatus.InternalServerError);
                 }
             }
@@ -424,9 +450,18 @@ namespace ATI.Services.Common.Tracing
                     return new OperationResult<string>(responseContent,
                         OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
                 }
+                catch (TaskCanceledException e) when (e.InnerException is TimeoutException)
+                {
+                    _logger.LogWithObject(_logLevelOverride(LogLevel.Error),
+                                          e,
+                                          logObjects: new { Method = methodName, Message = message });
+                    return new OperationResult<string>(ActionStatus.Timeout);
+                }
                 catch (Exception e)
                 {
-                    _logger.ErrorWithObject(e, new { Method = methodName, Message = message });
+                    _logger.LogWithObject(_logLevelOverride(LogLevel.Error),
+                                          e,
+                                          logObjects: new { Method = methodName, Message = message });
                     return new OperationResult<string>(ActionStatus.InternalServerError);
                 }
             }
