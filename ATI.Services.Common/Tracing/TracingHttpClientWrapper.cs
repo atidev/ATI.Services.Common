@@ -402,14 +402,15 @@ namespace ATI.Services.Common.Tracing
                     }
 
                     var logMessage = $"Сервис:{Config.ServiceName} в ответ на запрос [HTTP {message.Method} {message.FullUri}] вернул ответ с статус кодом {responseMessage.StatusCode}.";
+                    var responseSting = await responseMessage.Content.ReadAsStringAsync();
 
                     if (responseMessage.StatusCode == HttpStatusCode.InternalServerError)
                     {
-                        _logger.Log(_logLevelOverride(LogLevel.Error), logMessage);
+                        _logger.LogWithObject(_logLevelOverride(LogLevel.Error), ex: null, logMessage, logObjects: responseSting);
                     }
                     else
                     {
-                        _logger.Log(_logLevelOverride(LogLevel.Warn), logMessage);
+                        _logger.LogWithObject(_logLevelOverride(LogLevel.Warn), ex: null, logMessage, logObjects: responseSting);
                     }
                     
                     return new OperationResult<TResult>(
