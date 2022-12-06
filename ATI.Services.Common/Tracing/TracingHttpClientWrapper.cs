@@ -29,6 +29,8 @@ namespace ATI.Services.Common.Tracing
         private readonly MetricsTracingFactory _metricsTracingFactory;
         private readonly Func<LogLevel, LogLevel> _logLevelOverride;
 
+        private const string LogMessageTemplate =
+            "Сервис:{0} в ответ на запрос [HTTP {1} {2}] вернул ответ с статус кодом {3}.";
 
         public TracingHttpClientWrapper(TracedHttpClientConfig config)
         {
@@ -313,18 +315,26 @@ namespace ATI.Services.Common.Tracing
                     using var requestMessage = message.ToRequestMessage(Config);
 
                     using var responseMessage = await _httpClient.SendAsync(requestMessage);
+                    var responseContent = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
 
                     if (!responseMessage.IsSuccessStatusCode)
                     {
-                        var logMessage = $"Сервис:{Config.ServiceName} в ответ на запрос [HTTP {message.Method} {message.FullUri}] вернул ответ с статус кодом {responseMessage.StatusCode}.";
+                        var logMessage = string.Format(LogMessageTemplate, Config.ServiceName, message.Method,
+                            message.FullUri, responseMessage.StatusCode);
+                        var additionalLogProperties = new Dictionary<object, object>
+                        {
+                            { "responseBody", responseContent }
+                        };
 
                         if (responseMessage.StatusCode == HttpStatusCode.InternalServerError)
                         {
-                            _logger.LogWithObject(_logLevelOverride(LogLevel.Error), logObjects: logMessage);
+                            _logger.LogWithObject(_logLevelOverride(LogLevel.Error), 
+                                additionalProperties: additionalLogProperties, logObjects: logMessage);
                         }
                         else
                         {
-                            _logger.Log(_logLevelOverride(LogLevel.Warn), logMessage);
+                            _logger.LogWithObject(_logLevelOverride(LogLevel.Warn), ex: null, logMessage,
+                                additionalLogProperties);
                         }
                     }
 
@@ -335,7 +345,7 @@ namespace ATI.Services.Common.Tracing
                         TrailingHeaders = responseMessage.TrailingHeaders,
                         ReasonPhrase = responseMessage.ReasonPhrase,
                         Version = responseMessage.Version,
-                        RawContent = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false)
+                        RawContent = responseContent
                     };
 
                     try
@@ -401,16 +411,23 @@ namespace ATI.Services.Common.Tracing
                         return new OperationResult<TResult>(result);
                     }
 
-                    var logMessage = $"Сервис:{Config.ServiceName} в ответ на запрос [HTTP {message.Method} {message.FullUri}] вернул ответ с статус кодом {responseMessage.StatusCode}.";
-                    var responseSting = await responseMessage.Content.ReadAsStringAsync();
-
+                    var logMessage = string.Format(LogMessageTemplate, Config.ServiceName, message.Method,
+                        message.FullUri, responseMessage.StatusCode);
+                    var responseContent = await responseMessage.Content.ReadAsStringAsync();
+                    var additionalLogProperties = new Dictionary<object, object>
+                    {
+                        { "responseBody", responseContent }
+                    };
+                    
                     if (responseMessage.StatusCode == HttpStatusCode.InternalServerError)
                     {
-                        _logger.LogWithObject(_logLevelOverride(LogLevel.Error), ex: null, logMessage, logObjects: responseSting);
+                        _logger.LogWithObject(_logLevelOverride(LogLevel.Error), ex: null, logMessage,
+                            additionalLogProperties);
                     }
                     else
                     {
-                        _logger.LogWithObject(_logLevelOverride(LogLevel.Warn), ex: null, logMessage, logObjects: responseSting);
+                        _logger.LogWithObject(_logLevelOverride(LogLevel.Warn), ex: null, logMessage,
+                            additionalLogProperties);
                     }
                     
                     return new OperationResult<TResult>(
@@ -447,6 +464,27 @@ namespace ATI.Services.Common.Tracing
 
                     using var responseMessage = await _httpClient.SendAsync(requestMessage);
                     var responseContent = await responseMessage.Content.ReadAsStringAsync();
+
+                    if (responseMessage.IsSuccessStatusCode)
+                        return new OperationResult<string>(responseContent);
+
+                    var logMessage = string.Format(LogMessageTemplate, Config.ServiceName, message.Method,
+                        message.FullUri, responseMessage.StatusCode);
+                    var additionalLogProperties = new Dictionary<object, object>
+                    {
+                        { "responseBody", responseContent }
+                    };
+                        
+                    if (responseMessage.StatusCode == HttpStatusCode.InternalServerError)
+                    {
+                        _logger.LogWithObject(_logLevelOverride(LogLevel.Error), ex: null, logMessage,
+                            additionalLogProperties);
+                    }
+                    else
+                    {
+                        _logger.LogWithObject(_logLevelOverride(LogLevel.Warn), ex: null, logMessage,
+                            additionalLogProperties);
+                    }
 
                     return new OperationResult<string>(responseContent,
                         OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
