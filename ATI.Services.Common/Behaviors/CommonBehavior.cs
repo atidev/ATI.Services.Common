@@ -239,7 +239,7 @@ namespace ATI.Services.Common.Behaviors
                 case ActionStatus.NotFound:
                 case ActionStatus.NoContent:
                     if (resultIsArray)
-                        return new OkObjectResult(EmptyArray);
+                        return new JsonResult(EmptyArray);
                     break;
             }
 
@@ -268,7 +268,7 @@ namespace ATI.Services.Common.Behaviors
                 case ActionStatus.NotFound:
                 case ActionStatus.NoContent:
                     if (resultIsArray)
-                        return new OkObjectResult(EmptyArray);
+                        return new JsonResult(EmptyArray);
                     break;
             }
 
@@ -316,7 +316,7 @@ namespace ATI.Services.Common.Behaviors
         }
 
         private static readonly IActionResult OkResult = new OkResult();
-        private static readonly IActionResult OkResultWithEmptyArray = new OkObjectResult(EmptyArray);
+        private static readonly IActionResult OkResultWithEmptyArray = new JsonResult(EmptyArray);
         
         internal static IActionResult GetActionResult<T>(ActionStatus status, bool isInternal, string reason = null,
             Func<ActionStatus, HttpStatusCode?> customStatusFunc = null,
