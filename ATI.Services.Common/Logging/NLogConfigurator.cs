@@ -32,7 +32,8 @@ namespace ATI.Services.Common.Logging
             JsonAttributeHelper.CreateWithoutUnicodeEscaping("exceptionPretty", "${onexception:${exception:format=ToString,Data:exceptionDataSeparator=\\r\\n}}"),
             JsonAttributeHelper.CreateWithoutUnicodeEscaping("logContext", "${event-properties:logContext}"),
             JsonAttributeHelper.CreateWithoutUnicodeEscaping("metricString", "${event-properties:metricString}"),
-            JsonAttributeHelper.CreateWithoutUnicodeEscaping("metricSource", "${event-properties:metricSource}")
+            JsonAttributeHelper.CreateWithoutUnicodeEscaping("metricSource", "${event-properties:metricSource}"),
+            JsonAttributeHelper.CreateWithoutUnicodeEscaping("responseBody", "${event-properties:responseBody}")
         };
 
         public NLogConfigurator(NLogOptions options)
