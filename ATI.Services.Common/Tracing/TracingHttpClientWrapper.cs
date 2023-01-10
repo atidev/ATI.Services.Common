@@ -321,20 +321,16 @@ namespace ATI.Services.Common.Tracing
                     {
                         var logMessage = string.Format(LogMessageTemplate, Config.ServiceName, message.Method,
                             message.FullUri, responseMessage.StatusCode);
-                        var additionalLogProperties = new Dictionary<object, object>
-                        {
-                            { "responseBody", responseContent }
-                        };
 
                         if (responseMessage.StatusCode == HttpStatusCode.InternalServerError)
                         {
-                            _logger.LogWithObject(_logLevelOverride(LogLevel.Error), 
-                                additionalProperties: additionalLogProperties, logObjects: logMessage);
+                            _logger.LogWithObject(_logLevelOverride(LogLevel.Error), ex: null, logMessage,
+                                logObjects: new { ResponseBody = responseContent });
                         }
                         else
                         {
                             _logger.LogWithObject(_logLevelOverride(LogLevel.Warn), ex: null, logMessage,
-                                additionalLogProperties);
+                                logObjects: new { ResponseBody = responseContent });
                         }
                     }
 
@@ -414,20 +410,16 @@ namespace ATI.Services.Common.Tracing
                     var logMessage = string.Format(LogMessageTemplate, Config.ServiceName, message.Method,
                         message.FullUri, responseMessage.StatusCode);
                     var responseContent = await responseMessage.Content.ReadAsStringAsync();
-                    var additionalLogProperties = new Dictionary<object, object>
-                    {
-                        { "responseBody", responseContent }
-                    };
-                    
+
                     if (responseMessage.StatusCode == HttpStatusCode.InternalServerError)
                     {
                         _logger.LogWithObject(_logLevelOverride(LogLevel.Error), ex: null, logMessage,
-                            additionalLogProperties);
+                            logObjects: new { ResponseBody = responseContent });
                     }
                     else
                     {
                         _logger.LogWithObject(_logLevelOverride(LogLevel.Warn), ex: null, logMessage,
-                            additionalLogProperties);
+                            logObjects: new { ResponseBody = responseContent });
                     }
                     
                     return new OperationResult<TResult>(
@@ -470,20 +462,16 @@ namespace ATI.Services.Common.Tracing
 
                     var logMessage = string.Format(LogMessageTemplate, Config.ServiceName, message.Method,
                         message.FullUri, responseMessage.StatusCode);
-                    var additionalLogProperties = new Dictionary<object, object>
-                    {
-                        { "responseBody", responseContent }
-                    };
-                        
+
                     if (responseMessage.StatusCode == HttpStatusCode.InternalServerError)
                     {
                         _logger.LogWithObject(_logLevelOverride(LogLevel.Error), ex: null, logMessage,
-                            additionalLogProperties);
+                            logObjects: new { ResponseBody = responseContent });
                     }
                     else
                     {
                         _logger.LogWithObject(_logLevelOverride(LogLevel.Warn), ex: null, logMessage,
-                            additionalLogProperties);
+                            logObjects: new { ResponseBody = responseContent });
                     }
 
                     return new OperationResult<string>(responseContent,
