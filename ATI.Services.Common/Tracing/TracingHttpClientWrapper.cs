@@ -325,12 +325,12 @@ namespace ATI.Services.Common.Tracing
                         if (responseMessage.StatusCode == HttpStatusCode.InternalServerError)
                         {
                             _logger.LogWithObject(_logLevelOverride(LogLevel.Error), ex: null, logMessage,
-                                logObjects: new { ResponseBody = responseContent });
+                                logObjects: responseContent);
                         }
                         else
                         {
                             _logger.LogWithObject(_logLevelOverride(LogLevel.Warn), ex: null, logMessage,
-                                logObjects: new { ResponseBody = responseContent });
+                                logObjects: responseContent);
                         }
                     }
 
@@ -414,12 +414,12 @@ namespace ATI.Services.Common.Tracing
                     if (responseMessage.StatusCode == HttpStatusCode.InternalServerError)
                     {
                         _logger.LogWithObject(_logLevelOverride(LogLevel.Error), ex: null, logMessage,
-                            logObjects: new { ResponseBody = responseContent });
+                            logObjects: responseContent);
                     }
                     else
                     {
                         _logger.LogWithObject(_logLevelOverride(LogLevel.Warn), ex: null, logMessage,
-                            logObjects: new { ResponseBody = responseContent });
+                            logObjects: responseContent);
                     }
                     
                     return new OperationResult<TResult>(
@@ -466,12 +466,12 @@ namespace ATI.Services.Common.Tracing
                     if (responseMessage.StatusCode == HttpStatusCode.InternalServerError)
                     {
                         _logger.LogWithObject(_logLevelOverride(LogLevel.Error), ex: null, logMessage,
-                            logObjects: new { ResponseBody = responseContent });
+                            logObjects: responseContent);
                     }
                     else
                     {
                         _logger.LogWithObject(_logLevelOverride(LogLevel.Warn), ex: null, logMessage,
-                            logObjects: new { ResponseBody = responseContent });
+                            logObjects: responseContent);
                     }
 
                     return new OperationResult<string>(responseContent,
