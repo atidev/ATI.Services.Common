@@ -23,10 +23,10 @@ namespace ATI.Services.Common.Metrics
 
         public async Task InvokeAsync(HttpContext context)
         {
-            await _next(context);
             var param = new[] {context.Response.StatusCode.ToString()}.Concat(AppHttpContext.MetricsHeadersValues)
                 .ToArray();
             counter.WithLabels(param).Inc();
+            await _next(context);
         }
     }
 }
