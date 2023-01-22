@@ -117,17 +117,6 @@ namespace ATI.Services.Common.Behaviors
         }
 
         public static OperationResult Ok { get; } = new(ActionStatus.Ok);
-
-        public static OperationResult CheckOperationsForSuccess(params OperationResult[] operations)
-        {
-            foreach (var operation in operations)
-            {
-                if (!operation.Success)
-                    return operation;
-            }
-
-            return Ok;
-        }
     }
 
     /// <summary>
