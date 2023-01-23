@@ -35,11 +35,18 @@ namespace ATI.Services.Common.Caching.Redis
 
         private RedisScriptCache _redisScriptCache;
 
-        private static readonly AsyncRetryPolicy<ConnectionMultiplexer> InitPolicy =
+        private static readonly AsyncRetryPolicy<ConnectionMultiplexer> InitForeverPolicy =
             Policy<ConnectionMultiplexer>
                 .Handle<Exception>()
                 .OrResult(res => res == null)
                 .WaitAndRetryForeverAsync(_ => TimeSpan.FromSeconds(30));
+        
+        private static readonly AsyncRetryPolicy<ConnectionMultiplexer> InitThreeTimesPolicy =
+            Policy<ConnectionMultiplexer>
+                .Handle<Exception>()
+                .OrResult(res => res == null)
+                .WaitAndRetryAsync(3, _ => TimeSpan.FromSeconds(5));
+
 
         public RedisCache(RedisOptions options, CacheHitRatioManager manager) 
             : base(SerializerFactory.GetSerializerByType(options.Serializer))
@@ -55,23 +62,35 @@ namespace ATI.Services.Common.Caching.Redis
         public async Task InitAsync()
         {
             if (Options.MustConnectOnInit)
-                await ConnectToRedisAsync();
+                await ConnectToRedisAsync(true);
             else
-                ConnectToRedisAsync().Forget();
+                ConnectToRedisAsync(false).Forget();
         }
 
-        private async Task ConnectToRedisAsync()
+        private async Task ConnectToRedisAsync(bool mustConnectOnInit)
         {
             try
             {
-                var connectionMultiplexer = await InitPolicy.ExecuteAsync(async () => await ConnectionMultiplexer.ConnectAsync(Options.ConnectionString));
+                var policy = mustConnectOnInit ? InitThreeTimesPolicy : InitForeverPolicy;
+                var connectionMultiplexer = await policy.ExecuteAsync(async () =>
+                {
+                    try
+                    {
+                        return await ConnectionMultiplexer.ConnectAsync(Options.ConnectionString);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.Error(e, "Redis connection error in init retry policy");
+                        throw;
+                    }
+                });
                 _redisDb = connectionMultiplexer.GetDatabase(Options.CacheDbNumber);
                 _redisScriptCache = new RedisScriptCache(_redisDb, Options, _metricsTracingFactory, _circuitBreakerPolicy, _policy);
                 _connected = true;
             }
             catch (Exception e)
             {
-                _logger.ErrorWithObject(e, "Ошибка подключения к редису в фоновой задаче.");
+                _logger.ErrorWithObject(e, "Redis connection error");
                 throw;
             }
         }
