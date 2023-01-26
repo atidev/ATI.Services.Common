@@ -86,7 +86,7 @@ namespace ATI.Services.Common.Sql
             {
                 reader?.Dispose();
                 LogWithParameters(e, procedureName, metricEntity, parameters);
-                return new OperationResult<List<T>>(ActionStatus.InternalServerError, e.Message);
+                return new OperationResult<List<T>>(e);
             }
         }
 
@@ -146,7 +146,7 @@ namespace ATI.Services.Common.Sql
             {
                 reader?.Dispose();
                 LogWithParameters(e, procedureName, metricEntity, parameters);
-                return new OperationResult<List<T>>(ActionStatus.InternalServerError, e.Message);
+                return new OperationResult<List<T>>(e);
             }
         }
 
@@ -201,7 +201,7 @@ namespace ATI.Services.Common.Sql
             {
                 reader?.Dispose();
                 LogWithParameters(e, procedureName, metricEntity, parameters);
-                return new OperationResult<Dictionary<TKey, TValue>>(ActionStatus.InternalServerError, e.Message);
+                return new OperationResult<Dictionary<TKey, TValue>>(e);
             }
         }
 
@@ -242,7 +242,7 @@ namespace ATI.Services.Common.Sql
             catch (Exception e)
             {
                 LogWithParameters(e, procedureName, metricEntity, parameters);
-                return new OperationResult(ActionStatus.InternalServerError, e.Message);
+                return new OperationResult(e);
             }
         }
         
@@ -283,7 +283,7 @@ namespace ATI.Services.Common.Sql
             catch (Exception e)
             {
                 LogWithParameters(e, procedureName, metricEntity, parameters);
-                return new OperationResult<TResult>(ActionStatus.InternalServerError, e.Message);
+                return new OperationResult<TResult>(e);
             }
         }
 
@@ -336,7 +336,7 @@ namespace ATI.Services.Common.Sql
             {
                 reader?.Dispose();
                 LogWithParameters(e, procedureName, metricEntity, parameters);
-                return new OperationResult<T>(ActionStatus.InternalServerError, e.Message);
+                return new OperationResult<T>(e);
             }
         }
 
@@ -393,7 +393,7 @@ namespace ATI.Services.Common.Sql
             {
                 reader?.Dispose();
                 LogWithParameters(e, procedureName, metricEntity, parameters);
-                return new OperationResult<T>(ActionStatus.InternalServerError, e.Message);
+                return new OperationResult<T>(e);
             }
         }
 
@@ -452,7 +452,7 @@ namespace ATI.Services.Common.Sql
             {
                 reader?.Dispose();
                 LogWithParameters(e, procedureName, metricEntity, parameters);
-                return new OperationResult<List<T>>(ActionStatus.InternalServerError, e.Message);
+                return new OperationResult<List<T>>(e);
             }
         }
         
@@ -524,7 +524,7 @@ namespace ATI.Services.Common.Sql
             {
                 reader?.Dispose();
                 LogWithParameters(e, procedureName, metricEntity, parameters);
-                return new OperationResult<List<T>>(ActionStatus.InternalServerError, e.Message);
+                return new OperationResult<List<T>>(e);
             }
         }
         
@@ -577,7 +577,7 @@ namespace ATI.Services.Common.Sql
             {
                 reader?.Dispose();
                 LogWithParameters(e, procedureName, metricEntity, parameters);
-                return new OperationResult<List<T>>(ActionStatus.InternalServerError, e.Message);
+                return new OperationResult<List<T>>(e);
             }
         }
 
@@ -643,7 +643,7 @@ namespace ATI.Services.Common.Sql
             {
                 reader?.Dispose();
                 LogWithParameters(e, procedureName, metricEntity, parameters);
-                return new OperationResult<List<T>>(ActionStatus.InternalServerError, e.Message);
+                return new OperationResult<List<T>>(e);
             }
         }
 
@@ -680,7 +680,7 @@ namespace ATI.Services.Common.Sql
             catch (Exception e)
             {
                 LogWithParameters(e, procedureName, metricEntity, parameters);
-                return new OperationResult<T>(ActionStatus.InternalServerError, e.Message);
+                return new OperationResult<T>(e);
             }
         }
 
@@ -726,7 +726,7 @@ namespace ATI.Services.Common.Sql
             catch (Exception e)
             {
                 LogWithParameters(e, procedureName, metricEntity, parameters);
-                return new OperationResult<T>(ActionStatus.InternalServerError, e.Message);
+                return new OperationResult<T>(e);
             }
         }
 
@@ -765,7 +765,7 @@ namespace ATI.Services.Common.Sql
             catch (Exception e)
             {
                 LogWithParameters(e, procedureName, metricEntity, parameters);
-                return new OperationResult(ActionStatus.InternalServerError, e.Message);
+                return new OperationResult(e);
             }
         }
 
@@ -807,7 +807,7 @@ namespace ATI.Services.Common.Sql
             catch (Exception e)
             {
                 LogWithParameters(e, procedureName, metricEntity, parameters);
-                return new OperationResult(ActionStatus.InternalServerError, e.Message);
+                return new OperationResult(e);
             }
         }
 
@@ -861,7 +861,7 @@ namespace ATI.Services.Common.Sql
             {
                 reader?.Dispose();
                 LogWithParameters(e, procedureName, metricEntity, parameters);
-                return new OperationResult<T>(ActionStatus.InternalServerError, e.Message);
+                return new OperationResult<T>(e);
             }
         }
         
@@ -928,7 +928,7 @@ namespace ATI.Services.Common.Sql
             {
                 reader?.Dispose();
                 LogWithParameters(e, procedureName, metricEntity, parameters);
-                return new OperationResult<T>(ActionStatus.InternalServerError, e.Message);
+                return new OperationResult<T>(e);
             }
         }
 
@@ -988,7 +988,7 @@ namespace ATI.Services.Common.Sql
             {
                 reader?.Dispose();
                 LogWithParameters(e, procedureName, metricEntity, parameters);
-                return new OperationResult<T>(ActionStatus.InternalServerError, e.Message);
+                return new OperationResult<T>(e);
             }
         }
         
@@ -1061,7 +1061,7 @@ namespace ATI.Services.Common.Sql
             {
                 reader?.Dispose();
                 LogWithParameters(e, procedureName, metricEntity, parameters);
-                return new OperationResult<T>(ActionStatus.InternalServerError, e.Message);
+                return new OperationResult<T>(e);
             }
         }
 

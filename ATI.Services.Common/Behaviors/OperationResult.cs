@@ -21,7 +21,7 @@ namespace ATI.Services.Common.Behaviors
         /// <summary>
         /// Статус действия с объектом.
         /// </summary>
-        public ActionStatus ActionStatus { get; protected set; }
+        public ActionStatus ActionStatus { get; protected set; }        
 
         public OperationResult(ActionStatus actionStatus)
         {
@@ -75,6 +75,18 @@ namespace ATI.Services.Common.Behaviors
             Details = operationResult.Details;
         }
 
+        public OperationResult(Exception exception)
+        {
+            ActionStatus = ActionStatus.InternalServerError;
+            Errors.Add(new OperationError(ActionStatus, exception.Message));
+            Details.Add(ExceptionKey, exception);
+        }
+
+        public static readonly string ExceptionKey = "ExceptionKey";
+        public Exception Exception => Details.TryGetValue(ExceptionKey, out var exception)
+                                         ? exception as Exception 
+                                         : null;
+        
         /// <summary>
         /// Выводит все сообщения об ошибках, разделенных пустой строкой.
         /// </summary>
@@ -127,7 +139,7 @@ namespace ATI.Services.Common.Behaviors
     public class OperationResult<TValue> : OperationResult
     {
         /// <summary>
-        /// Возвращает или задает флаг, указывающий, успешно ли была выполнена операция.
+        /// Возвращает флаг, указывающий, успешно ли была выполнена операция и проверяет что значение не равно null        
         /// </summary>
         public new bool Success => ActionStatus == ActionStatus.Ok && Value != null &&
                                    (!UseCountSuccessCondition || !ValueIsArray || ((ICollection)Value).Count != 0);
@@ -215,5 +227,8 @@ namespace ATI.Services.Common.Behaviors
         public OperationResult(OperationError operationError) : base(operationError)
         {
         }
+
+        public OperationResult(Exception exception) : base(exception)
+        { }
     }
 }

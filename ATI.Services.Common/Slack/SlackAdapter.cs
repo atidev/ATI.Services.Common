@@ -54,7 +54,7 @@ namespace ATI.Services.Common.Slack
             catch (Exception e)
             {
                 _logger.ErrorWithObject(e, new { Alert = alert });
-                return new OperationResult(ActionStatus.InternalServerError);
+                return new OperationResult(e);
             }
         }
     }
