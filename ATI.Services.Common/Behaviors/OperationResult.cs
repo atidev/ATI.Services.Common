@@ -73,19 +73,17 @@ namespace ATI.Services.Common.Behaviors
             ActionStatus = operationResult.ActionStatus;
             Errors = operationResult.Errors;
             Details = operationResult.Details;
+            Exception = operationResult.Exception;
         }
 
         public OperationResult(Exception exception)
         {
             ActionStatus = ActionStatus.InternalServerError;
             Errors.Add(new OperationError(ActionStatus, exception.Message));
-            Details.Add(ExceptionKey, exception);
+            Exception = exception;
         }
-
-        public static readonly string ExceptionKey = "ExceptionKey";
-        public Exception Exception => Details.TryGetValue(ExceptionKey, out var exception)
-                                         ? exception as Exception 
-                                         : null;
+        
+        public Exception Exception { get; protected set; }
         
         /// <summary>
         /// Выводит все сообщения об ошибках, разделенных пустой строкой.
