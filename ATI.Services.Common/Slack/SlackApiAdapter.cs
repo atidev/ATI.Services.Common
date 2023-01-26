@@ -87,7 +87,7 @@ public class SlackApiAdapter
         catch (Exception e)
         {
             _logger.ErrorWithObject(e, new {Body = requestBody});
-            return new OperationResult<TResponse>(ActionStatus.InternalServerError);
+            return new OperationResult<TResponse>(e);
         }
     }
 }

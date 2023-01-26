@@ -123,7 +123,7 @@ namespace ATI.Services.Common.Caching.Redis
             catch (Exception e)
             {
                 _logger.ErrorWithObject(e, new {host, port, master});
-                return new OperationResult(ActionStatus.InternalServerError);
+                return new OperationResult(e);
             }
         }
 

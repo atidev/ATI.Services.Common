@@ -374,7 +374,7 @@ namespace ATI.Services.Common.Tracing
                 _logger.LogWithObject(_logLevelOverride(LogLevel.Error),
                                       e,
                                       logObjects: new { MetricName = metricName, FullUri = fullUri, Model = model, Headers = headers });
-                return new OperationResult<HttpResponseMessage<TResult>>(ActionStatus.InternalServerError);
+                return new OperationResult<HttpResponseMessage<TResult>>(e);
             }
         }
 
@@ -425,7 +425,7 @@ namespace ATI.Services.Common.Tracing
                     _logger.LogWithObject(_logLevelOverride(LogLevel.Error),
                                           e,
                                           logObjects: new { Method = methodName, Message = message });
-                    return new OperationResult<TResult>(ActionStatus.InternalServerError);
+                    return new OperationResult<TResult>(e);
                 }
             }
         }
@@ -471,7 +471,7 @@ namespace ATI.Services.Common.Tracing
                     _logger.LogWithObject(_logLevelOverride(LogLevel.Error),
                                           e,
                                           logObjects: new { Method = methodName, Message = message });
-                    return new OperationResult<string>(ActionStatus.InternalServerError);
+                    return new OperationResult<string>(e);
                 }
             }
         }
