@@ -10,9 +10,9 @@ namespace ATI.Services.Common.Caching.LocalCache
 {
     [PublicAPI]
     [InitializeOrder(Order = InitializeOrder.Fourth)]
-    public abstract class LocalCache<T> : ILocalCache
-        where T : class
+    public abstract class LocalCache<T> : ILocalCache where T : class
     {
+        private readonly bool _requiredToStartService;
         private readonly string _typeName;
         private readonly ILogger _logger;
         private readonly TimeSpan _reloadPeriodAfterInitialize;
@@ -21,15 +21,18 @@ namespace ATI.Services.Common.Caching.LocalCache
         private bool _initialized;
         private T _value;
 
-        protected LocalCache(TimeSpan? reloadPeriodAfterInitialize = null, TimeSpan? reloadPeriodOnInitialize = null)
+        protected LocalCache(TimeSpan? reloadPeriodAfterInitialize = null,
+                             TimeSpan? reloadPeriodOnInitialize = null,
+                             bool requiredToStartService = false)
         {
+            _requiredToStartService = requiredToStartService;
             _typeName = GetType().Name;
             _logger = LogManager.GetLogger(_typeName);
             _reloadPeriodAfterInitialize = reloadPeriodAfterInitialize ?? TimeSpan.FromMinutes(15);
             _reloadPeriodOnInitialize = reloadPeriodOnInitialize ?? TimeSpan.FromSeconds(5);
             _reloadTimer = null;
         }
-
+        
         public async Task<bool> TryReloadAsync()
         {
             try
@@ -46,7 +49,7 @@ namespace ATI.Services.Common.Caching.LocalCache
             }
             catch (Exception exception)
             {
-                _logger.Error(exception, $"Не смогли сделать {_typeName}.{nameof(TryReloadAsync)}");
+                _logger.Error(exception, $"Invoking {_typeName}.{nameof(TryReloadAsync)} failed");
                 return false;
             }
         }
@@ -71,22 +74,26 @@ namespace ATI.Services.Common.Caching.LocalCache
             if (await TryReloadAsync())
             {
                 _initialized = true;
+                // ReSharper disable once AsyncVoidLambda
                 _reloadTimer = new Timer(async _ => await TryReloadAsync(), null, _reloadPeriodAfterInitialize, _reloadPeriodAfterInitialize);
+                return;
             }
-            else
-            {
-                await Task.Factory.StartNew(async () =>
-                {
-                    do
-                    {
-                        LogManager.GetLogger(nameof(LocalCache<T>)).Trace("INIT_ Cache " + typeof(T).Name + ": reload async returned false. Trying it again.");
-                        await Task.Delay(_reloadPeriodOnInitialize);
-                    } while (await TryReloadAsync() == false);
 
-                    _initialized = true;
-                    _reloadTimer = new Timer(async _ => await TryReloadAsync(), null, _reloadPeriodAfterInitialize, _reloadPeriodAfterInitialize);
-                });
-            }
+            if (_requiredToStartService)
+                throw new InvalidOperationException($"{_typeName} required to start service, but initialize failed.");
+
+            await Task.Factory.StartNew(async () =>
+            {
+                do
+                {
+                    LogManager.GetLogger(nameof(LocalCache<T>)).Trace("INIT_ Cache " + typeof(T).Name + ": reload async returned false. Trying it again.");
+                    await Task.Delay(_reloadPeriodOnInitialize);
+                } while (await TryReloadAsync() == false);
+
+                _initialized = true;
+                // ReSharper disable once AsyncVoidLambda
+                _reloadTimer = new Timer(async _ => await TryReloadAsync(), null, _reloadPeriodAfterInitialize, _reloadPeriodAfterInitialize);
+            });
             _logger.Trace($"{_typeName}.InitializeAsync finished");
         }
 
