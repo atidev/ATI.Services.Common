@@ -61,6 +61,13 @@ namespace ATI.Services.Common.Behaviors
             Errors.Add(operationError);
             ActionStatus = operationError.ActionStatus;
         }
+        
+        public OperationResult(OperationError operationError, Dictionary<string, object> details)
+        {
+            Errors.Add(operationError);
+            ActionStatus = operationError.ActionStatus;
+            Details = details;
+        }
 
         public OperationResult(ActionStatus actionStatus, List<OperationError> errors)
         {
@@ -223,6 +230,10 @@ namespace ATI.Services.Common.Behaviors
         /// </summary>
         /// <param name="operationError"></param>
         public OperationResult(OperationError operationError) : base(operationError)
+        {
+        }
+        
+        public OperationResult(OperationError operationError, Dictionary<string, object> details) : base(operationError, details)
         {
         }
 
