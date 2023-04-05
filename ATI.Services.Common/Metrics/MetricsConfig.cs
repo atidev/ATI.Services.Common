@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using JetBrains.Annotations;
-using Prometheus.Advanced;
+﻿using JetBrains.Annotations;
 
 namespace ATI.Services.Common.Metrics
 {
@@ -9,15 +7,10 @@ namespace ATI.Services.Common.Metrics
     {
         public static void Configure()
         {
-            DefaultCollectorRegistry.Instance.Clear();
-
-            var customCollectors = new List<IOnDemandCollector>
-            {
-                new SystemMetricsCollector(),
-                new ExceptionsMetricsCollector()
-            };
-
-            DefaultCollectorRegistry.Instance.RegisterOnDemandCollectors(customCollectors);
+            var exceptionCollector = new ExceptionsMetricsCollector();
+            exceptionCollector.RegisterMetrics(Prometheus.Metrics.DefaultRegistry);
+            
+            Prometheus.Metrics.DefaultRegistry.AddBeforeCollectCallback(exceptionCollector.UpdateMetrics);
         }
     }
 }

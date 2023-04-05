@@ -136,8 +136,11 @@ namespace ATI.Services.Common.Metrics
             _logSource = logSource;
 
             if (summaryServiceName != null)
-                Summary = Prometheus.Metrics.CreateSummary(summaryServiceName, string.Empty, summaryLabelNames, null,
-                    TimeSpan.FromMinutes(1), null, null);
+            {
+                var options = new SummaryConfiguration { MaxAge = TimeSpan.FromMinutes(1) };
+                Summary = Prometheus.Metrics.CreateSummary(summaryServiceName, string.Empty, summaryLabelNames, options);
+            }
+                
         }
 
         private MetricsTracingFactory(
@@ -152,8 +155,10 @@ namespace ATI.Services.Common.Metrics
             _logSource = logSource;
 
             if (summaryServiceName != null)
-                Summary = Prometheus.Metrics.CreateSummary(summaryServiceName, string.Empty, summaryLabelNames, null,
-                    TimeSpan.FromMinutes(1), null, null);
+            {
+                var options = new SummaryConfiguration { MaxAge = TimeSpan.FromMinutes(1) };
+                Summary = Prometheus.Metrics.CreateSummary(summaryServiceName, string.Empty, summaryLabelNames, options);
+            }
         }
 
         public IDisposable CreateTracingWithLoggingMetricsTimer(
