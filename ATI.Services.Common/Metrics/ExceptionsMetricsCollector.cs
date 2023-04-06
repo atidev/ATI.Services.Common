@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.Tracing;
-using ATI.Services.Common.Tracing;
 using Microsoft.Extensions.Configuration;
 using Prometheus;
 using ConfigurationManager = ATI.Services.Common.Behaviors.ConfigurationManager;
@@ -22,7 +21,7 @@ namespace ATI.Services.Common.Metrics
         private string ServiceName { get; }
         public ExceptionsMetricsCollector()
         {
-            ServiceName = ConfigurationManager.GetSection(nameof(TracingOptions)).Get<TracingOptions>().MetricsServiceName;
+            ServiceName = ConfigurationManager.GetSection(nameof(MetricsOptions)).Get<MetricsOptions>().MetricsServiceName;
         }
 
         protected override void OnEventSourceCreated(EventSource eventSource)
@@ -41,7 +40,6 @@ namespace ATI.Services.Common.Metrics
             var exceptionType = eventData.Payload[ExceptionNameIndex].ToString();
             _exceptionCounters.AddOrUpdate(exceptionType, _ => 1, (_, oldValue) => oldValue + 1);
         }
-
 
         public void RegisterMetrics(CollectorRegistry registry)
         {

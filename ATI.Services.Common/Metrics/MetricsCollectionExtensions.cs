@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Prometheus;
 
@@ -26,13 +25,6 @@ namespace ATI.Services.Common.Metrics
         
         private static async Task GetMetrics(HttpContext httpContext)
         {
-            // var syncIoFeature = httpContext.Features.Get<IHttpBodyControlFeature>();
-            //
-            // if (syncIoFeature != null)
-            // {
-            //     syncIoFeature.AllowSynchronousIO = true;
-            // }
-
             var response = httpContext.Response;
 
             response.ContentType = PrometheusConstants.TextContentType;

@@ -34,7 +34,7 @@ namespace ATI.Services.Common.Logging
             }
         }
         
-        public static void ConfigureTracingMetricsLoggers()
+        public static void ConfigureMetricsLoggers()
         {
             var loggingConfiguration = LogManager.Configuration;
 

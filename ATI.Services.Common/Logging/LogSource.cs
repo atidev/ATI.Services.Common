@@ -13,6 +13,6 @@ namespace ATI.Services.Common.Logging
         Sql = 4,
         Controller = 5, 
         Repository = 6,
-        Tracing = 7
+        Metrics = 7
     }
 }
