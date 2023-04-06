@@ -9,7 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>atisu.services.common</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Version>2.0.0-dev</Version>
+    <Version>1.0.0</Version>
   </PropertyGroup>
   <PropertyGroup>
     <NoWarn>1701;1702;CS1591;CS1571;CS1573;CS1574</NoWarn>
