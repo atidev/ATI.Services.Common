@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -36,16 +37,28 @@ namespace ATI.Services.Common.Tracing
         {
             Config = config;
             _logger = LogManager.GetLogger(Config.ServiceName);
-            _httpClient = CreateHttpClient(config.Headers);
+            _httpClient = CreateHttpClient(config.Headers, config.PropagateActivity);
             _metricsTracingFactory = MetricsTracingFactory.CreateTracingFactory(config.ServiceName);
             _logLevelOverride = Config.LogLevelOverride;
         }
 
         public TracedHttpClientConfig Config { get; }
 
-        private HttpClient CreateHttpClient(Dictionary<string, string> additionalHeaders)
+        private HttpClient CreateHttpClient(Dictionary<string, string> additionalHeaders, bool propagateActivity = true)
         {
-            var httpClient = new HttpClient { Timeout = Config.Timeout };
+            HttpClient httpClient;
+            if (propagateActivity)
+            {
+                httpClient = new HttpClient() { Timeout = Config.Timeout };
+            }
+            else
+            {
+                httpClient = new HttpClient(new SocketsHttpHandler
+                {
+                    ActivityHeadersPropagator = DistributedContextPropagator.CreateNoOutputPropagator()
+                }) { Timeout = Config.Timeout };
+            }
+
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             if (!ServiceVariables.ServiceAsClientName.IsNullOrEmpty() &&
                 !ServiceVariables.ServiceAsClientHeaderName.IsNullOrEmpty())

@@ -19,11 +19,13 @@ namespace ATI.Services.Common.Tracing
             SerializerType serializerType,
             bool addCultureToRequest = true,
             JsonSerializerSettings newtonsoftSettings = null,
-            JsonSerializerOptions systemTextJsonOptions = null)
+            JsonSerializerOptions systemTextJsonOptions = null,
+            bool propagateActivity = true)
         {
             ServiceName = serviceName;
             Timeout = timeout;
             AddCultureToRequest = addCultureToRequest;
+            PropagateActivity = true;
             SetSerializer(serializerType, newtonsoftSettings, systemTextJsonOptions);
         }
 
@@ -34,6 +36,7 @@ namespace ATI.Services.Common.Tracing
         
         public Dictionary<string, string> Headers { get; set; } = new();
         public List<string> HeadersToProxy { get; set; } = new();
+        public bool PropagateActivity { get; set; }
 
         public Func<LogLevel, LogLevel> LogLevelOverride { get; set; } = level => level;
 

@@ -29,7 +29,8 @@ public class SlackApiAdapter
     public SlackApiAdapter(SlackAdapterOptions options)
     {
         _slackOptions = options;
-        var config = new TracedHttpClientConfig(ServiceName, TimeSpan.FromSeconds(5), SerializerType.Newtonsoft);
+        var config = new TracedHttpClientConfig(ServiceName, TimeSpan.FromSeconds(5), SerializerType.Newtonsoft,
+            propagateActivity: false);
         _httpClient = new TracingHttpClientWrapper(config);
     }
 
