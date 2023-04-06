@@ -3,26 +3,25 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using ATI.Services.Common.Behaviors;
-using ATI.Services.Common.Logging;
-using System.Threading.Tasks;
 using System.Text;
+using System.Threading.Tasks;
+using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Context;
-using NLog;
 using ATI.Services.Common.Extensions;
 using ATI.Services.Common.Localization;
-using ATI.Services.Common.Metrics.HttpWrapper;
+using ATI.Services.Common.Logging;
 using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
+using NLog;
 
-namespace ATI.Services.Common.Metrics
+namespace ATI.Services.Common.Metrics.ExternalHttpWrapper
 {
     /// <summary>
     /// Для удобства лучше использовать ConsulMetricsHttpClientWrapper из ATI.Services.Consul
     /// Он внутри себя инкапсулирует ConsulServiceAddress и MetricsFactory
     /// </summary>
     [PublicAPI]
-    public class MetricsHttpClientWrapper
+    public class MetricsExternalHttpClientWrapper
     {
         private readonly ILogger _logger;
         private readonly HttpClient _httpClient;
@@ -32,16 +31,16 @@ namespace ATI.Services.Common.Metrics
         private const string LogMessageTemplate =
             "Сервис:{0} в ответ на запрос [HTTP {1} {2}] вернул ответ с статус кодом {3}.";
 
-        public MetricsHttpClientWrapper(MetricsHttpClientConfig config)
+        public MetricsExternalHttpClientWrapper(MetricsExternalHttpClientConfig config)
         {
             Config = config;
             _logger = LogManager.GetLogger(Config.ServiceName);
             _httpClient = CreateHttpClient(config.Headers);
-            _metricsFactory = MetricsFactory.CreateHttpMetricsFactory();
+            _metricsFactory = MetricsFactory.CreateExternalHttpMetricsFactory();
             _logLevelOverride = Config.LogLevelOverride;
         }
 
-        public MetricsHttpClientConfig Config { get; }
+        public MetricsExternalHttpClientConfig Config { get; }
 
         private HttpClient CreateHttpClient(Dictionary<string, string> additionalHeaders)
         {
@@ -509,7 +508,7 @@ namespace ATI.Services.Common.Metrics
             public Dictionary<string, string> Headers { get; }
             private string ContentType { get; }
 
-            internal HttpRequestMessage ToRequestMessage(MetricsHttpClientConfig config)
+            internal HttpRequestMessage ToRequestMessage(MetricsExternalHttpClientConfig config)
             {
                 var msg = new HttpRequestMessage(Method, FullUri);
 

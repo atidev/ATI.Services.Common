@@ -140,10 +140,10 @@ namespace ATI.Services.Common.Metrics
                 labels);
         }
 
-        public static MetricsFactory CreateHttpMetricsFactory(TimeSpan? longRequestTime = null)
+        public static MetricsFactory CreateExternalHttpMetricsFactory(TimeSpan? longRequestTime = null)
         {
             return new MetricsFactory(
-                LogSource.Metrics, 
+                LogSource.ExternalHttpClient, 
                 null, 
                 longRequestTime ?? _defaultLongRequestTime);
         }

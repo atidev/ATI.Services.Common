@@ -8,12 +8,12 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using NLog;
 
-namespace ATI.Services.Common.Metrics.HttpWrapper
+namespace ATI.Services.Common.Metrics.ExternalHttpWrapper
 {
     [PublicAPI]
-    public class MetricsHttpClientConfig
+    public class MetricsExternalHttpClientConfig
     {
-        public MetricsHttpClientConfig(
+        public MetricsExternalHttpClientConfig(
             string serviceName,
             TimeSpan timeout,
             SerializerType serializerType,
