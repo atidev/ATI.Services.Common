@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
 using ATI.Services.Common.Metrics;
-using ATI.Services.Common.Metrics.ExternalHttpWrapper;
+using ATI.Services.Common.Metrics.HttpWrapper;
 using ATI.Services.Common.Serializers;
 using JetBrains.Annotations;
 using NLog;
@@ -17,15 +17,15 @@ namespace ATI.Services.Common.Slack
     public class SlackAdapter
     {
         private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
-        private readonly MetricsExternalHttpClientWrapper _externalHttpClient;
+        private readonly MetricsHttpClientWrapper _httpClient;
         private const string ServiceName = "slack";
         private readonly SlackAdapterOptions _slackOptions;
 
         public SlackAdapter(SlackAdapterOptions options)
         {
             _slackOptions = options;
-            var config = new MetricsExternalHttpClientConfig(ServiceName, TimeSpan.FromSeconds(5), SerializerType.Newtonsoft);
-            _externalHttpClient = new MetricsExternalHttpClientWrapper(config);
+            var config = new MetricsHttpClientConfig(ServiceName, TimeSpan.FromSeconds(5), SerializerType.Newtonsoft);
+            _httpClient = new MetricsHttpClientWrapper(config);
         }
         
         public async Task<OperationResult> SendAlertAsync(string alert)
@@ -42,7 +42,7 @@ namespace ATI.Services.Common.Slack
                     Text = alert,
                     Username = _slackOptions.BotName
                 };
-                var response = await _externalHttpClient.PostAsync(
+                var response = await _httpClient.PostAsync(
                     _slackOptions.SlackAddress,
                     "SlackAlert",
                     _slackOptions.WebHookUri,

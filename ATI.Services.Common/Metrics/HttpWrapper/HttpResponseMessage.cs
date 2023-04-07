@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 
-namespace ATI.Services.Common.Metrics.ExternalHttpWrapper
+namespace ATI.Services.Common.Metrics.HttpWrapper
 {
     public class HttpResponseMessage<T>
     {

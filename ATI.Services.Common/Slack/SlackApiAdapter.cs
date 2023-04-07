@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
 using ATI.Services.Common.Metrics;
-using ATI.Services.Common.Metrics.ExternalHttpWrapper;
+using ATI.Services.Common.Metrics.HttpWrapper;
 using ATI.Services.Common.Serializers;
 using JetBrains.Annotations;
 using NLog;
@@ -22,7 +22,7 @@ public class SlackApiAdapter
     private const string SlackApiMetric = "SlackApi";
     private const string ServiceName = "Slack";
 
-    private readonly MetricsExternalHttpClientWrapper _externalHttpClient;
+    private readonly MetricsHttpClientWrapper _httpClient;
     private readonly SlackAdapterOptions _slackOptions;
 
     private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
@@ -30,8 +30,8 @@ public class SlackApiAdapter
     public SlackApiAdapter(SlackAdapterOptions options)
     {
         _slackOptions = options;
-        var config = new MetricsExternalHttpClientConfig(ServiceName, TimeSpan.FromSeconds(5), SerializerType.Newtonsoft);
-        _externalHttpClient = new MetricsExternalHttpClientWrapper(config);
+        var config = new MetricsHttpClientConfig(ServiceName, TimeSpan.FromSeconds(5), SerializerType.Newtonsoft);
+        _httpClient = new MetricsHttpClientWrapper(config);
     }
 
     /// <summary>
@@ -82,7 +82,7 @@ public class SlackApiAdapter
 
             var headers = new Dictionary<string, string> {{"Authorization", $"Bearer {_slackOptions.BotAccessToken}"}};
 
-            return await _externalHttpClient.PostAsync<TRequest, TResponse>(
+            return await _httpClient.PostAsync<TRequest, TResponse>(
                 SlackApiBaseAddress, SlackApiMetric, apiTemplate, requestBody, headers);
         }
         catch (Exception e)

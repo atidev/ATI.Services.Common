@@ -14,14 +14,14 @@ using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
 using NLog;
 
-namespace ATI.Services.Common.Metrics.ExternalHttpWrapper
+namespace ATI.Services.Common.Metrics.HttpWrapper
 {
     /// <summary>
     /// Для удобства лучше использовать ConsulMetricsHttpClientWrapper из ATI.Services.Consul
     /// Он внутри себя инкапсулирует ConsulServiceAddress и MetricsFactory
     /// </summary>
     [PublicAPI]
-    public class MetricsExternalHttpClientWrapper
+    public class MetricsHttpClientWrapper
     {
         private readonly ILogger _logger;
         private readonly HttpClient _httpClient;
@@ -31,7 +31,7 @@ namespace ATI.Services.Common.Metrics.ExternalHttpWrapper
         private const string LogMessageTemplate =
             "Сервис:{0} в ответ на запрос [HTTP {1} {2}] вернул ответ с статус кодом {3}.";
 
-        public MetricsExternalHttpClientWrapper(MetricsExternalHttpClientConfig config)
+        public MetricsHttpClientWrapper(MetricsHttpClientConfig config)
         {
             Config = config;
             _logger = LogManager.GetLogger(Config.ServiceName);
@@ -40,7 +40,7 @@ namespace ATI.Services.Common.Metrics.ExternalHttpWrapper
             _logLevelOverride = Config.LogLevelOverride;
         }
 
-        public MetricsExternalHttpClientConfig Config { get; }
+        public MetricsHttpClientConfig Config { get; }
 
         private HttpClient CreateHttpClient(Dictionary<string, string> additionalHeaders)
         {
@@ -508,7 +508,7 @@ namespace ATI.Services.Common.Metrics.ExternalHttpWrapper
             public Dictionary<string, string> Headers { get; }
             private string ContentType { get; }
 
-            internal HttpRequestMessage ToRequestMessage(MetricsExternalHttpClientConfig config)
+            internal HttpRequestMessage ToRequestMessage(MetricsHttpClientConfig config)
             {
                 var msg = new HttpRequestMessage(Method, FullUri);
 
