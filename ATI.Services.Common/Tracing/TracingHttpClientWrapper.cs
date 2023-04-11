@@ -49,16 +49,17 @@ namespace ATI.Services.Common.Tracing
             HttpClient httpClient;
             if (propagateActivity)
             {
-                httpClient = new HttpClient() { Timeout = Config.Timeout };
+                httpClient = new HttpClient();
             }
             else
             {
                 httpClient = new HttpClient(new SocketsHttpHandler
                 {
                     ActivityHeadersPropagator = DistributedContextPropagator.CreateNoOutputPropagator()
-                }) { Timeout = Config.Timeout };
+                });
             }
 
+            httpClient.Timeout = Config.Timeout;
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             if (!ServiceVariables.ServiceAsClientName.IsNullOrEmpty() &&
                 !ServiceVariables.ServiceAsClientHeaderName.IsNullOrEmpty())
