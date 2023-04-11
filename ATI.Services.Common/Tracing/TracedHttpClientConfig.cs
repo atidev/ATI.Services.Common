@@ -25,7 +25,7 @@ namespace ATI.Services.Common.Tracing
             ServiceName = serviceName;
             Timeout = timeout;
             AddCultureToRequest = addCultureToRequest;
-            PropagateActivity = true;
+            PropagateActivity = propagateActivity;
             SetSerializer(serializerType, newtonsoftSettings, systemTextJsonOptions);
         }
 
