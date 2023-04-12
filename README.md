@@ -93,39 +93,9 @@
 ```
 
 ---
-### Tracing
-*внимание! Трейсинг работает ТОЛЬКО вкупе с системой метрик, потому необходимо выполнить инициализацию метрик.
-добавляем в файл сеттингов 
-```json
- "TracingOptions": {
-    "Enabled": true,
-    "Rate": 0,
-    "TraceEndpoint": "http://zip-test-1.ri.domain:9411/",
-    "ServiceName": "ATI.Notifications",
-    "MetricsServiceName": "notifications" //переопределяем название сервиса для метрик
-  }
-```
-В `Startup.cs` в методе `ConfigureServices(IServiceCollection services)` вызывваем 
-```csharp
- services.AddTracing(ConfigurationManager.ConfigurationRoot.GetSection("TracingOptions"));
-```
-и в `Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime lifetime)`
-вызываем 
-```csharp
- app.UseTracing();
-```
-Конфигурим `TracingOptions`, добавляем в IoC-контейнер `ZipkinManager`.
-Инициализируем трейсинг, вызвав следующий код `Program.cs`:
-```csharp
- var tracingOptions = serviceProvider.GetRequiredService<IOptions<TracingOptions>>().Value;
-                var zipkinManager = serviceProvider.GetRequiredService<ZipkinManager>();
-                zipkinManager.Init(tracingOptions);
-```
-
----
 ### Метрики
 Добавляем метрики в `Startup.cs` : `services.AddMetrics();`
-Он автоматически добавит: `TracingOptions, ZipkinManager`
+Он автоматически добавит: `MetricsOptions`
 
 Так как Prometheus собирает метрики через консул, добавляем тег в конфиг консула `metrics-port-*портприложения*`.
 Добавляем [endpoint](http://stash.ri.domain:7990/projects/AS/repos/ati.firmservicecore/browse/ATI.FirmService.Core.Web.Api/Controllers/MetricsController.cs) для сбора метрик.
@@ -140,7 +110,8 @@
 "MetricsOptions": {
     "LabelsAndHeaders": {
       "Лейбл метрики" : "Header HTTP-запроса"
-    }
+    },
+    "MetricsServiceName": "notifications" //переопределяем название сервиса для метрик
   },
 ```
 Ключ словаря - лейбл метрики, значение - Header HTTP-запроса.
@@ -151,27 +122,16 @@
 
 Собственно сбор:
 На метод котроллера вешаем `MeasureAttribute`, в который передаем название сущности, с которой работает метод.
-В остальных файлах создаем нужный экземпляр `MetricsTracingFactory` оборачиваем методы в using c `CreateMetricsTimer`:
+В остальных файлах создаем нужный экземпляр `MetricsFactory` оборачиваем методы в using c `CreateMetricsTimer`:
 ```csharp
- private readonly MetricsTracingFactory _metricsFactory = MetricsTracingFactory.CreateRepositoryMetricsFactory(RepositoryName));
+ private readonly MetricsFactory _metricsFactory = MetricsFactory.CreateRepositoryMetricsFactory(RepositoryName));
   using (_metricsFactory.CreateMetricsTimer(EntityName))
             {
               Entity entity = await DoSomething();
             }
 ```
-HTTP запросы к другим сервисам нужно оборачивать с трейсингом, например:
-```csharp
- HttpClient _httpClient = CreateSomeHttpClient();
- MetricsTracingFactory _metricsTracingFactory = MetricsTracingFactory.CreateTracingFactory(httpServiceName);
- Func<Dictionary<string, string>> GetTracingInfo(string url, string method, string body) =>
-            TraceHelper.GetHttpTracingInfo(url, method, body);
-    using (_metricsTracingFactory.CreateTracingTimer(GetTracingInfo(requestUri, HttpMethod.Post.Method, body)))
-            {
-                return await _httpClient.PostAsync(requestUri, body);
-            }
-```
 Для удобства был написан `ConsulMetricsHttpClientWrapper`. <br/>
-Включает в себя `ConsulServiceAddress`, `TracingHttpClientWrapper` и `MetricsTracingFactory`. <br/>
+Включает в себя `ConsulServiceAddress`, `MetricsHttpClientWrapper` и `MetricsFactory`. <br/>
 Для инициализации нужно передать настройки сервиса, отнаследовав их от `BaseServiceOptions`, <br/>
 `adapterName` (будет отображаться в метриках), <br/>
 `serializer` (необязательный параметр, по умолчанию - `SnakeCase`) <br/>

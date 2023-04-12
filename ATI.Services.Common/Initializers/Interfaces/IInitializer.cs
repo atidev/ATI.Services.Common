@@ -9,9 +9,8 @@ namespace ATI.Services.Common.Initializers.Interfaces
     /// для задания порядка инициализации используйте аттрибут <see cref="InitializeOrderAttribute"/>
     /// Имеющийся порядок на данный момент:
     /// ATI.Services.Authorization.AuthorizationInitializer - InitializeOrder.First
-    /// <see cref="Tracing.TracingInitializer"/> -  InitializeOrder.First
     /// <see cref="ServiceVariablesInitializer"/> -  InitializeOrder.First
-    /// <see cref="MetricsInitializer"/> -  InitializeOrder.Second
+    /// <see cref="MetricsInitializer"/> -  InitializeOrder.First
     /// <see cref="RedisInitializer"/> -  InitializeOrder.Third
     /// <see cref="TwoLevelCacheInitializer"/> -  InitializeOrder.Third
     /// <see cref="Caching.LocalCache.LocalCache{T}"/> -  InitializeOrder.Fourth

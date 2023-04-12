@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ATI.Services.Common.Extensions;
 using ATI.Services.Common.Initializers;
-using ATI.Services.Common.Tracing;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -16,14 +15,23 @@ namespace ATI.Services.Common.Metrics
     {
         public static void AddMetrics(this IServiceCollection services)
         {
-            services.ConfigureByName<TracingOptions>();
-            services.AddSingleton<ZipkinManager>();
+            services.ConfigureByName<MetricsOptions>();
             services.AddTransient<MetricsInitializer>();
-            MetricsConfig.Configure();
+            
+            InitializeExceptionsMetrics();
 
             MetricsLabelsAndHeaders.LabelsStatic = ConfigurationManager.GetSection(nameof(MetricsOptions))?.Get<MetricsOptions>()?.LabelsAndHeaders ?? new Dictionary<string, string>();
             MetricsLabelsAndHeaders.UserLabels = MetricsLabelsAndHeaders.LabelsStatic.Keys.ToArray();
             MetricsLabelsAndHeaders.UserHeaders = MetricsLabelsAndHeaders.LabelsStatic.Values.ToArray();
+        }
+
+        private static void InitializeExceptionsMetrics()
+        {
+            var exceptionCollector = new ExceptionsMetricsCollector();
+            var registry = Prometheus.Metrics.DefaultRegistry;
+            
+            exceptionCollector.RegisterMetrics(registry);
+            registry.AddBeforeCollectCallback(exceptionCollector.UpdateMetrics);
         }
 
         public static void UseMetrics(this IApplicationBuilder app)

@@ -1,24 +1,21 @@
 using System.Threading.Tasks;
 using ATI.Services.Common.Initializers.Interfaces;
 using ATI.Services.Common.Metrics;
-using ATI.Services.Common.Tracing;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 
 namespace ATI.Services.Common.Initializers
 {
     [UsedImplicitly]
-    [InitializeOrder(Order = InitializeOrder.Second)]
+    [InitializeOrder(Order = InitializeOrder.First)]
     public class MetricsInitializer : IInitializer
     {
         private static bool _initialized;
-        private readonly ZipkinManager _zipkinManager;
-        private readonly TracingOptions _tracingOptions;
+        private readonly MetricsOptions _metricsOptions;
 
-        public MetricsInitializer(ZipkinManager zipkinManager, IOptions<TracingOptions> tracingOptions)
+        public MetricsInitializer(IOptions<MetricsOptions> metricsOptions)
         {
-            _zipkinManager = zipkinManager;
-            _tracingOptions = tracingOptions.Value;
+            _metricsOptions = metricsOptions.Value;
         }
 
         public Task InitializeAsync()
@@ -28,12 +25,9 @@ namespace ATI.Services.Common.Initializers
                 return Task.CompletedTask;
             }
             
-            _zipkinManager.Init(_tracingOptions);
-            MeasureAttribute.Initialize(_zipkinManager);
-            
-            if (_tracingOptions.MetricsServiceName != null )
+            if (_metricsOptions.MetricsServiceName != null )
             {
-                MetricsTracingFactory.Init(_tracingOptions.MetricsServiceName, _tracingOptions.DefaultLongRequestTime);
+                MetricsFactory.Init(_metricsOptions.MetricsServiceName, _metricsOptions.DefaultLongRequestTime);
             }
             
             _initialized = true;
