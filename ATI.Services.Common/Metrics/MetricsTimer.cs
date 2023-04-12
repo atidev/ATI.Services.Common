@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using ATI.Services.Common.Logging;
-using Newtonsoft.Json;
+using ATI.Services.Common.Serializers;
 using NLog;
 using Prometheus;
 
@@ -17,6 +17,7 @@ namespace ATI.Services.Common.Metrics
         private readonly TimeSpan? _longRequestTime;
         private readonly object _context;
         private readonly LogSource? _logSource;
+        private readonly ISerializer _serializer;
 
         /// <summary>
         /// Конструктор таймера метрик, который считает только метрику (время выполнения + счётчик) для прометеуса
@@ -34,10 +35,13 @@ namespace ATI.Services.Common.Metrics
 
             _stopwatch = new Stopwatch();
             if (startTimerImmediately)
+            {
                 _stopwatch.Start();
+            }
             _longRequestTime = longRequestTime;
             _context = context;
             _logSource = logSource;
+            _serializer = SerializerFactory.GetSerializerByType(SerializerType.SystemTextJson);
         }
 
         public void Restart()
@@ -52,39 +56,49 @@ namespace ATI.Services.Common.Metrics
 
         public void Dispose()
         {
-            if (_summary != null)
+            if (_summary == null)
             {
-                if (_summaryLabels == null)
-                {
-                    _summary.Observe(_stopwatch.ElapsedMilliseconds);
-                }
-                else
-                {
-                    _summary.Labels(_summaryLabels).Observe(_stopwatch.ElapsedMilliseconds);
-                }
-
-                _stopwatch.Stop();
-
-                if (_longRequestTime != null && _stopwatch.Elapsed > _longRequestTime && _context != null &&
-                    _logSource != null)
-                {
-                    Logger.LogWithObject(LogLevel.Warn, null, "Long request WARN.",
-                        new Dictionary<object, object>
-                        {
-                            { "metricSource", _logSource.Value.ToString() },
-                            {
-                                "metricString", JsonConvert.SerializeObject(
-                                    new
-                                    {
-                                        LogSource = _logSource,
-                                        RequestTime = _stopwatch.Elapsed,
-                                        Labels = _summaryLabels,
-                                        Context = _context
-                                    })
-                            }
-                        });
-                }
+                return;
             }
+
+            if (_summaryLabels == null)
+            {
+                _summary.Observe(_stopwatch.ElapsedMilliseconds);
+            }
+            else
+            {
+                _summary.Labels(_summaryLabels).Observe(_stopwatch.ElapsedMilliseconds);
+            }
+
+            _stopwatch.Stop();
+
+            if (_longRequestTime == null
+                || !(_stopwatch.Elapsed > _longRequestTime)
+                || _context == null
+                || _logSource == null)
+            {
+                return;
+            }
+            
+            Logger.LogWithObject(LogLevel.Warn, null, "Long request WARN.", GetContext());
+        }
+
+        private Dictionary<object, object> GetContext()
+        {
+            var metricString = _serializer.Serialize(
+                new
+                {
+                    LogSource = _logSource,
+                    RequestTime = _stopwatch.Elapsed,
+                    Labels = _summaryLabels,
+                    Context = _context
+                });
+
+            return new Dictionary<object, object>
+            {
+                { "metricSource", _logSource.Value.ToString() },
+                { "metricString", metricString }
+            };
         }
     }
 }

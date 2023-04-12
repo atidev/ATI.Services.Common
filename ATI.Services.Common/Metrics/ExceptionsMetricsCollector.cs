@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.Tracing;
-using ATI.Services.Common.Tracing;
 using Microsoft.Extensions.Configuration;
 using Prometheus;
-using Prometheus.Advanced;
 using ConfigurationManager = ATI.Services.Common.Behaviors.ConfigurationManager;
 
 namespace ATI.Services.Common.Metrics
 {
-    public class ExceptionsMetricsCollector : EventListener, IOnDemandCollector
+    public class ExceptionsMetricsCollector : EventListener
     {
         // Да, даже под linux - Microsoft-Windows
         private const string ExceptionSourceName = "Microsoft-Windows-DotNETRuntime";
@@ -23,7 +21,7 @@ namespace ATI.Services.Common.Metrics
         private string ServiceName { get; }
         public ExceptionsMetricsCollector()
         {
-            ServiceName = ConfigurationManager.GetSection(nameof(TracingOptions)).Get<TracingOptions>().MetricsServiceName;
+            ServiceName = ConfigurationManager.GetSection(nameof(MetricsOptions)).Get<MetricsOptions>().MetricsServiceName;
         }
 
         protected override void OnEventSourceCreated(EventSource eventSource)
@@ -43,8 +41,7 @@ namespace ATI.Services.Common.Metrics
             _exceptionCounters.AddOrUpdate(exceptionType, _ => 1, (_, oldValue) => oldValue + 1);
         }
 
-
-        public void RegisterMetrics(ICollectorRegistry registry)
+        public void RegisterMetrics(CollectorRegistry registry)
         {
             _metricFactory = Prometheus.Metrics.WithCustomRegistry(registry);
             _gauge = _metricFactory.CreateGauge(ServiceName + ExceptionsMetricName, "", "machine_name", "exception_type");

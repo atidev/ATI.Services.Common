@@ -3,10 +3,8 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Prometheus;
-using Prometheus.Advanced;
 
 namespace ATI.Services.Common.Metrics
 {
@@ -20,32 +18,20 @@ namespace ATI.Services.Common.Metrics
             return builder.MapGet(MetricsCollectionAddress, MetricsCollectionDelegate);
         }
 
-        private static Task MetricsCollectionDelegate(HttpContext httpContext)
+        private static async Task MetricsCollectionDelegate(HttpContext httpContext)
         {
-            GetMetrics(httpContext);
-            return Task.CompletedTask;
+            await GetMetrics(httpContext);
         }
         
-        private static void GetMetrics(HttpContext httpContext)
+        private static async Task GetMetrics(HttpContext httpContext)
         {
-            var syncIoFeature = httpContext.Features.Get<IHttpBodyControlFeature>();
-
-            if (syncIoFeature != null)
-            {
-                syncIoFeature.AllowSynchronousIO = true;
-            }
-
-            var request = httpContext.Request;
             var response = httpContext.Response;
 
-            var acceptHeaders = request.Headers["Accept"];
-
-            response.ContentType = ScrapeHandler.GetContentType(acceptHeaders);
+            response.ContentType = PrometheusConstants.TextContentType;
             response.StatusCode = (int)HttpStatusCode.OK;
 
-            using var outputStream = response.Body;
-            var collected = DefaultCollectorRegistry.Instance.CollectAll();
-            ScrapeHandler.ProcessScrapeRequest(collected, response.ContentType, outputStream);
+            await using var outputStream = response.Body;
+            await Prometheus.Metrics.DefaultRegistry.CollectAndExportAsTextAsync(outputStream);
         }
     }
 }

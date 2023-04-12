@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
 using ATI.Services.Common.Serializers;
-using ATI.Services.Common.Tracing;
 using NLog;
 using Polly.CircuitBreaker;
 using Polly.Timeout;
@@ -24,8 +22,6 @@ namespace ATI.Services.Common.Caching.Redis
         {
             Serializer = serializer;
         }
-
-        protected Dictionary<string, string> GetTracingInfo(string key) => TraceHelper.GetRedisTracingInfo(Options.ConnectionString, key);
         
         protected async Task<OperationResult> ExecuteAsync(
             Func<Task> func, 

@@ -8,12 +8,12 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using NLog;
 
-namespace ATI.Services.Common.Tracing
+namespace ATI.Services.Common.Metrics.HttpWrapper
 {
     [PublicAPI]
-    public class TracedHttpClientConfig
+    public class MetricsHttpClientConfig
     {
-        public TracedHttpClientConfig(
+        public MetricsHttpClientConfig(
             string serviceName,
             TimeSpan timeout,
             SerializerType serializerType,
@@ -33,7 +33,7 @@ namespace ATI.Services.Common.Tracing
         public string ServiceName { get; init; }
         public TimeSpan Timeout { get; init; }
         public bool AddCultureToRequest { get; init; }
-        
+
         public Dictionary<string, string> Headers { get; set; } = new();
         public List<string> HeadersToProxy { get; set; } = new();
         public bool PropagateActivity { get; set; }
@@ -49,7 +49,9 @@ namespace ATI.Services.Common.Tracing
             if (serializerType == SerializerType.Newtonsoft)
             {
                 if (newtonsoftSettings != null)
+                {
                     Serializer.SetSerializeSettings(newtonsoftSettings);
+                }
                 else
                 {
                     var jsonSerializerSettings = new JsonSerializerSettings()
@@ -68,7 +70,9 @@ namespace ATI.Services.Common.Tracing
             else
             {
                 if (systemTextJsonOptions != null)
+                {
                     Serializer.SetSerializeSettings(systemTextJsonOptions);
+                }
                 else
                 {
                     var jsonSerializerSettings = new JsonSerializerOptions()
