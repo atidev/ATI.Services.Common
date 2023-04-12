@@ -24,7 +24,8 @@ namespace ATI.Services.Common.Slack
         public SlackAdapter(SlackAdapterOptions options)
         {
             _slackOptions = options;
-            var config = new MetricsHttpClientConfig(ServiceName, TimeSpan.FromSeconds(5), SerializerType.Newtonsoft);
+            var config = new MetricsHttpClientConfig(ServiceName, TimeSpan.FromSeconds(5), SerializerType.Newtonsoft,
+                propagateActivity: false);
             _httpClient = new MetricsHttpClientWrapper(config);
         }
         

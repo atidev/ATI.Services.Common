@@ -30,7 +30,8 @@ public class SlackApiAdapter
     public SlackApiAdapter(SlackAdapterOptions options)
     {
         _slackOptions = options;
-        var config = new MetricsHttpClientConfig(ServiceName, TimeSpan.FromSeconds(5), SerializerType.Newtonsoft);
+        var config = new MetricsHttpClientConfig(ServiceName, TimeSpan.FromSeconds(5), SerializerType.Newtonsoft,
+            propagateActivity: false);
         _httpClient = new MetricsHttpClientWrapper(config);
     }
 
