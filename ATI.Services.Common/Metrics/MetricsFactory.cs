@@ -18,6 +18,13 @@ namespace ATI.Services.Common.Metrics
         private readonly LogSource _logSource;
         private static TimeSpan _defaultLongRequestTime = TimeSpan.FromSeconds(1);
 
+        private static readonly QuantileEpsilonPair[] _summaryQuantileEpsilonPairs = {
+            new(0.5, 0.05),
+            new(0.9, 0.05),
+            new(0.95, 0.01),
+            new(0.99, 0.005),
+        };
+
         //Время запроса считающегося достаточно долгим, что бы об этом доложить в кибану
         private readonly TimeSpan _longRequestTime;
 
@@ -163,7 +170,8 @@ namespace ATI.Services.Common.Metrics
             {
                 var options = new SummaryConfiguration
                 {
-                    MaxAge = TimeSpan.FromMinutes(1)
+                    MaxAge = TimeSpan.FromMinutes(1),
+                    Objectives = _summaryQuantileEpsilonPairs
                 };
 
                 Summary = Prometheus.Metrics.CreateSummary(
@@ -187,7 +195,8 @@ namespace ATI.Services.Common.Metrics
             {
                 var options = new SummaryConfiguration
                 {
-                    MaxAge = TimeSpan.FromMinutes(1)
+                    MaxAge = TimeSpan.FromMinutes(1),
+                    Objectives = _summaryQuantileEpsilonPairs
                 };
 
                 Summary = Prometheus.Metrics.CreateSummary(
