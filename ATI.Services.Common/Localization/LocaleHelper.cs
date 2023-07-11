@@ -36,11 +36,13 @@ namespace ATI.Services.Common.Localization
                         .Where(lang =>
                             ServiceVariables.SupportedLocales.Contains(lang.Value, StringComparer.OrdinalIgnoreCase))
                         .MaxBy(lang => lang.Quality);
+
+                if (language == null) 
+                    return false;
                 
-                if (language != null)
-                    cultureInfo = new CultureInfo(language.Value);
-                
+                cultureInfo = new CultureInfo(language.Value);
                 return true;
+
             }
             catch (Exception)
             {
