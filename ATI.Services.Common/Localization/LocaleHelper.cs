@@ -33,14 +33,15 @@ namespace ATI.Services.Common.Localization
                 var language =
                     acceptLanguage.Split(',')
                         .Select(StringWithQualityHeaderValue.Parse)
-                        .Where(lang =>
-                            ServiceVariables.SupportedLocales.Contains(lang.Value, StringComparer.OrdinalIgnoreCase))
+                        .Where(lang => ServiceVariables.SupportedLocales.Contains(lang.Value))
                         .MaxBy(lang => lang.Quality);
+
+                if (language == null) 
+                    return false;
                 
-                if (language != null)
-                    cultureInfo = new CultureInfo(language.Value);
-                
+                cultureInfo = new CultureInfo(language.Value);
                 return true;
+
             }
             catch (Exception)
             {
