@@ -11,6 +11,7 @@ namespace ATI.Services.Common.Sql
         {
             services.ConfigureByName<DbManagerOptions>();
             services.AddSingleton<DbProvider>();
+            services.AddSingleton<PostgresDapperProvider>();
         }
     }
 }

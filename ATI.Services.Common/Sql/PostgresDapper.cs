@@ -8,12 +8,14 @@ using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
 using ATI.Services.Common.Metrics;
 using Dapper;
+using JetBrains.Annotations;
 using Newtonsoft.Json;
 using NLog;
 using Npgsql;
 
 namespace ATI.Services.Common.Sql;
 
+[PublicAPI]
 public class PostgresDapper
 {
     private readonly DataBaseOptions _options;
