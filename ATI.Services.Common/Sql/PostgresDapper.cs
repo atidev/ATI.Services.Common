@@ -682,7 +682,7 @@ public class PostgresDapper
 
     #region Dictionary
 
-    public async Task<OperationResult<Dictionary<TKey, TValue>>> ExecuteDictionaryFunctionAsync<TKey, TValue>(
+    public async Task<OperationResult<Dictionary<TKey, TValue>>> ExecuteScalarDictionaryFunctionAsync<TKey, TValue>(
         string functionName,
         Func<dynamic, TKey> keySelector,
         Func<dynamic, TValue> valueSelector,
@@ -704,7 +704,7 @@ public class PostgresDapper
             timeoutInSeconds);
     }
 
-    public async Task<OperationResult<Dictionary<TKey, TValue>>> ExecuteScalarProcedureAsync<TKey, TValue>(
+    public async Task<OperationResult<Dictionary<TKey, TValue>>> ExecuteScalarDictionaryProcedureAsync<TKey, TValue>(
         string procedureName,
         Func<dynamic, TKey> keySelector,
         Func<dynamic, TValue> valueSelector,
