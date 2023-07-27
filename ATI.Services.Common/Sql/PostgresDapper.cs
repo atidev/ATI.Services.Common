@@ -32,7 +32,7 @@ public class PostgresDapper
     public PostgresDapper(DataBaseOptions options)
     {
         _options = options;
-        _metricsFactory = MetricsFactory.CreateSqlMetricsFactory(nameof(DapperDb), _options.LongTimeRequest, "type");
+        _metricsFactory = MetricsFactory.CreateSqlMetricsFactory(nameof(PostgresDapper), _options.LongTimeRequest, "type");
     }
 
     public async Task<OperationResult> ExecuteFunctionAsync(
@@ -197,8 +197,6 @@ public class PostgresDapper
         }
     }
 
-    #region objects' sets // TODO: remove
-
     public async Task<OperationResult<T>> ExecuteFunctionObjectAsync<T>(
         string functionName,
         DynamicParameters parameters,
@@ -208,7 +206,7 @@ public class PostgresDapper
         TimeSpan? longTimeRequest = null,
         int? timeoutInSeconds = null)
     {
-        return await ExecuteObjectAsync<T>(
+        return await ExecuteObjectAsync(
             functionName,
             GetFunctionQuery(parameters, functionName),
             parameters,
@@ -228,7 +226,7 @@ public class PostgresDapper
         TimeSpan? longTimeRequest = null,
         int? timeoutInSeconds = null)
     {
-        return await ExecuteObjectAsync<T>(
+        return await ExecuteObjectAsync(
             procedureName,
             GetProcedureQuery(parameters, procedureName),
             parameters,
@@ -395,10 +393,6 @@ public class PostgresDapper
         }
     }
 
-    #endregion
-
-    #region lists
-
     public async Task<OperationResult<List<T>>> ExecuteFunctionListAsync<T>(
         string functionName,
         DynamicParameters parameters,
@@ -479,10 +473,6 @@ public class PostgresDapper
             return new OperationResult<List<T>>(e);
         }
     }
-
-    #endregion
-
-    #region lists' sets
 
     public async Task<OperationResult<List<T>>> ExecuteFunctionListAsync<T>(
         string functionName,
@@ -680,10 +670,6 @@ public class PostgresDapper
         }
     }
 
-    #endregion
-
-    #region Dictionary
-
     public async Task<OperationResult<Dictionary<TKey, TValue>>> ExecuteScalarDictionaryFunctionAsync<TKey, TValue>(
         string functionName,
         Func<dynamic, TKey> keySelector,
@@ -775,8 +761,6 @@ public class PostgresDapper
             return new OperationResult<Dictionary<TKey, TValue>>(e);
         }
     }
-
-    #endregion
 
 
     private string GetFunctionQuery(DynamicParameters @params, string functionName)
