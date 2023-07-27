@@ -167,7 +167,7 @@ public class PostgresDapper
             using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
                 metricEntity,
                 actionName,
-                new { StoredProcedure = actionName, Parameters = parameters },
+                new { Action = actionName, Parameters = parameters },
                 longTimeRequest,
                 FullMetricTypeLabel);
 
