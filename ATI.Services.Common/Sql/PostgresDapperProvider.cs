@@ -25,7 +25,7 @@ public class PostgresDapperProvider
         if (isDbConfigured)
             return db;
 
-        _logger.Error($"Тo {dbName} database was configured");
+        _logger.Error($"No {dbName} database was configured");
         return null;
     }
 }
