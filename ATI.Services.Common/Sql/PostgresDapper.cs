@@ -26,7 +26,7 @@ public class PostgresDapper
     private const string QueryMetricTypeLabel = "query";
     private const string FullMetricTypeLabel = "full";
 
-    private const string FunctionQuery = "SELECT";
+    private const string FunctionQuery = "SELECT * FROM";
     private const string ProcedureQuery = "CALL";
 
     public PostgresDapper(DataBaseOptions options)
@@ -123,68 +123,29 @@ public class PostgresDapper
         TimeSpan? longTimeRequest = null,
         int? timeoutInSeconds = null)
     {
-        return await ExecuteObjectAsync<T>(
-            functionName,
-            GetFunctionQuery(parameters, functionName),
-            parameters,
-            metricEntity,
-            receiveNotice,
-            longTimeRequest,
-            timeoutInSeconds
-        );
-    }
-
-    public async Task<OperationResult<T>> ExecuteProcedureObjectAsync<T>(
-        string procedureName,
-        DynamicParameters parameters,
-        string metricEntity,
-        bool receiveNotice = false,
-        TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
-    {
-        return await ExecuteObjectAsync<T>(
-            procedureName,
-            GetProcedureQuery(parameters, procedureName),
-            parameters,
-            metricEntity,
-            receiveNotice,
-            longTimeRequest,
-            timeoutInSeconds
-        );
-    }
-
-    private async Task<OperationResult<T>> ExecuteObjectAsync<T>(
-        string actionName,
-        string query,
-        DynamicParameters parameters,
-        string metricEntity,
-        bool receiveNotice,
-        TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
-    {
         try
         {
             using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
                 metricEntity,
-                actionName,
-                new { Action = actionName, Parameters = parameters },
+                functionName,
+                new { Action = functionName, Parameters = parameters },
                 longTimeRequest,
                 FullMetricTypeLabel);
 
-            var timeout = timeoutInSeconds ?? GetTimeOut(actionName);
+            var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
             await using var connection = new NpgsqlConnection(_options.ConnectionString);
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
 
             var result = await ExecuteTaskWithMetrics(connection.ExecuteScalarAsync<T>(
-                    query,
+                    GetFunctionQuery(parameters, functionName),
                     parameters,
                     commandTimeout: timeout),
                 _metricsFactory.CreateMetricsTimerWithLogging(
                     metricEntity,
-                    actionName,
-                    new { Action = actionName, Parameters = parameters },
+                    functionName,
+                    new { Action = functionName, Parameters = parameters },
                     longTimeRequest,
                     QueryMetricTypeLabel));
 
@@ -192,7 +153,7 @@ public class PostgresDapper
         }
         catch (Exception e)
         {
-            LogWithParameters(e, actionName, metricEntity, parameters);
+            LogWithParameters(e, functionName, metricEntity, parameters);
             return new OperationResult<T>(e);
         }
     }
@@ -206,57 +167,16 @@ public class PostgresDapper
         TimeSpan? longTimeRequest = null,
         int? timeoutInSeconds = null)
     {
-        return await ExecuteObjectAsync(
-            functionName,
-            GetFunctionQuery(parameters, functionName),
-            parameters,
-            convertData,
-            metricEntity,
-            receiveNotice,
-            longTimeRequest,
-            timeoutInSeconds);
-    }
-
-    public async Task<OperationResult<T>> ExecuteProcedureObjectAsync<T>(
-        string procedureName,
-        DynamicParameters parameters,
-        Func<SqlMapper.GridReader, Task<T>> convertData,
-        string metricEntity,
-        bool receiveNotice = false,
-        TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
-    {
-        return await ExecuteObjectAsync(
-            procedureName,
-            GetProcedureQuery(parameters, procedureName),
-            parameters,
-            convertData,
-            metricEntity,
-            receiveNotice,
-            longTimeRequest,
-            timeoutInSeconds);
-    }
-
-    private async Task<OperationResult<T>> ExecuteObjectAsync<T>(
-        string actionName,
-        string query,
-        DynamicParameters parameters,
-        Func<SqlMapper.GridReader, Task<T>> convertData,
-        string metricEntity,
-        bool receiveNotice,
-        TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
-    {
         try
         {
             using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
                 metricEntity,
-                actionName,
-                new { Action = actionName, Parameters = parameters },
+                functionName,
+                new { Action = functionName, Parameters = parameters },
                 longTimeRequest,
                 FullMetricTypeLabel);
 
-            var timeout = timeoutInSeconds ?? GetTimeOut(actionName);
+            var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
 
             await using var connection = new NpgsqlConnection(_options.ConnectionString);
 
@@ -265,20 +185,20 @@ public class PostgresDapper
 
             using var reader = await ExecuteTaskWithMetrics(
                 connection.QueryMultipleAsync(
-                    query,
+                    GetFunctionQuery(parameters, functionName),
                     parameters,
                     commandTimeout: timeout),
                 _metricsFactory.CreateMetricsTimerWithLogging(
                     metricEntity,
-                    actionName,
-                    new { Action = actionName, Parameters = parameters },
+                    functionName,
+                    new { Action = functionName, Parameters = parameters },
                     longTimeRequest,
                     QueryMetricTypeLabel));
 
             using var disposable = _metricsFactory.CreateMetricsTimerWithLogging(
                 metricEntity,
-                actionName,
-                new { Action = actionName, Parameters = parameters },
+                functionName,
+                new { Action = functionName, Parameters = parameters },
                 longTimeRequest,
                 ReadMetricTypeLabel);
 
@@ -287,7 +207,7 @@ public class PostgresDapper
         }
         catch (Exception e)
         {
-            LogWithParameters(e, actionName, metricEntity, parameters);
+            LogWithParameters(e, functionName, metricEntity, parameters);
             return new OperationResult<T>(e);
         }
     }
@@ -301,57 +221,16 @@ public class PostgresDapper
         TimeSpan? longTimeRequest = null,
         int? timeoutInSeconds = null)
     {
-        return await ExecuteObjectAsync(
-            functionName,
-            GetFunctionQuery(parameters, functionName),
-            parameters,
-            convertData,
-            metricEntity,
-            receiveNotice,
-            longTimeRequest,
-            timeoutInSeconds);
-    }
-
-    public async Task<OperationResult<T>> ExecuteProcedureObjectAsync<T>(
-        string procedureName,
-        DynamicParameters parameters,
-        Func<SqlMapper.GridReader, MetricsTimer, Task<T>> convertData,
-        string metricEntity,
-        bool receiveNotice = false,
-        TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
-    {
-        return await ExecuteObjectAsync(
-            procedureName,
-            GetProcedureQuery(parameters, procedureName),
-            parameters,
-            convertData,
-            metricEntity,
-            receiveNotice,
-            longTimeRequest,
-            timeoutInSeconds);
-    }
-
-    private async Task<OperationResult<T>> ExecuteObjectAsync<T>(
-        string actionName,
-        string query,
-        DynamicParameters parameters,
-        Func<SqlMapper.GridReader, MetricsTimer, Task<T>> convertData,
-        string metricEntity,
-        bool receiveNotice,
-        TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
-    {
         try
         {
             using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
                 metricEntity,
-                actionName,
-                new { Action = actionName, Parameters = parameters },
+                functionName,
+                new { Action = functionName, Parameters = parameters },
                 longTimeRequest,
                 FullMetricTypeLabel);
 
-            var timeout = timeoutInSeconds ?? GetTimeOut(actionName);
+            var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
             await using var connection = new NpgsqlConnection(_options.ConnectionString);
 
             if (receiveNotice)
@@ -359,26 +238,26 @@ public class PostgresDapper
 
             using var reader = await ExecuteTaskWithMetrics(
                 connection.QueryMultipleAsync(
-                    query,
+                    GetFunctionQuery(parameters, functionName),
                     parameters,
                     commandTimeout: timeout),
                 _metricsFactory.CreateMetricsTimerWithLogging(
                     metricEntity,
-                    actionName,
-                    new { Action = actionName, Parameters = parameters },
+                    functionName,
+                    new { Action = functionName, Parameters = parameters },
                     longTimeRequest,
                     QueryMetricTypeLabel));
 
             using (_metricsFactory.CreateMetricsTimerWithLogging(
                        metricEntity,
-                       actionName,
-                       new { Action = actionName, Parameters = parameters },
+                       functionName,
+                       new { Action = functionName, Parameters = parameters },
                        longTimeRequest,
                        ReadMetricTypeLabel))
             using (var convertDataTimer = _metricsFactory.CreateMetricsTimerWithDelayedLogging(
                        metricEntity,
-                       actionName,
-                       new { Action = actionName, Parameters = parameters },
+                       functionName,
+                       new { Action = functionName, Parameters = parameters },
                        longTimeRequest,
                        ConvertDataMetricTypeLabel))
             {
@@ -388,7 +267,7 @@ public class PostgresDapper
         }
         catch (Exception e)
         {
-            LogWithParameters(e, actionName, metricEntity, parameters);
+            LogWithParameters(e, functionName, metricEntity, parameters);
             return new OperationResult<T>(e);
         }
     }
@@ -401,53 +280,16 @@ public class PostgresDapper
         TimeSpan? longTimeRequest = null,
         int? timeoutInSeconds = null)
     {
-        return await ExecuteListAsync<T>(
-            functionName,
-            GetFunctionQuery(parameters, functionName),
-            parameters,
-            metricEntity,
-            receiveNotice,
-            longTimeRequest,
-            timeoutInSeconds);
-    }
-
-    public async Task<OperationResult<List<T>>> ExecuteProcedureListAsync<T>(
-        string procedureName,
-        DynamicParameters parameters,
-        string metricEntity,
-        bool receiveNotice = false,
-        TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
-    {
-        return await ExecuteListAsync<T>(
-            procedureName,
-            GetProcedureQuery(parameters, procedureName),
-            parameters,
-            metricEntity,
-            receiveNotice,
-            longTimeRequest,
-            timeoutInSeconds);
-    }
-
-    private async Task<OperationResult<List<T>>> ExecuteListAsync<T>(
-        string actionName,
-        string query,
-        DynamicParameters parameters,
-        string metricEntity,
-        bool receiveNotice,
-        TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
-    {
         try
         {
             using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
                 metricEntity,
-                actionName,
-                new { StoredProcedure = actionName, Parameters = parameters },
+                functionName,
+                new { StoredProcedure = functionName, Parameters = parameters },
                 longTimeRequest,
                 FullMetricTypeLabel);
 
-            var timeout = timeoutInSeconds ?? GetTimeOut(actionName);
+            var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
             await using var connection = new NpgsqlConnection(_options.ConnectionString);
 
             if (receiveNotice)
@@ -455,13 +297,13 @@ public class PostgresDapper
 
             var result = await ExecuteTaskWithMetrics(
                 connection.QueryAsync<T>(
-                    query,
+                    GetFunctionQuery(parameters, functionName),
                     parameters,
                     commandTimeout: timeout),
                 _metricsFactory.CreateMetricsTimerWithLogging(
                     metricEntity,
-                    actionName,
-                    new { Action = actionName, Parameters = parameters },
+                    functionName,
+                    new { Action = functionName, Parameters = parameters },
                     longTimeRequest,
                     QueryMetricTypeLabel));
 
@@ -469,7 +311,7 @@ public class PostgresDapper
         }
         catch (Exception e)
         {
-            LogWithParameters(e, actionName, metricEntity, parameters);
+            LogWithParameters(e, functionName, metricEntity, parameters);
             return new OperationResult<List<T>>(e);
         }
     }
@@ -483,59 +325,16 @@ public class PostgresDapper
         TimeSpan? longTimeRequest = null,
         int? timeoutInSeconds = null)
     {
-        return await ExecuteResultSetAsync(
-            functionName,
-            GetFunctionQuery(parameters, functionName),
-            parameters,
-            convertData,
-            metricEntity,
-            receiveNotice,
-            longTimeRequest,
-            timeoutInSeconds
-        );
-    }
-
-    public async Task<OperationResult<List<T>>> ExecuteProcedureListAsync<T>(
-        string procedureName,
-        DynamicParameters parameters,
-        Func<SqlMapper.GridReader, Task<List<T>>> convertData,
-        string metricEntity,
-        bool receiveNotice = false,
-        TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
-    {
-        return await ExecuteResultSetAsync(
-            procedureName,
-            GetProcedureQuery(parameters, procedureName),
-            parameters,
-            convertData,
-            metricEntity,
-            receiveNotice,
-            longTimeRequest,
-            timeoutInSeconds
-        );
-    }
-
-    private async Task<OperationResult<List<T>>> ExecuteResultSetAsync<T>(
-        string actionName,
-        string query,
-        DynamicParameters parameters,
-        Func<SqlMapper.GridReader, Task<List<T>>> convertData,
-        string metricEntity,
-        bool receiveNotice,
-        TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
-    {
         try
         {
             using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
                 metricEntity,
-                actionName,
-                new { Action = actionName, Parameters = parameters },
+                functionName,
+                new { Action = functionName, Parameters = parameters },
                 longTimeRequest,
                 FullMetricTypeLabel);
 
-            var timeout = timeoutInSeconds ?? GetTimeOut(actionName);
+            var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
             await using var connection = new NpgsqlConnection(_options.ConnectionString);
 
             if (receiveNotice)
@@ -543,20 +342,20 @@ public class PostgresDapper
 
             using var reader = await ExecuteTaskWithMetrics(
                 connection.QueryMultipleAsync(
-                    query,
+                    GetFunctionQuery(parameters, functionName),
                     parameters,
                     commandTimeout: timeout),
                 _metricsFactory.CreateMetricsTimerWithLogging(
                     metricEntity,
-                    actionName,
-                    new { Action = actionName, Parameters = parameters },
+                    functionName,
+                    new { Action = functionName, Parameters = parameters },
                     longTimeRequest,
                     QueryMetricTypeLabel));
 
             using var disposable = _metricsFactory.CreateMetricsTimerWithLogging(
                 metricEntity,
-                actionName,
-                new { Action = actionName, Parameters = parameters },
+                functionName,
+                new { Action = functionName, Parameters = parameters },
                 longTimeRequest,
                 ReadMetricTypeLabel);
             var result = await convertData(reader);
@@ -564,7 +363,7 @@ public class PostgresDapper
         }
         catch (Exception e)
         {
-            LogWithParameters(e, actionName, metricEntity, parameters);
+            LogWithParameters(e, functionName, metricEntity, parameters);
             return new OperationResult<List<T>>(e);
         }
     }
@@ -578,57 +377,16 @@ public class PostgresDapper
         TimeSpan? longTimeRequest = null,
         int? timeoutInSeconds = null)
     {
-        return await ExecuteResultSetAsync(
-            functionName,
-            GetFunctionQuery(parameters, functionName),
-            parameters,
-            convertData,
-            metricEntity,
-            receiveNotice,
-            longTimeRequest,
-            timeoutInSeconds);
-    }
-
-    public async Task<OperationResult<List<T>>> ExecuteProcedureListAsync<T>(
-        string procedureName,
-        DynamicParameters parameters,
-        Func<SqlMapper.GridReader, MetricsTimer, Task<List<T>>> convertData,
-        string metricEntity,
-        bool receiveNotice = false,
-        TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
-    {
-        return await ExecuteResultSetAsync(
-            procedureName,
-            GetProcedureQuery(parameters, procedureName),
-            parameters,
-            convertData,
-            metricEntity,
-            receiveNotice,
-            longTimeRequest,
-            timeoutInSeconds);
-    }
-
-    private async Task<OperationResult<List<T>>> ExecuteResultSetAsync<T>(
-        string actionName,
-        string query,
-        DynamicParameters parameters,
-        Func<SqlMapper.GridReader, MetricsTimer, Task<List<T>>> convertData,
-        string metricEntity,
-        bool receiveNotice,
-        TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
-    {
         try
         {
             using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
                 metricEntity,
-                actionName,
-                new { Action = actionName, Parameters = parameters },
+                functionName,
+                new { Action = functionName, Parameters = parameters },
                 longTimeRequest,
                 FullMetricTypeLabel);
 
-            var timeout = timeoutInSeconds ?? GetTimeOut(actionName);
+            var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
             await using var connection = new NpgsqlConnection(_options.ConnectionString);
 
             if (receiveNotice)
@@ -636,26 +394,26 @@ public class PostgresDapper
 
             using var reader = await ExecuteTaskWithMetrics(
                 connection.QueryMultipleAsync(
-                    query,
+                    GetFunctionQuery(parameters, functionName),
                     parameters,
                     commandTimeout: timeout),
                 _metricsFactory.CreateMetricsTimerWithLogging(
                     metricEntity,
-                    actionName,
-                    new { Action = actionName, Parameters = parameters },
+                    functionName,
+                    new { Action = functionName, Parameters = parameters },
                     longTimeRequest,
                     QueryMetricTypeLabel));
 
             using (_metricsFactory.CreateMetricsTimerWithLogging(
                        metricEntity,
-                       actionName,
-                       new { Action = actionName, Parameters = parameters },
+                       functionName,
+                       new { Action = functionName, Parameters = parameters },
                        longTimeRequest,
                        ReadMetricTypeLabel))
             using (var convertDataTimer = _metricsFactory.CreateMetricsTimerWithDelayedLogging(
                        metricEntity,
-                       actionName,
-                       new { Action = actionName, Parameters = parameters },
+                       functionName,
+                       new { Action = functionName, Parameters = parameters },
                        longTimeRequest,
                        ConvertDataMetricTypeLabel))
             {
@@ -665,7 +423,7 @@ public class PostgresDapper
         }
         catch (Exception e)
         {
-            LogWithParameters(e, actionName, metricEntity, parameters);
+            LogWithParameters(e, functionName, metricEntity, parameters);
             return new OperationResult<List<T>>(e);
         }
     }
@@ -680,61 +438,16 @@ public class PostgresDapper
         TimeSpan? longTimeRequest = null,
         int? timeoutInSeconds = null)
     {
-        return await ExecuteScalarDictionaryAsync(
-            functionName,
-            GetFunctionQuery(parameters, functionName),
-            keySelector,
-            valueSelector,
-            parameters,
-            metricEntity,
-            receiveNotice,
-            longTimeRequest,
-            timeoutInSeconds);
-    }
-
-    public async Task<OperationResult<Dictionary<TKey, TValue>>> ExecuteScalarDictionaryProcedureAsync<TKey, TValue>(
-        string procedureName,
-        Func<dynamic, TKey> keySelector,
-        Func<dynamic, TValue> valueSelector,
-        DynamicParameters parameters,
-        string metricEntity,
-        bool receiveNotice = false,
-        TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
-    {
-        return await ExecuteScalarDictionaryAsync(
-            procedureName,
-            GetProcedureQuery(parameters, procedureName),
-            keySelector,
-            valueSelector,
-            parameters,
-            metricEntity,
-            receiveNotice,
-            longTimeRequest,
-            timeoutInSeconds);
-    }
-
-    private async Task<OperationResult<Dictionary<TKey, TValue>>> ExecuteScalarDictionaryAsync<TKey, TValue>(
-        string actionName,
-        string query,
-        Func<dynamic, TKey> keySelector,
-        Func<dynamic, TValue> valueSelector,
-        DynamicParameters parameters,
-        string metricEntity,
-        bool receiveNotice,
-        TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
-    {
         try
         {
             using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
                 metricEntity,
-                actionName,
-                new { Action = actionName, Parameters = parameters },
+                functionName,
+                new { Action = functionName, Parameters = parameters },
                 longTimeRequest,
                 FullMetricTypeLabel);
 
-            var timeout = timeoutInSeconds ?? GetTimeOut(actionName);
+            var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
             await using var connection = new NpgsqlConnection(_options.ConnectionString);
 
             if (receiveNotice)
@@ -742,13 +455,13 @@ public class PostgresDapper
 
             var result = await ExecuteTaskWithMetrics(
                 connection.QueryAsync<dynamic>(
-                    query,
+                    GetFunctionQuery(parameters, functionName),
                     parameters,
                     commandTimeout: timeout),
                 _metricsFactory.CreateMetricsTimerWithLogging(
                     metricEntity,
-                    actionName,
-                    new { Action = actionName, Parameters = parameters },
+                    functionName,
+                    new { Action = functionName, Parameters = parameters },
                     longTimeRequest,
                     QueryMetricTypeLabel));
 
@@ -757,11 +470,46 @@ public class PostgresDapper
         }
         catch (Exception e)
         {
-            LogWithParameters(e, actionName, metricEntity, parameters);
+            LogWithParameters(e, functionName, metricEntity, parameters);
             return new OperationResult<Dictionary<TKey, TValue>>(e);
         }
     }
 
+    public async Task<OperationResult<List<T>>> ExecuteRawSqlAsync<T>(
+        string sql,
+        DynamicParameters parameters,
+        string metricEntity,
+        bool receiveNotice = false,
+        TimeSpan? longTimeRequest = null, 
+        int? timeoutInSeconds = null)
+    {
+        using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
+            metricEntity,
+            sql,
+            new { Action = sql, Parameters = parameters },
+            longTimeRequest,
+            FullMetricTypeLabel);
+
+        var timeout = timeoutInSeconds ?? _options.Timeout.Seconds;
+        await using var connection = new NpgsqlConnection(_options.ConnectionString);
+
+        if (receiveNotice)
+            connection.Notice += LoggOnNotice;
+
+        var result = await ExecuteTaskWithMetrics(
+            connection.QueryAsync<T>(
+                sql,
+                parameters,
+                commandTimeout: timeout),
+            _metricsFactory.CreateMetricsTimerWithLogging(
+                metricEntity,
+                sql,
+                new { Action = sql, Parameters = parameters },
+                longTimeRequest,
+                QueryMetricTypeLabel));
+
+        return new OperationResult<List<T>>(result.AsList());
+    }
 
     private string GetFunctionQuery(DynamicParameters @params, string functionName)
         => GetQuery(@params, functionName, FunctionQuery);
@@ -771,7 +519,7 @@ public class PostgresDapper
 
     private string GetQuery(DynamicParameters @params, string functionName, string querySpecialization)
     {
-        var stringBuilder = new StringBuilder($"{querySpecialization} {functionName}(");
+        var stringBuilder = new StringBuilder($@"{querySpecialization} {functionName}(");
         foreach (var name in @params.ParameterNames)
         {
             stringBuilder.Append($"@{name}, ");
