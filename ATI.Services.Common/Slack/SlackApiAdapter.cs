@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
+using ATI.Services.Common.Metrics;
+using ATI.Services.Common.Metrics.HttpWrapper;
 using ATI.Services.Common.Serializers;
-using ATI.Services.Common.Tracing;
 using JetBrains.Annotations;
 using NLog;
 
@@ -21,7 +22,7 @@ public class SlackApiAdapter
     private const string SlackApiMetric = "SlackApi";
     private const string ServiceName = "Slack";
 
-    private readonly TracingHttpClientWrapper _httpClient;
+    private readonly MetricsHttpClientWrapper _httpClient;
     private readonly SlackAdapterOptions _slackOptions;
 
     private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
@@ -29,8 +30,9 @@ public class SlackApiAdapter
     public SlackApiAdapter(SlackAdapterOptions options)
     {
         _slackOptions = options;
-        var config = new TracedHttpClientConfig(ServiceName, TimeSpan.FromSeconds(5), SerializerType.Newtonsoft);
-        _httpClient = new TracingHttpClientWrapper(config);
+        var config = new MetricsHttpClientConfig(ServiceName, TimeSpan.FromSeconds(5), SerializerType.Newtonsoft,
+            propagateActivity: false);
+        _httpClient = new MetricsHttpClientWrapper(config);
     }
 
     /// <summary>

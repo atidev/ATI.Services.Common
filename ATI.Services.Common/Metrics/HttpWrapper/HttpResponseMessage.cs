@@ -1,8 +1,8 @@
-﻿using System; 
+﻿using System;
 using System.Net;
 using System.Net.Http.Headers;
 
-namespace ATI.Services.Common.Tracing
+namespace ATI.Services.Common.Metrics.HttpWrapper
 {
     public class HttpResponseMessage<T>
     {

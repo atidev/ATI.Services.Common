@@ -30,7 +30,7 @@ namespace ATI.Services.Common.Caching.Redis
         private readonly AsyncCircuitBreakerPolicy _circuitBreakerPolicy;
         private readonly AsyncPolicyWrap _policy;
         private readonly HitRatioCounter _counter;
-        private readonly MetricsTracingFactory _metricsTracingFactory;
+        private readonly MetricsFactory _metricsFactory;
         private bool _connected;
 
         private RedisScriptCache _redisScriptCache;
@@ -52,7 +52,7 @@ namespace ATI.Services.Common.Caching.Redis
             : base(SerializerFactory.GetSerializerByType(options.Serializer))
         {
             Options = options;
-            _metricsTracingFactory = MetricsTracingFactory.CreateRedisMetricsFactory(nameof(RedisCache), Options.LongRequestTime);
+            _metricsFactory = MetricsFactory.CreateRedisMetricsFactory(nameof(RedisCache), Options.LongRequestTime);
             _circuitBreakerPolicy = Policy.Handle<Exception>()
                 .CircuitBreakerAsync(Options.CircuitBreakerExceptionsCount, Options.CircuitBreakerSeconds);
             _policy = Policy.WrapAsync(Policy.TimeoutAsync(Options.RedisTimeout, TimeoutStrategy.Pessimistic), _circuitBreakerPolicy);
@@ -85,7 +85,7 @@ namespace ATI.Services.Common.Caching.Redis
                     }
                 });
                 _redisDb = connectionMultiplexer.GetDatabase(Options.CacheDbNumber);
-                _redisScriptCache = new RedisScriptCache(_redisDb, Options, _metricsTracingFactory, _circuitBreakerPolicy, _policy);
+                _redisScriptCache = new RedisScriptCache(_redisDb, Options, _metricsFactory, _circuitBreakerPolicy, _policy);
                 _connected = true;
             }
             catch (Exception e)
@@ -201,7 +201,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (redisValue.Count < 0)
                 return OperationResult.Ok;
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(redisValue.FirstOrDefault()?.GetKey()), metricEntity, requestParams: new { RedisValues = redisValue }, longRequestTime: longRequestTime))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { RedisValues = redisValue }, longRequestTime: longRequestTime))
             {
                 var tasks = new List<Task>(redisValue.Select(async cacheEntity =>
                     await _redisDb.StringSetAsync(cacheEntity.GetKey(), Serializer.Serialize(cacheEntity), Options.TimeToLive)));
@@ -217,7 +217,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (redisValues == null || redisValues.Count == 0 || !_connected)
                 return;
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(redisValues.FirstOrDefault().Key), metricEntity, requestParams: new { RedisValues = redisValues }, longRequestTime: longRequestTime))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { RedisValues = redisValues }, longRequestTime: longRequestTime))
             {
                 var tasks =
                     new List<Task>(
@@ -238,7 +238,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(key))
                 return new OperationResult<T>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(key), metricEntity, requestParams: new { RedisKey = key }, longRequestTime: longRequestTime))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { RedisKey = key }, longRequestTime: longRequestTime))
             {
                 var operationResult = await ExecuteAsync(async () => await _redisDb.StringGetAsync(key), key);
 
@@ -262,7 +262,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(key))
                 return OperationResult.Ok;
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(key), metricEntity, requestParams: new { RedisKey = key }, longRequestTime: longRequestTime))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { RedisKey = key }, longRequestTime: longRequestTime))
             {
                 return await ExecuteAsync(async () => await _redisDb.KeyDeleteAsync(key), key);
             }
@@ -275,7 +275,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (keys == null || keys.Count == 0)
                 return OperationResult.Ok;
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(keys.FirstOrDefault()), metricEntity, requestParams: new { RedisKeys = keys }, longRequestTime: longRequestTime))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { RedisKeys = keys }, longRequestTime: longRequestTime))
             {
                 return await ExecuteAsync(async () =>
                 {
@@ -294,7 +294,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (keys == null || keys.Count == 0)
                 return new OperationResult<List<T>>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(keys.FirstOrDefault()), metricEntity, requestParams: new { RedisKeys = keys, WithNulls = withNulls }, longRequestTime: longRequestTime))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { RedisKeys = keys, WithNulls = withNulls }, longRequestTime: longRequestTime))
             {
                 var keysArray = keys.Select(key => (RedisKey)key).ToArray();
                 var operationResult = await ExecuteAsync(async () => await _redisDb.StringGetAsync(keysArray), keys);
@@ -320,7 +320,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(key))
                 return new OperationResult<List<string>>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(key), metricEntity, requestParams: new { Key = key }, longRequestTime: longRequestTime))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { Key = key }, longRequestTime: longRequestTime))
             {
                 var operationResult = await ExecuteAsync(async () => await _redisDb.SetMembersAsync(key), key);
 
@@ -352,7 +352,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(key))
                 return new OperationResult<bool>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(key), metricEntity, requestParams: new { Key = key }, longRequestTime: longRequestTime))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { Key = key }, longRequestTime: longRequestTime))
             {
                 return await ExecuteAsync(async () => await _redisDb.KeyExistsAsync(key), key);
             }
@@ -365,7 +365,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(setKey))
                 return OperationResult.Ok;
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(setKey), metricEntity, requestParams: new { SetKey = setKey, Value = value }, longRequestTime: longRequestTime))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { SetKey = setKey, Value = value }, longRequestTime: longRequestTime))
             {
                 return await ExecuteAsync(async () => await _redisDb.SetAddAsync(setKey, value), new { setKey, value });
             }
@@ -378,7 +378,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(setKey) || values.Count == 0)
                 return new OperationResult(ActionStatus.Ok);
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(setKey), metricEntity,
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
                 requestParams: new {SetKey = setKey, Values = values}, longRequestTime: longRequestTime))
             {
                 return await ExecuteAsync(async () => await _redisDb.SetAddAsync(setKey, values.Cast<RedisValue>().ToArray()), new { setKey, values });
@@ -392,7 +392,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (setKeys == null || setKeys.Count == 0)
                 return OperationResult.Ok;
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(setKeys.FirstOrDefault()), metricEntity, requestParams: new { SetsKeys = setKeys, Value = value }, longRequestTime: longRequestTime))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { SetsKeys = setKeys, Value = value }, longRequestTime: longRequestTime))
             {
                 var setAddTasks = setKeys.Select(async setKey => await InsertEntityToSetWithPolicy(setKey, value));
                 return await ExecuteAsync(async () => await Task.WhenAll(setAddTasks), new { setKeys, value });
@@ -408,7 +408,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (keys == null || keys.Count == 0)
                 return new OperationResult<List<string>>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(keys.FirstOrDefault()), metricEntity, requestParams: new { RedisKeys = keys, WithNulls = withNulls }, longRequestTime: longRequestTime))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { RedisKeys = keys, WithNulls = withNulls }, longRequestTime: longRequestTime))
             {
                 var transaction = _redisDb.CreateTransaction();
                 var operations = keys.Select(key =>
@@ -443,7 +443,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (manyRedisValues.Count == 0)
                 return await ExecuteAsync(async () => await _redisDb.SetAddAsync(setKey, ""), new { manyRedisValues, setKey });
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(setKey), metricEntity, requestParams: new { RedisValues = manyRedisValues, SetKey = setKey }, longRequestTime: longRequestTime))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { RedisValues = manyRedisValues, SetKey = setKey }, longRequestTime: longRequestTime))
             {
                 var transaction = _redisDb.CreateTransaction();
                 transaction.KeyDeleteAsync(setKey).Forget();
@@ -466,7 +466,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(key))
                 return new OperationResult<long>(ActionStatus.BadRequest);
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(key), metricEntity, requestParams: new { Key = key, ExpireAt = expireAt }, longRequestTime: longTimeRequest))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { Key = key, ExpireAt = expireAt }, longRequestTime: longTimeRequest))
             {
                 var transaction = _redisDb.CreateTransaction();
                 var incrementOperation = transaction.StringIncrementAsync(key);
@@ -486,7 +486,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(setKey))
                 return OperationResult.Ok;
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(setKey), metricEntity, requestParams: new { SetKey = setKey, MemberOfSet = member }, longRequestTime: longTimeRequest))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { SetKey = setKey, MemberOfSet = member }, longRequestTime: longTimeRequest))
             {
                 return await ExecuteAsync(async () => await _redisDb.SetRemoveAsync(setKey, member), setKey);
             }
@@ -499,7 +499,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(setKey))
                 return new OperationResult<bool>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(setKey), metricEntity, requestParams: new { SetKey = setKey, MemberOfSet = member }, longRequestTime: longTimeRequest))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { SetKey = setKey, MemberOfSet = member }, longRequestTime: longTimeRequest))
             {
                 return await ExecuteAsync(async () => await _redisDb.SetContainsAsync(setKey, member), new { setKey, member });
             }
@@ -512,7 +512,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(hashKey) || string.IsNullOrEmpty(hashField))
                 return new OperationResult<RedisValue>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(hashKey), metricEntity, requestParams: new { HashKey = hashKey, HashField = hashField }, longRequestTime: longTimeRequest))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { HashKey = hashKey, HashField = hashField }, longRequestTime: longTimeRequest))
             {
                 return await ExecuteAsync(async () => await _redisDb.HashGetAsync(hashKey, hashField), new { hashKey, hashField });
             }
@@ -525,7 +525,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(hashKey) || string.IsNullOrEmpty(hashField))
                 return OperationResult.Ok;
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(hashKey), metricEntity, requestParams: new { HashKey = hashKey, HashField = hashField }, longRequestTime: longTimeRequest))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { HashKey = hashKey, HashField = hashField }, longRequestTime: longTimeRequest))
             {
                 return await ExecuteAsync(async () => await _redisDb.HashSetAsync(hashKey, hashField, value), new { hashKey, hashField, value });
             }
@@ -538,7 +538,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(hashKey) || string.IsNullOrEmpty(hashField))
                 return OperationResult.Ok;
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(hashKey), metricEntity, requestParams: new { HashKey = hashKey, HashField = hashField }, longRequestTime: longTimeRequest))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { HashKey = hashKey, HashField = hashField }, longRequestTime: longTimeRequest))
             {
                 return await ExecuteAsync(async () => await _redisDb.HashDeleteAsync(hashKey, hashField), new { hashKey, hashField });
             }
@@ -551,7 +551,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(key))
                 return OperationResult.Ok;
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(key), metricEntity, requestParams: new {Key = key, Expiration = expiration}, longRequestTime: longRequestTime))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new {Key = key, Expiration = expiration}, longRequestTime: longRequestTime))
             {
                 return await ExecuteAsync(async () => await _redisDb.KeyExpireAsync(key, expiration.ToUniversalTime()), new {key, expiration});
             }
@@ -564,7 +564,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(key))
                 return OperationResult.Ok;
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(key), metricEntity, requestParams: new {Key = key, TimeToLive = ttl}, longRequestTime: longRequestTime))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new {Key = key, TimeToLive = ttl}, longRequestTime: longRequestTime))
             {
                 return await ExecuteAsync(async () => await _redisDb.KeyExpireAsync(key, ttl), new {key, ttl});
             }
@@ -578,9 +578,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrWhiteSpace(sortedSetKey))
                 return new OperationResult(ActionStatus.BadRequest, "sorted set key was not specified.");
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(
-                GetTracingInfo(sortedSetKey),
-                metricEntity,
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
                 requestParams: new
                 {
                     Value = member,
@@ -608,9 +606,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrWhiteSpace(sortedSetKey))
                 return new OperationResult(ActionStatus.BadRequest, "sorted set key was not specified.");
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(
-                GetTracingInfo(sortedSetKey),
-                metricEntity,
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
                 requestParams: new
                 {
                     Value = member,
@@ -639,7 +635,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(key))
                 return new OperationResult<bool>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(key), metricEntity,
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
                                                                                requestParams: new { Value = redisValue, Key = key, TimeToLive = timeToLive },
                                                                                longRequestTime: longTimeRequest))
             {
@@ -655,7 +651,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(hashKey))
                 return OperationResult.Ok;
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(hashKey), metricEntity,
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
                 requestParams: new {RedisValues = data, HashKey = hashKey}, longRequestTime: longTimeRequest))
             {
                 var fields = ToHashEntries(data).ToArray();
@@ -677,7 +673,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(hashKey))
                 return OperationResult.Ok;
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(hashKey), metricEntity,
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
                 requestParams: new {RedisValues = fieldsToInsert, HashKey = hashKey}, longRequestTime: longTimeRequest))
             {
                 var fields = fieldsToInsert.Select(kvp => new HashEntry(kvp.Key.ToString(), Serializer.Serialize(kvp.Value))).ToArray();
@@ -700,8 +696,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (valuesByHashKeys.Count == 0)
                 return OperationResult.Ok;
 
-            using var metric = _metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(valuesByHashKeys.FirstOrDefault().Key),
-                metricEntity,
+            using var metric = _metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
                 requestParams: new {RedisValues = valuesByHashKeys}, longRequestTime: longTimeRequest);
 
             var transaction = _redisDb.CreateTransaction();
@@ -724,7 +719,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(hashKey))
                 return OperationResult.Ok;
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(hashKey), metricEntity, requestParams: new { RedisValues = manyRedisValues, HashKey = hashKey }, longRequestTime: longTimeRequest))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { RedisValues = manyRedisValues, HashKey = hashKey }, longRequestTime: longTimeRequest))
             {
                 return await ExecuteAsync(async () => await _redisDb.HashSetAsync(hashKey,
                     manyRedisValues
@@ -740,7 +735,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(hashKey) || string.IsNullOrEmpty(hashField))
                 return new OperationResult<T>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(hashKey), metricEntity, requestParams: new { HashKey = hashKey, HashField = hashField }, longRequestTime: longTimeRequest))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { HashKey = hashKey, HashField = hashField }, longRequestTime: longTimeRequest))
             {
                 var operationResult = await ExecuteAsync(async () => await _redisDb.HashGetAsync(hashKey, hashField), new { hashKey, hashField });
 
@@ -764,7 +759,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(hashKey))
                 return new OperationResult<T>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(hashKey), metricEntity,
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
                 requestParams: new {HashKey = hashKey}, longRequestTime: longTimeRequest))
             {
                 var operationResult = await ExecuteAsync(async () => await _redisDb.HashGetAllAsync(hashKey), hashKey);
@@ -790,7 +785,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(hashKey))
                 return new OperationResult<List<KeyValuePair<TKey, TValue>>>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(hashKey), metricEntity,
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
                 requestParams: new {HashKey = hashKey}, longRequestTime: longTimeRequest))
             {
                 var operationResult = await ExecuteAsync(async () => await _redisDb.HashGetAllAsync(hashKey), hashKey);
@@ -822,7 +817,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(hashKey))
                 return new OperationResult<List<T>>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(hashKey), metricEntity, requestParams: new { HashKey = hashKey }, longRequestTime: longTimeRequest))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { HashKey = hashKey }, longRequestTime: longTimeRequest))
             {
                 var operationResult = await ExecuteAsync(async () => await _redisDb.HashValuesAsync(hashKey), hashKey);
                 if (operationResult.Success)
@@ -850,7 +845,7 @@ namespace ATI.Services.Common.Caching.Redis
             if (string.IsNullOrEmpty(key))
                 return new OperationResult<double>();
 
-            using (_metricsTracingFactory.CreateTracingWithLoggingMetricsTimer(GetTracingInfo(key), metricEntity, requestParams: new { Key = key, Value = value }, longRequestTime: longTimeRequest))
+            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { Key = key, Value = value }, longRequestTime: longTimeRequest))
             {
                 var transaction = _redisDb.CreateTransaction();
                 var incrementTransaction = transaction.StringIncrementAsync(key, value);

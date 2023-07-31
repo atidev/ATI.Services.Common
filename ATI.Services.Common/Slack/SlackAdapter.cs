@@ -2,8 +2,9 @@ using System;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
+using ATI.Services.Common.Metrics;
+using ATI.Services.Common.Metrics.HttpWrapper;
 using ATI.Services.Common.Serializers;
-using ATI.Services.Common.Tracing;
 using JetBrains.Annotations;
 using NLog;
 
@@ -16,15 +17,16 @@ namespace ATI.Services.Common.Slack
     public class SlackAdapter
     {
         private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
-        private readonly TracingHttpClientWrapper _httpClient;
+        private readonly MetricsHttpClientWrapper _httpClient;
         private const string ServiceName = "slack";
         private readonly SlackAdapterOptions _slackOptions;
 
         public SlackAdapter(SlackAdapterOptions options)
         {
             _slackOptions = options;
-            var config = new TracedHttpClientConfig(ServiceName, TimeSpan.FromSeconds(5), SerializerType.Newtonsoft);
-            _httpClient = new TracingHttpClientWrapper(config);
+            var config = new MetricsHttpClientConfig(ServiceName, TimeSpan.FromSeconds(5), SerializerType.Newtonsoft,
+                propagateActivity: false);
+            _httpClient = new MetricsHttpClientWrapper(config);
         }
         
         public async Task<OperationResult> SendAlertAsync(string alert)

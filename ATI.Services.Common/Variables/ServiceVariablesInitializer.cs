@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using ATI.Services.Common.Initializers;
 using ATI.Services.Common.Initializers.Interfaces;
@@ -28,7 +29,8 @@ namespace ATI.Services.Common.Variables
             ServiceVariables.ServiceAsClientName = ServiceVariables.Variables.TryGetValue("ServiceAsClientName", out var name) ? name : "";
             ServiceVariables.ServiceAsClientHeaderName = ServiceVariables.Variables.TryGetValue("ServiceAsClientHeaderName", out var headerName) ? headerName : "";
             ServiceVariables.DefaultLocale = ServiceVariables.Variables.TryGetValue("DefaultLocale", out var locale) ? locale : "ru";
-            ServiceVariables.SupportedLocales = _options?.SupportedLocales ?? new HashSet<string>( new []{ServiceVariables.DefaultLocale} );
+            var locales = _options?.SupportedLocales ?? new List<string> { ServiceVariables.DefaultLocale };
+            ServiceVariables.SupportedLocales = new HashSet<string>(locales, StringComparer.OrdinalIgnoreCase);
 
             _initialized = true;
             return Task.CompletedTask;
