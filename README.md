@@ -1,10 +1,10 @@
 # ATI.Services.Common
 ## Деплой
-Выкладка в nuget происходит на основе триггера на тег определённого формата 
-- `v1.0.0` - формат релизная версия на ветке master 
-- `v1.0.0-rc1` - формат тестовой/альфа/бета версии на любой ветке  
+Выкладка в nuget происходит на основе триггера на тег определённого формата
+- `v1.0.0` - формат релизная версия на ветке master
+- `v1.0.0-rc1` - формат тестовой/альфа/бета версии на любой ветке
 
-Тег можно создать через git(нужно запушить его в origin) [создание тега и пуш в remote](https://git-scm.com/book/en/v2/Git-Basics-Tagging) 
+Тег можно создать через git(нужно запушить его в origin) [создание тега и пуш в remote](https://git-scm.com/book/en/v2/Git-Basics-Tagging)
 
 или через раздел [releses](https://github.com/atidev/ATI.Services.Common/releases)(альфа версии нужно помечать соответсвующей галкой).
 
@@ -37,9 +37,9 @@
         "TimeToLive": "00:05:00",
         "ConnectionString": "your.firstredis.connectionstring",
         "RedisTimeout": "00:00:02",
-        "CircuitBreakerSeconds": "00:01:00", 
+        "CircuitBreakerSeconds": "00:01:00",
         "CircuitBreakerExceptionsCount": 20,
-        "CacheDbNumber": 0 
+        "CacheDbNumber": 0
       },
       "SecondCache": {
         "TimeToLive": "01:00:00",
@@ -60,12 +60,12 @@
   public FirmCommentRepository(RedisProvider redisProvider)
   {
     IRedisCache _cache = redisProvider.GetCache(CacheNames.FirmComment.ToString());
-  } 
+  }
 ```
 
 ---
 ### Sql
-Схема такая же как при работе с Redis. 
+Схема такая же как при работе с Redis.
 Для настройки в `Startup.cs` нужно добавить '`services.AddSql()`
 
  Дополнительно, можно указать кастомный таймаут к определенной процедуре из базы:
@@ -83,13 +83,13 @@
     }
 ```
  В этом случае процедура на процедуру `Very_Heavy_Procedure_Name` будет установлен таймаут в 5 секунд, а на все остальные 2.
- 
+
  Пример использования:
 ```c#
   public FirmCommentRepository(DbProvider provider)
   {
     IDbWrapper _db = provider.GetDb(Databases.RateInfo.ToString());
-  } 
+  }
 ```
 
 ---
@@ -100,7 +100,7 @@
 Так как Prometheus собирает метрики через консул, добавляем тег в конфиг консула `metrics-port-*портприложения*`.
 Добавляем [endpoint](http://stash.ri.domain:7990/projects/AS/repos/ati.firmservicecore/browse/ATI.FirmService.Core.Web.Api/Controllers/MetricsController.cs) для сбора метрик.
 
-Добавляем мидлвару 
+Добавляем мидлвару
 ```csharp
     app.UseMetrics();
 ```
@@ -173,7 +173,7 @@ public class FirmsAdapter
 
 ---
 ### Local Cache
-Для работы с данными, которые меняются очень редко, сделан механизм кэширования в памяти сервиса. Готовим так: 
+Для работы с данными, которые меняются очень редко, сделан механизм кэширования в памяти сервиса. Готовим так:
 наследуем класс, в котором будут хранится данные от класса  `LocalCache<T>`, где `T` - объект, который нужно хранить.
 Добавляем в `Startup.cs` `services.AddLocalCache()`.
 
@@ -198,7 +198,7 @@ public class FirmsAdapter
 
 ---
 ### Common results behavior
-При общении с внешними сервисами для унификации и соблюдения контракта выдачи сделан класс `CommonBehavior`, все данные в контроллерах обрабатываются и приводятся к `ActionResult` только через него. 
+При общении с внешними сервисами для унификации и соблюдения контракта выдачи сделан класс `CommonBehavior`, все данные в контроллерах обрабатываются и приводятся к `ActionResult` только через него.
 При необходимости можно заменить стандартный для наших сервисов сериализатор, вызвав метод этого класса `SetSerializer` и передать туда свой.
 > Нужно отдавать себе отчет, что класс `CommonBehavior` статический, и это действие затронет весь сервис.
 
@@ -222,7 +222,7 @@ public class FirmsAdapter
   }
 ```
 Контроллеры наследуем от `ControllerWithOpenApi`. <br/>
-На методы контроллера вешаем нужные SwaggerTag теги в атрибуте `[SwaggerTag(SwaggerTag.Internal|SwaggerTag.Public)]` и 
+На методы контроллера вешаем нужные SwaggerTag теги в атрибуте `[SwaggerTag(SwaggerTag.Internal|SwaggerTag.Public)]` и
 виды ответов через `[ProducesResponseType(typeof(T), 200)]`.
 
 В `Startup.cs` добавляем: <br/>
@@ -238,7 +238,7 @@ public class FirmsAdapter
 
  ---
 ### slack
-Схема такая же, как при работе с Redis. 
+Схема такая же, как при работе с Redis.
 Для настройки в `Startup.cs` нужно добавить `services.AddSlack()`
 
 Добавляем такую секцию в` appsettings.json`
@@ -264,7 +264,7 @@ public class FirmsAdapter
     }
   }
 ```
- 
+
  Пример использования:
 ```c#
   public KonturFullCheckAlertSender(SlackProvider slackProvider)
@@ -276,15 +276,15 @@ public class FirmsAdapter
 ---
 ### Логи
 Для использования NLog нужно:
-1. Создать секцию NLogOptions в `appsettings`  
+1. Создать секцию NLogOptions в `appsettings`
 2. Подключить NLog `.UseNLog()` в Program.cs
-3. Настроить NLog после инициализации ConfigurationManager в Startup.cs 
+3. Настроить NLog после инициализации ConfigurationManager в Startup.cs
 ```
 var nLogOptions = ConfigurationManager.ConfigurationRoot.GetSection("NLogOptions").Get<NLogOptions>();
 var nLogConfigurator = new NLogConfigurator(nLogOptions);
 nLogConfigurator.ConfigureNLog();
 ```
-   
+
 Структура секции NLogOptions в appsettiings, default значения можно опустить:
 ``` json
 "NLogOptions": {
@@ -350,14 +350,14 @@ nLogConfigurator.ConfigureNLog();
 ---
 ### ServiceVariables
 Данный блок конфигурации используется для конфигурирования данных уровня всего приложения
-В приложении можно вызывать 
+В приложении можно вызывать
 ```csharp
-ServiceVariables.Variables 
+ServiceVariables.Variables
 ```
 Так же имеются предопределенные поля:
 ```csharp
-ServiceVariables.ServiceAsClientHeaderName 
-ServiceVariables.ServiceAsClientName 
+ServiceVariables.ServiceAsClientHeaderName
+ServiceVariables.ServiceAsClientName
 ServiceVariables.DefaultLocale
 ServiceVariables.SupportedLocales
 ```
@@ -366,7 +366,7 @@ ServiceVariables.SupportedLocales
   "ServiceVariablesOptions": {
     "Variables": {
       //Передается в каждый исходящий HTTP Запрос ConsulMetricsHttpClientWrapper в качестве header'a со значением  ServiceAsClientName
-      "ServiceAsClientHeaderName": "ClientNameHeader", 
+      "ServiceAsClientHeaderName": "ClientNameHeader",
       "ServiceAsClientName": "ServiceName", //имя сервиса при исходящих HTTP запросах
       "DefaultLocale":"ru", //локаль, использующаяся по умолчанию
       "VarName-3":"Var value 3", //Дополнительные параметры
@@ -375,7 +375,7 @@ ServiceVariables.SupportedLocales
     "SupportedLocales":["ru","en"] //список поддерживаемых сервисом локалей
   }
 ```
-В `Startup.cs` вызываем 
+В `Startup.cs` вызываем
 ```c#
   services.AddServiceVariables();
 ```
@@ -387,7 +387,7 @@ ServiceVariables.SupportedLocales
 ```csharp
 app.UseAcceptLanguageLocalization();
 ```
-Теперь, если заголовок Accept-Language при http запросе или хэдер accept_language rmq сообщения будет передан, то получить значение культуры можно в любом месте приложения путем вызова 
+Теперь, если заголовок Accept-Language при http запросе или хэдер accept_language rmq сообщения будет передан, то получить значение культуры можно в любом месте приложения путем вызова
 ```csharp
 LocaleHelper.GetLocale();
 ```
@@ -398,59 +398,90 @@ FlowContext<RequestMetaData>.AccessLanguage;
 
 #### InCodeLocalizer
 
-Небольшой хелпер для локализации строк, переводы можно хранить прямо в коде. Подходит если строк для перевода относительно мало.  
+Небольшой хелпер для локализации строк, переводы можно хранить прямо в коде. Подходит если строк для перевода относительно мало.
 Работает только с локалями перечисленными в `ServiceVariables.SupportedLocales`, текущую локаль определяет через `LocaleHelper.GetLocale()`
 
 1. Добавить в Startup.cs
 ```csharp
-services.AddInCodeLocalization(); 
+services.AddInCodeLocalization();
 ```
 
 2. Реализовать `IInCodeLocalization`, есть 2 варианта:
-   1. для всех локалей кроме дефолтной  
+   1. для всех локалей кроме дефолтной
      в качестве ключа использовать значение в дефолтной локали,
     более наглядно, т.к. в коде по месту используются не "NortWestRegionId", а сам текст в дефолтной локали
       ```csharp
       public class EnLocalization : IInCodeLocalization
       {
           public string Locale { get; } = new("en");
-   
+
           public ReadOnlyDictionary<string, string> LocalizedStrings =>
               new(new Dictionary<string, string>
               {
                   { "Северо-Западный фед.округ", "Northwestern Federal District" },
               });
       }
-     
+
       // использование
       // в дефолтной локали вернёт переданный ключ "Северо-Западный фед.округ"
       _inCodeLocalizer["Северо-Западный фед.округ"]
       ```
    2. для каждой поддерживаемой локали
       ```csharp
-     
+
       public class RuLocalization : IInCodeLocalization
       {
           public string Locale { get; } = new("ru");
-   
+
           public ReadOnlyDictionary<string, string> LocalizedStrings =>
               new(new Dictionary<string, string>
               {
                   { "NortWestRegionId", "Северо-Западный фед.округ" },
               });
       }
-     
+
       public class EnLocalization : IInCodeLocalization
       {
           public string Locale { get; } = new("en");
-   
+
           public ReadOnlyDictionary<string, string> LocalizedStrings =>
               new(new Dictionary<string, string>
               {
                   { "NortWestRegionId", "Northwestern Federal District" },
               });
       }
-      
+
       // использование
       _inCodeLocalizer["NortWestRegionId", false]
       ```
+
+### Xss
+Небольшой сервис для проверки на xss инъекции
+
+#### Middleware
+Добавить в Startup.cs
+
+```csharp
+app.UseXssValidation();
+```
+
+#### Атрибуты
+
+##### Атрибут для контроллера
+Над котроллером написать
+```csharp
+[XssInputValidationFilter]
+```
+##### Атрибут для свойств в классах
+  1. Добавить в Startup.cs
+  ```csharp
+  services.AddXssValidationAttribute();
+  ```
+  2. Над свойствами в классе добавить
+  ```csharp
+  [XssValidate]
+  ```
+
+
+
+
