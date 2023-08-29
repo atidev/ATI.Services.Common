@@ -2,7 +2,7 @@
 ## Деплой
 
 
-### теги
+### Теги
 
 Выкладка в nuget происходит на основе триггера на тег определённого формата: [как повышать версию](https://learn.microsoft.com/en-us/nuget/concepts/package-versioning)
 ##### ВАЖНО: 
