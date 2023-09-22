@@ -1,5 +1,6 @@
 ﻿using System;
 using ATI.Services.Common.Serializers;
+using StackExchange.Redis;
 
 namespace ATI.Services.Common.Caching.Redis
 {
@@ -15,7 +16,36 @@ namespace ATI.Services.Common.Caching.Redis
         public int CacheDbNumber { get; set; }
         public TimeSpan? LongRequestTime { get; set; }
         public bool MustConnectOnInit { get; set; }
+        
+        public string Server { get; set; }
+        public string ServiceName { get; set; }
+        public int? SyncTimeoutMs { get; set; }
 
         public SerializerType Serializer { get; set; } = SerializerType.SystemTextJson;
+
+        public string BuildConnectionString()
+        {
+            var options = ConnectionString != null
+                ? ConfigurationOptions.Parse(ConnectionString)
+                : new ConfigurationOptions();
+            
+            if (Server != null)
+            {
+                options.EndPoints.Clear();
+                options.EndPoints.Add(Server);
+            }
+
+            if (ServiceName != null)
+            {
+                options.ServiceName = ServiceName;
+            }
+
+            if (SyncTimeoutMs != null)
+            {
+                options.SyncTimeout = SyncTimeoutMs.Value;
+            }
+
+            return options.ToString();
+        }
     }
 }
