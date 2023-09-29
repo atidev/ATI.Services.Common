@@ -76,7 +76,7 @@ namespace ATI.Services.Common.Caching.Redis
                 {
                     try
                     {
-                        return await ConnectionMultiplexer.ConnectAsync(Options.ConnectionString);
+                        return await ConnectionMultiplexer.ConnectAsync(Options.BuildConnectionString());
                     }
                     catch (Exception e)
                     {
