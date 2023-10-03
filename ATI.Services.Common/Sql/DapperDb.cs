@@ -47,7 +47,7 @@ namespace ATI.Services.Common.Sql
                            longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
-                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
                         using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -96,7 +96,7 @@ namespace ATI.Services.Common.Sql
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
-                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
                         using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -152,7 +152,7 @@ namespace ATI.Services.Common.Sql
                     longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
-                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
                         using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -200,7 +200,7 @@ namespace ATI.Services.Common.Sql
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
-                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
                         using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -237,7 +237,7 @@ namespace ATI.Services.Common.Sql
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Object, ParameterDirection.ReturnValue);
-                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
                         using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                                    longTimeRequest, QueryMetricTypeLabel))
@@ -274,7 +274,7 @@ namespace ATI.Services.Common.Sql
                     longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
-                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
                         using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -323,7 +323,7 @@ namespace ATI.Services.Common.Sql
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
-                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
                         using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, 
@@ -376,7 +376,7 @@ namespace ATI.Services.Common.Sql
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
-                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
                         using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -438,7 +438,7 @@ namespace ATI.Services.Common.Sql
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
-                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
                         using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -494,7 +494,7 @@ namespace ATI.Services.Common.Sql
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
-                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
                         using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -553,7 +553,7 @@ namespace ATI.Services.Common.Sql
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
-                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
                         using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -602,7 +602,7 @@ namespace ATI.Services.Common.Sql
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
-                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
                         using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -637,7 +637,7 @@ namespace ATI.Services.Common.Sql
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
-                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
                         T result;
                         
@@ -679,7 +679,7 @@ namespace ATI.Services.Common.Sql
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
-                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
                         using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -716,7 +716,7 @@ namespace ATI.Services.Common.Sql
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
-                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
                         using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -757,7 +757,7 @@ namespace ATI.Services.Common.Sql
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
 
-                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
                         using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -817,7 +817,7 @@ namespace ATI.Services.Common.Sql
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
 
-                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
                         using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -870,7 +870,7 @@ namespace ATI.Services.Common.Sql
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
 
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
-                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
                         using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -936,7 +936,7 @@ namespace ATI.Services.Common.Sql
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
 
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
-                    await using (var connection = new SqlConnection(_options.ConnectionString))
+                    await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
                         using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
@@ -975,6 +975,51 @@ namespace ATI.Services.Common.Sql
                 LogWithParameters(e, procedureName, metricEntity, parameters);
                 return new OperationResult<T>(e);
             }
+        }
+
+
+        private string BuildConnectionString()
+        {
+            var connectionString = _options.ConnectionString;
+            var builder = new SqlConnectionStringBuilder(connectionString);
+            if (_options.Server != null)
+            {
+                builder.DataSource = _options.Server;
+            }
+            if (_options.Database != null)
+            {
+                builder.InitialCatalog = _options.Database;
+            }
+            if (_options.UserName != null)
+            {
+                builder.UserID = _options.UserName;
+            }
+            if (_options.Password != null)
+            {
+                builder.Password = _options.Password;
+            }
+            if (_options.MinPoolSize != null)
+            {
+                builder.MinPoolSize = _options.MinPoolSize.Value;
+            }
+            if (_options.MaxPoolSize != null)
+            {
+                builder.MaxPoolSize = _options.MaxPoolSize.Value;
+            }
+            if (_options.ConnectTimeout != null)
+            {
+                builder.ConnectTimeout = _options.ConnectTimeout.Value;
+            }
+            if (_options.ConnectRetryCount != null)
+            {
+                builder.ConnectRetryCount = _options.ConnectRetryCount.Value;
+            }
+            if (_options.ConnectRetryInterval != null)
+            {
+                builder.ConnectRetryInterval = _options.ConnectRetryInterval.Value;
+            }
+
+            return builder.ToString();
         }
 
         
