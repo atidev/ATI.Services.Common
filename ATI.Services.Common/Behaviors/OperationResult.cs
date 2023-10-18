@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using JetBrains.Annotations;
@@ -146,6 +147,7 @@ namespace ATI.Services.Common.Behaviors
         /// <summary>
         /// Возвращает флаг, указывающий, успешно ли была выполнена операция и проверяет что значение не равно null        
         /// </summary>
+        [MemberNotNullWhen(returnValue: true, nameof(Value))]
         public new bool Success => ActionStatus == ActionStatus.Ok && Value != null &&
                                    (!UseCountSuccessCondition || !ValueIsArray || ((ICollection)Value).Count != 0);
 
