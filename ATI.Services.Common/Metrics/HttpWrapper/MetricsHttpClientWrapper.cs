@@ -530,12 +530,12 @@ namespace ATI.Services.Common.Metrics.HttpWrapper
                     Headers.AddRange(AppHttpContext.HeadersAndValuesToProxy(config.HeadersToProxy));
 
                 foreach (var header in Headers)
-                    msg.Headers.Add(header.Key, header.Value);
+                    msg.Headers.TryAddWithoutValidation(header.Key, header.Value);
 
                 string acceptLanguage;
                 if (config.AddCultureToRequest
                     && (acceptLanguage = FlowContext<RequestMetaData>.Current.AcceptLanguage) != null)
-                    msg.Headers.TryAddWithoutValidation("Accept-Language", acceptLanguage);
+                    msg.Headers.Add("Accept-Language", acceptLanguage);
 
 
                 if (string.IsNullOrEmpty(Content) == false)
