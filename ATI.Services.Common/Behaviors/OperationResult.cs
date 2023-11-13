@@ -129,6 +129,8 @@ namespace ATI.Services.Common.Behaviors
                     return ActionStatus.Timeout;
                 case HttpStatusCode.TooManyRequests:
                     return ActionStatus.TooManyRequests;
+                case HttpStatusCode.NotModified:
+                    return ActionStatus.NotModified;
                 default:
                     return ActionStatus.InternalServerError;
             }

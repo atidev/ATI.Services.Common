@@ -535,7 +535,7 @@ namespace ATI.Services.Common.Metrics.HttpWrapper
                 string acceptLanguage;
                 if (config.AddCultureToRequest
                     && (acceptLanguage = FlowContext<RequestMetaData>.Current.AcceptLanguage) != null)
-                    msg.Headers.Add("Accept-Language", acceptLanguage);
+                    msg.Headers.TryAddWithoutValidation("Accept-Language", acceptLanguage);
 
 
                 if (string.IsNullOrEmpty(Content) == false)
