@@ -352,7 +352,9 @@ namespace ATI.Services.Common.Metrics.HttpWrapper
 
                     try
                     {
-                        result.Content = Config.Serializer.Deserialize<TResult>(result.RawContent);
+                        result.Content = !string.IsNullOrEmpty(result.RawContent)
+                                             ? Config.Serializer.Deserialize<TResult>(result.RawContent)
+                                             : default;
                     }
                     catch (TaskCanceledException e) when (e.InnerException is TimeoutException)
                     {
