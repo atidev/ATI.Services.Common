@@ -70,14 +70,14 @@ namespace ATI.Services.Common.Swagger
                 {
                     foreach (string projectXmlPath in Directory.EnumerateFiles(AppContext.BaseDirectory, "*.xml"))
                     {
-                        c.IncludeXmlComments(projectXmlPath);
+                        c.IncludeXmlComments(projectXmlPath, includeControllerXmlComments: true);
                     }
                 }
                 else
                 {
                     foreach (var projectXml in swaggerOptions.ProjectsXmlNames)
                     {
-                        c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, projectXml));
+                        c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, projectXml), includeControllerXmlComments: true);
                     }
                 }
                     
