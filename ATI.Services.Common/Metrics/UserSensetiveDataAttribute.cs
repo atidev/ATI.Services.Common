@@ -1,7 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
 
 namespace ATI.Services.Common.Metrics;
 
-public class UserSensitiveDataAttribute : ValidationAttribute
+public class UserSensitiveDataAttribute : Attribute
 {
 }
