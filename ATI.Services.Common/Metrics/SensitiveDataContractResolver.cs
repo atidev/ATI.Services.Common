@@ -5,6 +5,9 @@ using Newtonsoft.Json.Serialization;
 
 namespace ATI.Services.Common.Metrics;
 
+/// <summary>
+/// Позволяет убирать из сериализации поля, помеченные атрибутом UserSensitiveDataAttribute
+/// </summary>
 public class SensitiveDataContractResolver : DefaultContractResolver
 {
     public static SensitiveDataContractResolver Instance { get; } = new ();
