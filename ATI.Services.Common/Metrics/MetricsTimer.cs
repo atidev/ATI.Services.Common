@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using ATI.Services.Common.Logging;
 using ATI.Services.Common.Serializers;
+using Newtonsoft.Json;
 using NLog;
 using Prometheus;
 
@@ -85,6 +86,12 @@ namespace ATI.Services.Common.Metrics
 
         private Dictionary<object, object> GetContext()
         {
+            var settings = new JsonSerializerSettings()
+            {
+                ContractResolver = SensitiveDataContractResolver.Instance
+            };
+            _serializer.SetSerializeSettings(settings);
+            
             var metricString = _serializer.Serialize(
                 new
                 {
