@@ -1,10 +1,10 @@
 ﻿using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
+using ATI.Services.Common.Metrics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace ATI.Services.Common.Metrics;
+namespace ATI.Services.Common.Serializers.Newtonsoft.ContractResolvers;
 
 /// <summary>
 /// Позволяет убирать из сериализации поля, помеченные атрибутом UserSensitiveDataAttribute

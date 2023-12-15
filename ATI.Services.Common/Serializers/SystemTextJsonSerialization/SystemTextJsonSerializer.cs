@@ -22,10 +22,6 @@ namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization
                     {
                         new TimeSpanConverter(),
                         new DictionaryKeyValueConverter()
-                    },
-                    TypeInfoResolver = new DefaultJsonTypeInfoResolver()
-                    {
-                        Modifiers = { IgnoreUserSensitiveData }
                     }
                 } : new JsonSerializerOptions();
         }
@@ -66,7 +62,7 @@ namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization
             return await JsonSerializer.DeserializeAsync<T>(stream, _jsonSerializerOptions);
         }
         
-        private static void IgnoreUserSensitiveData(JsonTypeInfo typeInfo)
+        public static void IgnoreUserSensitiveData(JsonTypeInfo typeInfo)
         {
             foreach (var propertyInfo in typeInfo.Properties)
             {

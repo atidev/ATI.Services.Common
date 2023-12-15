@@ -1,8 +1,6 @@
 using System;
 using System.IO;
-using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
-using ATI.Services.Common.Metrics;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -20,7 +18,7 @@ namespace ATI.Services.Common.Serializers.Newtonsoft
             _serializeSettings = new JsonSerializerSettings
             {
                 // Для приватной логики (работа с редисом и тд) игнорируем ShouldSerialize для корректной работы
-                ContractResolver = SensitiveDataContractResolver.Instance
+                ContractResolver = new DefaultContractResolver { IgnoreShouldSerializeMembers = true }
             };
             SetJsonSerializer();
         }
