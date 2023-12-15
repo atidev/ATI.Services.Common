@@ -42,7 +42,7 @@ namespace ATI.Services.Common.Metrics
             _longRequestTime = longRequestTime;
             _context = context;
             _logSource = logSource;
-            _serializer = SerializerFactory.GetSerializerByType(SerializerType.Newtonsoft);
+            _serializer = SerializerFactory.GetSerializerByType(SerializerType.SystemTextJson);
         }
 
         public void Restart()
@@ -86,12 +86,6 @@ namespace ATI.Services.Common.Metrics
 
         private Dictionary<object, object> GetContext()
         {
-            var settings = new JsonSerializerSettings()
-            {
-                ContractResolver = SensitiveDataContractResolver.Instance
-            };
-            _serializer.SetSerializeSettings(settings);
-            
             var metricString = _serializer.Serialize(
                 new
                 {
