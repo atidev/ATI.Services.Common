@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using ATI.Services.Common.Serializers;
 using ATI.Services.Common.Serializers.SystemTextJsonSerialization;
 using JetBrains.Annotations;
-using Newtonsoft.Json;
 using NLog;
 
 namespace ATI.Services.Common.Logging;

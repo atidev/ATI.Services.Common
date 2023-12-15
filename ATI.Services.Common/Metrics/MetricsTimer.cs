@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using ATI.Services.Common.Logging;
 using ATI.Services.Common.Serializers;
-using Newtonsoft.Json;
 using NLog;
 using Prometheus;
 

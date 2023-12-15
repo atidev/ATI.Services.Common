@@ -1,9 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
-using ATI.Services.Common.Metrics;
 using JetBrains.Annotations;
 
 namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization
@@ -60,17 +58,6 @@ namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization
         public async Task<T> DeserializeAsync<T>(Stream stream)
         {
             return await JsonSerializer.DeserializeAsync<T>(stream, _jsonSerializerOptions);
-        }
-        
-        public static void IgnoreUserSensitiveData(JsonTypeInfo typeInfo)
-        {
-            foreach (var propertyInfo in typeInfo.Properties)
-            {
-                if (propertyInfo.AttributeProvider != null && propertyInfo.AttributeProvider.IsDefined(typeof(UserSensitiveDataAttribute), false))
-                {
-                    propertyInfo.ShouldSerialize = (_, _) => false;
-                }
-            }
         }
     }
 }
