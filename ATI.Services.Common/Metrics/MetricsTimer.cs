@@ -42,7 +42,7 @@ namespace ATI.Services.Common.Metrics
             _longRequestTime = longRequestTime;
             _context = context;
             _logSource = logSource;
-            _serializer = SerializerFactory.GetSerializerByType(SerializerType.SystemTextJson);
+            _serializer = SerializerFactory.GetSerializerByType(SerializerType.Newtonsoft);
         }
 
         public void Restart()
