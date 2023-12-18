@@ -18,7 +18,7 @@ public static class SystemTextJsonCustomOptions
     {
         foreach (var propertyInfo in typeInfo.Properties)
         {
-            if (propertyInfo.AttributeProvider != null && propertyInfo.AttributeProvider.IsDefined(typeof(UserSensitiveDataAttribute), false))
+            if (propertyInfo.AttributeProvider != null && propertyInfo.AttributeProvider.IsDefined(typeof(UserSensitiveDataAttribute), true))
             {
                 propertyInfo.ShouldSerialize = (_, _) => false;
             }
