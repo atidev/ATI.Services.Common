@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
-using ATI.Services.Common.Metrics;
+using ATI.Services.Common.Logging;
 
 namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization;
 

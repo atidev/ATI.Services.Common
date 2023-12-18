@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ATI.Services.Common.Metrics;
+namespace ATI.Services.Common.Logging;
 
 /// <summary>
 /// Аттрибут, который показывает, что поле содержит конфиденциальную информацию

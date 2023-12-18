@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using System.Reflection;
-using ATI.Services.Common.Metrics;
+using ATI.Services.Common.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -12,11 +12,6 @@ namespace ATI.Services.Common.Serializers.Newtonsoft.ContractResolvers;
 public class SensitiveDataContractResolver : DefaultContractResolver
 {
     public static SensitiveDataContractResolver Instance { get; } = new();
-
-    private SensitiveDataContractResolver()
-    {
-        IgnoreShouldSerializeMembers = true;
-    }
 
     protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
     {
