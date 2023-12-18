@@ -6,7 +6,7 @@ namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization;
 
 public static class SystemTextJsonCustomOptions
 {
-    public static JsonSerializerOptions IgnoreUserSensitiveDataOptions = new JsonSerializerOptions
+    public static readonly JsonSerializerOptions IgnoreUserSensitiveDataOptions = new JsonSerializerOptions
     {
         TypeInfoResolver = new DefaultJsonTypeInfoResolver
         {
