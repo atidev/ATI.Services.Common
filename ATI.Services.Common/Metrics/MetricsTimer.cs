@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using ATI.Services.Common.Logging;
 using ATI.Services.Common.Serializers;
+using ATI.Services.Common.Serializers.SystemTextJsonSerialization;
 using NLog;
 using Prometheus;
 
@@ -42,6 +43,7 @@ namespace ATI.Services.Common.Metrics
             _context = context;
             _logSource = logSource;
             _serializer = SerializerFactory.GetSerializerByType(SerializerType.SystemTextJson);
+            _serializer.SetSerializeSettings(SystemTextJsonCustomOptions.IgnoreUserSensitiveDataOptions);
         }
 
         public void Restart()
