@@ -65,7 +65,7 @@ public class InCodeLocalizer
 
         foreach (var localization in _localizations)
         {
-            if (name != null && localization.Value.LocalizedStrings.TryGetValue(name, out var localized))
+            if (localization.Value.LocalizedStrings.TryGetValue(name, out var localized))
             {
                 localizedValues.Add(localized);
             }
