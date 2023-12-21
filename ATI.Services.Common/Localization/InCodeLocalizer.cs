@@ -21,7 +21,7 @@ public class InCodeLocalizer
     public InCodeLocalizer(IEnumerable<IInCodeLocalization> localizations)
     {
         _localizations = localizations.Where(x => ServiceVariables.SupportedLocales.Contains(x.Locale))
-                                      .ToDictionary(x => x.Locale);
+            .ToDictionary(x => x.Locale);
     }
 
     /// <summary>
@@ -57,5 +57,20 @@ public class InCodeLocalizer
             Logger.Error($"Missing translation for {name ?? string.Empty} in locale {locale}");
             return string.Empty;
         }
+    }
+
+    public List<string> GetAllLocalizedValues(string name)
+    {
+        var localizedValues = new List<string>();
+
+        foreach (var localization in _localizations)
+        {
+            if (localization.Value.LocalizedStrings.TryGetValue(name, out var localized))
+            {
+                localizedValues.Add(localized);
+            }
+        }
+
+        return localizedValues;
     }
 }
