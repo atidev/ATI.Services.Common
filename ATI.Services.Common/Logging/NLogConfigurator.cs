@@ -7,7 +7,6 @@ using NLog;
 using NLog.Config;
 using NLog.Layouts;
 using NLog.Targets;
-using NLog.Web;
 
 namespace ATI.Services.Common.Logging
 {
@@ -35,7 +34,8 @@ namespace ATI.Services.Common.Logging
             JsonAttributeHelper.CreateWithoutUnicodeEscaping("metricSource", "${event-properties:metricSource}"),
             JsonAttributeHelper.CreateWithoutUnicodeEscaping("traceId", "${activity:property=TraceId}"),
             JsonAttributeHelper.CreateWithoutUnicodeEscaping("parentId", "${activity:property=ParentId}"),
-            JsonAttributeHelper.CreateWithoutUnicodeEscaping("spanId", "${activity:property=SpanId}")
+            JsonAttributeHelper.CreateWithoutUnicodeEscaping("spanId", "${activity:property=SpanId}"),
+            JsonAttributeHelper.CreateWithoutUnicodeEscaping("traceState", "${activity:property=TraceState}")
         };
 
         public NLogConfigurator(NLogOptions options)
@@ -52,12 +52,7 @@ namespace ATI.Services.Common.Logging
             try
             {
                 LogManager.ThrowExceptions = _options.ThrowExceptions;
-                
-                LogManager.Setup().SetupExtensions(ext => {
-                    ext.RegisterTarget<NLog.Targets.DiagnosticListenerTarget>();
-                    ext.RegisterLayoutRenderer<NLog.LayoutRenderers.ActivityTraceLayoutRenderer>();
-                });
-                
+
                 var configuration = new LoggingConfiguration();
 
                 AddVariables(configuration);
@@ -71,7 +66,12 @@ namespace ATI.Services.Common.Logging
 
                 ApplyRules(configuration, _options.Rules);
 
-                NLogBuilder.ConfigureNLog(configuration);
+                LogManager.Setup()
+                    .SetupExtensions(ext => {
+                        ext.RegisterTarget<DiagnosticListenerTarget>();
+                        ext.RegisterLayoutRenderer<NLog.LayoutRenderers.ActivityTraceLayoutRenderer>();
+                    })
+                    .LoadConfiguration(configuration);
             }
             catch (Exception exception)
             {

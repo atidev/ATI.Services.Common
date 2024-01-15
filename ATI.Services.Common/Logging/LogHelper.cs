@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using NLog;
 using NLog.Layouts;
-using NLog.Web;
 using ConfigurationManager = ATI.Services.Common.Behaviors.ConfigurationManager;
 
 namespace ATI.Services.Common.Logging
@@ -25,11 +24,11 @@ namespace ATI.Services.Common.Logging
             try
             {
                 var configPath = $"nlog.{env.EnvironmentName}.config";
-                NLogBuilder.ConfigureNLog(configPath);
+                LogManager.Setup().LoadConfigurationFromFile(configPath);
             }
             catch (Exception exception)
             {
-                NLogBuilder.ConfigureNLog("nlog.config");
+                LogManager.Setup().LoadConfigurationFromFile("nlog.config");
                 LogManager.GetCurrentClassLogger().Error(exception);
             }
         }
@@ -39,8 +38,8 @@ namespace ATI.Services.Common.Logging
             var loggingConfiguration = LogManager.Configuration;
 
             loggingConfiguration.Variables.Add("JsonLayout", new SimpleLayout(ConfigurationManager.LoggerSettings("JsonLayout")));
-
-            NLogBuilder.ConfigureNLog(loggingConfiguration);
+            
+            LogManager.Setup().LoadConfiguration(loggingConfiguration);
         }
     }
 }
