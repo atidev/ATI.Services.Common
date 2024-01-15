@@ -67,10 +67,7 @@ namespace ATI.Services.Common.Logging
                 ApplyRules(configuration, _options.Rules);
 
                 LogManager.Setup()
-                    .SetupExtensions(ext => {
-                        ext.RegisterTarget<DiagnosticListenerTarget>();
-                        ext.RegisterLayoutRenderer<NLog.LayoutRenderers.ActivityTraceLayoutRenderer>();
-                    })
+                    .SetupExtensions(ext => ext.AutoLoadExtensions())
                     .LoadConfiguration(configuration);
             }
             catch (Exception exception)
