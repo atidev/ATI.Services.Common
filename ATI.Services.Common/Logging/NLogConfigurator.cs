@@ -33,8 +33,7 @@ namespace ATI.Services.Common.Logging
             JsonAttributeHelper.CreateWithoutUnicodeEscaping("logContext", "${event-properties:logContext}"),
             JsonAttributeHelper.CreateWithoutUnicodeEscaping("metricString", "${event-properties:metricString}"),
             JsonAttributeHelper.CreateWithoutUnicodeEscaping("metricSource", "${event-properties:metricSource}"),
-            JsonAttributeHelper.CreateWithoutUnicodeEscaping("traceId", "${activity:property=Id}"),
-            JsonAttributeHelper.CreateWithoutUnicodeEscaping("traceRootId", "${activity:property=TraceId}"),
+            JsonAttributeHelper.CreateWithoutUnicodeEscaping("traceId", "${activity:property=TraceId}"),
             JsonAttributeHelper.CreateWithoutUnicodeEscaping("traceParentId", "${activity:property=ParentId}"),
             JsonAttributeHelper.CreateWithoutUnicodeEscaping("traceSpanId", "${activity:property=SpanId}"),
             JsonAttributeHelper.CreateWithoutUnicodeEscaping("traceState", "${activity:property=TraceState}")
