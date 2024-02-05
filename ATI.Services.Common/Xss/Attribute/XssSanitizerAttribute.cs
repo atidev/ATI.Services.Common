@@ -11,6 +11,8 @@ public class XssSanitizerAttribute : ValidationAttribute
     /// <summary>
     /// Экранировать XSS и отдавать success
     /// </summary>
+    /// <value>true - экранирует XSS </value>
+    /// <value>false - возвращает, что модель не валидна</value>>
     public bool IsReplace { get; set; } = true;
 
     private static readonly HtmlSanitizer Sanitizer = new ();
@@ -20,6 +22,11 @@ public class XssSanitizerAttribute : ValidationAttribute
         var rawValue = value as string;
         if (rawValue == null)
             return ValidationResult.Success;
+
+        // Реплейсим спец. символ, потому что санитайзер его считает за xss
+        rawValue = rawValue
+            .Replace('\r', ' ')
+            .TrimStart();
 
         var sanitised = Sanitizer.Sanitize(rawValue);
 
