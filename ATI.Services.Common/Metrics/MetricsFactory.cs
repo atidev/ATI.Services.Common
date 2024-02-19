@@ -12,7 +12,7 @@ namespace ATI.Services.Common.Metrics
     public class MetricsFactory
     {
         private Summary Summary { get; }
-        private static string _serviceName = "default_name";
+        private static string _serviceName = "common_default";
         private static readonly string MachineName = Environment.MachineName;
         private readonly string _className;
         private readonly string _externalHttpServiceName;
@@ -31,7 +31,9 @@ namespace ATI.Services.Common.Metrics
 
         public static void Init(string serviceName, TimeSpan? defaultLongRequestTime = null)
         {
-            _serviceName = serviceName;
+            if (serviceName != null)
+                _serviceName = $"common_{serviceName}";
+            
             if (defaultLongRequestTime != null)
             {
                 _defaultLongRequestTime = defaultLongRequestTime.Value;
