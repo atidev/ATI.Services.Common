@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using Ganss.Xss;
 
@@ -25,7 +26,7 @@ public class XssSanitizerAttribute : ValidationAttribute
 
         // Реплейсим спец. символ, потому что санитайзер его считает за xss
         rawValue = rawValue
-            .Replace('\r', ' ')
+            .Replace("\r", String.Empty)
             .TrimStart();
 
         var sanitised = Sanitizer.Sanitize(rawValue);
