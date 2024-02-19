@@ -18,10 +18,11 @@ namespace ATI.Services.Common.Metrics
         private const string ExceptionsMetricName = "Exceptions";
         private Gauge _gauge;
 
-        private string ServiceName { get; }
+        private string ServiceName { get; } = "common_default";
         public ExceptionsMetricsCollector()
         {
-            ServiceName = ConfigurationManager.GetSection(nameof(MetricsOptions)).Get<MetricsOptions>().MetricsServiceName;
+            if(ConfigurationManager.GetSection(nameof(MetricsOptions)).Get<MetricsOptions>().MetricsServiceName is { } serviceName)
+                ServiceName =  $"common_{serviceName}";
         }
 
         protected override void OnEventSourceCreated(EventSource eventSource)
@@ -44,7 +45,7 @@ namespace ATI.Services.Common.Metrics
         public void RegisterMetrics(CollectorRegistry registry)
         {
             _metricFactory = Prometheus.Metrics.WithCustomRegistry(registry);
-            _gauge = _metricFactory.CreateGauge(ServiceName + ExceptionsMetricName, "", "machine_name", "exception_type");
+            _gauge = _metricFactory.CreateGauge($"{ServiceName}_{ExceptionsMetricName}", "", "machine_name", "exception_type");
         }
 
         public void UpdateMetrics()
