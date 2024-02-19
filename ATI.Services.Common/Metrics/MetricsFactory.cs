@@ -14,11 +14,12 @@ namespace ATI.Services.Common.Metrics
         private Summary Summary { get; }
         private static string _serviceName = "default_name";
         private static readonly string MachineName = Environment.MachineName;
+        private readonly string _className;
         private readonly string _externalHttpServiceName;
         private readonly LogSource _logSource;
         private static TimeSpan _defaultLongRequestTime = TimeSpan.FromSeconds(1);
 
-        private static readonly QuantileEpsilonPair[] _summaryQuantileEpsilonPairs = {
+        private static readonly QuantileEpsilonPair[] SummaryQuantileEpsilonPairs = {
             new(0.5, 0.05),
             new(0.9, 0.05),
             new(0.95, 0.01),
@@ -38,7 +39,7 @@ namespace ATI.Services.Common.Metrics
         }
 
         public static MetricsFactory CreateHttpClientMetricsFactory(
-            [NotNull] string summaryName,
+            [NotNull] string className,
             string externalHttpServiceName,
             TimeSpan? longRequestTime = null,
             params string[] additionalSummaryLabels)
@@ -51,15 +52,16 @@ namespace ATI.Services.Common.Metrics
                 additionalSummaryLabels);
 
             return new MetricsFactory(
+                className,
                 LogSource.HttpClient,
-                _serviceName + summaryName,
+                $"{_serviceName}.http_client",
                 externalHttpServiceName,
                 longRequestTime,
                 labels);
         }
 
         public static MetricsFactory CreateRedisMetricsFactory(
-            [NotNull] string summaryName,
+            [NotNull] string className,
             TimeSpan? longRequestTime = null,
             params string[] additionalSummaryLabels)
         {
@@ -71,28 +73,34 @@ namespace ATI.Services.Common.Metrics
                 additionalSummaryLabels);
 
             return new MetricsFactory(
+                className,
                 LogSource.Redis,
-                _serviceName + summaryName,
+                $"{_serviceName}.redis",
                 longRequestTime ?? _defaultLongRequestTime,
                 labels);
         }
 
         public static MetricsFactory CreateMongoMetricsFactory(
-            [NotNull] string summaryName,
+            [NotNull] string className,
             params string[] additionalSummaryLabels)
         {
-            var labels = ConcatLabelNames("method_name", "entity_name", null, MetricsLabelsAndHeaders.UserLabels,
+            var labels = ConcatLabelNames(
+                "method_name",
+                "entity_name",
+                null,
+                MetricsLabelsAndHeaders.UserLabels,
                 additionalSummaryLabels);
 
             return new MetricsFactory(
+                className,
                 LogSource.Mongo,
-                _serviceName + summaryName,
+                $"{_serviceName}.mongo",
                 _defaultLongRequestTime,
                 labels);
         }
 
         public static MetricsFactory CreateSqlMetricsFactory(
-            [NotNull] string summaryName,
+            [NotNull] string className,
             TimeSpan? longTimeRequest = null,
             params string[] additionalSummaryLabels)
         {
@@ -104,14 +112,15 @@ namespace ATI.Services.Common.Metrics
                 additionalSummaryLabels);
 
             return new MetricsFactory(
+                className,
                 LogSource.Sql,
-                _serviceName + summaryName,
+                $"{_serviceName}.sql",
                 _defaultLongRequestTime,
                 labels);
         }
 
         public static MetricsFactory CreateControllerMetricsFactory(
-            [NotNull] string summaryName,
+            [NotNull] string className,
             params string[] additionalSummaryLabels)
         {
             var labels = ConcatLabelNames(
@@ -122,14 +131,15 @@ namespace ATI.Services.Common.Metrics
                 additionalSummaryLabels);
 
             return new MetricsFactory(
+                className,
                 LogSource.Controller,
-                _serviceName + summaryName,
+                $"{_serviceName}.controller",
                 _defaultLongRequestTime,
                 labels);
         }
 
         public static MetricsFactory CreateRepositoryMetricsFactory(
-            [NotNull] string summaryName,
+            [NotNull] string className,
             TimeSpan? requestLongTime = null,
             params string[] additionalSummaryLabels)
         {
@@ -141,27 +151,22 @@ namespace ATI.Services.Common.Metrics
                 additionalSummaryLabels);
 
             return new MetricsFactory(
+                className,
                 LogSource.Repository,
-                _serviceName + summaryName,
+                $"{_serviceName}.repository",
                 requestLongTime ?? _defaultLongRequestTime,
                 labels);
         }
 
-        public static MetricsFactory CreateExternalHttpMetricsFactory(TimeSpan? longRequestTime = null)
-        {
-            return new MetricsFactory(
-                LogSource.ExternalHttpClient, 
-                null, 
-                longRequestTime ?? _defaultLongRequestTime);
-        }
-
         private MetricsFactory(
+            string className,
             LogSource logSource,
             string summaryServiceName,
             string externalHttpServiceName,
             TimeSpan? longRequestTime = null,
             params string[] summaryLabelNames)
         {
+            _className = className;
             _externalHttpServiceName = externalHttpServiceName;
             _longRequestTime = longRequestTime ?? _defaultLongRequestTime;
             _logSource = logSource;
@@ -171,7 +176,7 @@ namespace ATI.Services.Common.Metrics
                 var options = new SummaryConfiguration
                 {
                     MaxAge = TimeSpan.FromMinutes(1),
-                    Objectives = _summaryQuantileEpsilonPairs
+                    Objectives = SummaryQuantileEpsilonPairs
                 };
 
                 Summary = Prometheus.Metrics.CreateSummary(
@@ -183,11 +188,13 @@ namespace ATI.Services.Common.Metrics
         }
 
         private MetricsFactory(
+            string className,
             LogSource logSource,
             [CanBeNull] string summaryServiceName,
             TimeSpan longRequestTime,
             params string[] summaryLabelNames)
         {
+            _className = className;
             _longRequestTime = longRequestTime;
             _logSource = logSource;
 
@@ -196,7 +203,7 @@ namespace ATI.Services.Common.Metrics
                 var options = new SummaryConfiguration
                 {
                     MaxAge = TimeSpan.FromMinutes(1),
-                    Objectives = _summaryQuantileEpsilonPairs
+                    Objectives = SummaryQuantileEpsilonPairs
                 };
 
                 Summary = Prometheus.Metrics.CreateSummary(
@@ -220,6 +227,7 @@ namespace ATI.Services.Common.Metrics
             }
 
             var labels = ConcatLabelValues(
+                _className,
                 actionName,
                 entityName,
                 _externalHttpServiceName,
@@ -257,6 +265,7 @@ namespace ATI.Services.Common.Metrics
             }
 
             var labels = ConcatLabelValues(
+                _className,
                 actionName,
                 entityName,
                 _externalHttpServiceName,
@@ -280,6 +289,7 @@ namespace ATI.Services.Common.Metrics
             params string[] additionalLabels)
         {
             var labels = ConcatLabelValues(
+                _className,
                 actionName,
                 entityName,
                 _externalHttpServiceName,
@@ -300,6 +310,7 @@ namespace ATI.Services.Common.Metrics
             params string[] additionalLabels)
         {
             var labels = ConcatLabelValues(
+                _className,
                 actionName,
                 entityName,
                 _externalHttpServiceName,
@@ -313,6 +324,7 @@ namespace ATI.Services.Common.Metrics
         /// Метод управляющий порядком значений лэйблов 
         /// </summary>
         private static string[] ConcatLabelValues(
+            string className,
             string actionName,
             string entityName = null,
             string externHttpService = null,
@@ -320,6 +332,7 @@ namespace ATI.Services.Common.Metrics
             params string[] additionalLabels)
         {
             return ConcatLabels(
+                className,
                 MachineName,
                 actionName,
                 entityName,
@@ -339,6 +352,7 @@ namespace ATI.Services.Common.Metrics
             params string[] additionalLabels)
         {
             return ConcatLabels(
+                "class_name",
                 "machine_name",
                 actionName,
                 entityName,
@@ -352,6 +366,7 @@ namespace ATI.Services.Common.Metrics
         /// <param name="actionName"> Указывать только при объявлении лейблов. Записывается он в таймере, так как нужен для трейсинга</param>
         /// </summary>
         private static string[] ConcatLabels(
+            string className,
             string machineName,
             string actionName,
             string entityName,
@@ -361,9 +376,10 @@ namespace ATI.Services.Common.Metrics
         {
             var labels = new List<string>
             {
+                className,
                 actionName
             };
-
+            
             if (machineName != null)
                 labels.Add(machineName);
 
