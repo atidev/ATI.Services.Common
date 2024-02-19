@@ -54,7 +54,7 @@ namespace ATI.Services.Common.Metrics
             return new MetricsFactory(
                 className,
                 LogSource.HttpClient,
-                $"{_serviceName}.http_client",
+                $"{_serviceName}_http_client",
                 externalHttpServiceName,
                 longRequestTime,
                 labels);
@@ -75,7 +75,7 @@ namespace ATI.Services.Common.Metrics
             return new MetricsFactory(
                 className,
                 LogSource.Redis,
-                $"{_serviceName}.redis",
+                $"{_serviceName}_redis",
                 longRequestTime ?? _defaultLongRequestTime,
                 labels);
         }
@@ -94,7 +94,7 @@ namespace ATI.Services.Common.Metrics
             return new MetricsFactory(
                 className,
                 LogSource.Mongo,
-                $"{_serviceName}.mongo",
+                $"{_serviceName}_mongo",
                 _defaultLongRequestTime,
                 labels);
         }
@@ -114,7 +114,7 @@ namespace ATI.Services.Common.Metrics
             return new MetricsFactory(
                 className,
                 LogSource.Sql,
-                $"{_serviceName}.sql",
+                $"{_serviceName}_sql",
                 _defaultLongRequestTime,
                 labels);
         }
@@ -133,7 +133,7 @@ namespace ATI.Services.Common.Metrics
             return new MetricsFactory(
                 className,
                 LogSource.Controller,
-                $"{_serviceName}.controller",
+                $"{_serviceName}_controller",
                 _defaultLongRequestTime,
                 labels);
         }
@@ -153,7 +153,7 @@ namespace ATI.Services.Common.Metrics
             return new MetricsFactory(
                 className,
                 LogSource.Repository,
-                $"{_serviceName}.repository",
+                $"{_serviceName}_repository",
                 requestLongTime ?? _defaultLongRequestTime,
                 labels);
         }
