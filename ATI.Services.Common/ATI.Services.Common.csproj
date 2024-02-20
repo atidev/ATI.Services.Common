@@ -4,7 +4,6 @@
     <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
     <Authors>Team Services</Authors>
     <Company>ATI</Company>
-    <LangVersion>10</LangVersion>
     <PublishReadyToRun>true</PublishReadyToRun>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>atisu.services.common</PackageId>
