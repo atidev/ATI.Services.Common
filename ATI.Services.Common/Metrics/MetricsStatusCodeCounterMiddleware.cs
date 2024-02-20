@@ -4,6 +4,8 @@ using ATI.Services.Common.Variables;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Prometheus;
+using ConfigurationManager = ATI.Services.Common.Behaviors.ConfigurationManager;
+
 
 namespace ATI.Services.Common.Metrics;
 
@@ -13,10 +15,10 @@ public class MetricsStatusCodeCounterMiddleware
 
     private readonly RequestDelegate _next;
 
-    public MetricsStatusCodeCounterMiddleware(RequestDelegate next, IConfiguration configuration)
+    public MetricsStatusCodeCounterMiddleware(RequestDelegate next)
     {
-        var prefix = configuration.GetSection(nameof(MetricsOptions))
-                                  .Get<MetricsOptions>().MetricsServiceName is { } serviceName
+        var prefix = ConfigurationManager.GetSection(nameof(MetricsOptions))
+                                         ?.Get<MetricsOptions>()?.MetricsServiceName is { } serviceName
                          ? $"common_{serviceName}"
                          : "common_default";
 

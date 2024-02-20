@@ -21,7 +21,7 @@ namespace ATI.Services.Common.Metrics
         private string ServiceName { get; } = "common_default";
         public ExceptionsMetricsCollector()
         {
-            if(ConfigurationManager.GetSection(nameof(MetricsOptions)).Get<MetricsOptions>().MetricsServiceName is { } serviceName)
+            if(ConfigurationManager.GetSection(nameof(MetricsOptions))?.Get<MetricsOptions>()?.MetricsServiceName is { } serviceName)
                 ServiceName =  $"common_{serviceName}";
         }
 
