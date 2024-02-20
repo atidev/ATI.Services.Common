@@ -159,6 +159,50 @@ namespace ATI.Services.Common.Metrics
                 requestLongTime ?? _defaultLongRequestTime,
                 labels);
         }
+        
+        public static MetricsFactory CreateRabbitMqMetricsFactory(
+            RabbitMetricsDirection direction,
+            [NotNull] string className,
+            TimeSpan? requestLongTime = null,
+            params string[] additionalSummaryLabels)
+        {
+            var labels = ConcatLabelNames(
+                "exchange_routing_key_name",
+                "entity_name",
+                null,
+                MetricsLabelsAndHeaders.UserLabels,
+                additionalSummaryLabels);
+
+            return new MetricsFactory(
+                className,
+                LogSource.RabbitMq,
+                $"{_serviceName}_{direction.ToString().ToLower()}_rabbitmq",
+                requestLongTime ?? _defaultLongRequestTime,
+                labels);
+        }
+        
+        public static MetricsFactory CreateCustomMetricsFactory(
+            [NotNull] string className,
+            string customMetricName,
+            TimeSpan? requestLongTime = null,
+            params string[] additionalSummaryLabels)
+        {
+            if(customMetricName is null) throw new ArgumentNullException(nameof(customMetricName));
+            
+            var labels = ConcatLabelNames(
+                "method_name",
+                "entity_name",
+                null,
+                MetricsLabelsAndHeaders.UserLabels,
+                additionalSummaryLabels);
+
+            return new MetricsFactory(
+                className,
+                LogSource.Custom,
+                $"{_serviceName}_{customMetricName}",
+                requestLongTime ?? _defaultLongRequestTime,
+                labels);
+        }
 
         private MetricsFactory(
             string className,
