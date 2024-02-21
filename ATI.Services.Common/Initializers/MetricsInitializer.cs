@@ -25,7 +25,7 @@ namespace ATI.Services.Common.Initializers
                 return Task.CompletedTask;
             }
             
-            MetricsFactory.Init(_metricsOptions.MetricsServiceName, _metricsOptions.DefaultLongRequestTime);
+            MetricsFactory.Init(_metricsOptions.DefaultLongRequestTime);
             
             _initialized = true;
             return Task.CompletedTask;

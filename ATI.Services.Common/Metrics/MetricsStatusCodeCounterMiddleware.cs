@@ -2,27 +2,18 @@
 using System.Threading.Tasks;
 using ATI.Services.Common.Variables;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Prometheus;
-using ConfigurationManager = ATI.Services.Common.Behaviors.ConfigurationManager;
-
 
 namespace ATI.Services.Common.Metrics;
 
 public class MetricsStatusCodeCounterMiddleware
 {
     private readonly Counter _counter;
-
     private readonly RequestDelegate _next;
 
     public MetricsStatusCodeCounterMiddleware(RequestDelegate next)
     {
-        var prefix = ConfigurationManager.GetSection(nameof(MetricsOptions))
-                                         ?.Get<MetricsOptions>()?.MetricsServiceName is { } serviceName
-                         ? $"common_{serviceName}"
-                         : "common_default";
-
-        _counter = Prometheus.Metrics.CreateCounter($"{prefix}_HttpStatusCodeCounter",
+        _counter = Prometheus.Metrics.CreateCounter($"{MetricsFactory.Prefix}_HttpStatusCodeCounter",
                                                     "",
                                                     new CounterConfiguration
                                                     {
