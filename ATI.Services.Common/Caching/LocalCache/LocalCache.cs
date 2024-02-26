@@ -6,25 +6,25 @@ using ATI.Services.Common.Initializers.Interfaces;
 using JetBrains.Annotations;
 using NLog;
 
-namespace ATI.Services.Common.Caching.LocalCache
-{
-    [PublicAPI]
-    [InitializeOrder(Order = InitializeOrder.Fourth)]
-    public abstract class LocalCache<T> : ILocalCache where T : class
-    {
-        private readonly bool _requiredToStartService;
-        private readonly string _typeName;
-        private readonly ILogger _logger;
-        private readonly TimeSpan _reloadPeriodAfterInitialize;
-        private readonly TimeSpan _reloadPeriodOnInitialize;
-        private Timer _reloadTimer;
-        private bool _initialized;
-        private T _value;
+namespace ATI.Services.Common.Caching.LocalCache;
 
-        protected LocalCache(TimeSpan? reloadPeriodAfterInitialize = null,
-                             TimeSpan? reloadPeriodOnInitialize = null,
-                             bool requiredToStartService = false)
-        {
+[PublicAPI]
+[InitializeOrder(Order = InitializeOrder.Fourth)]
+public abstract class LocalCache<T> : ILocalCache where T : class
+{
+    private readonly bool _requiredToStartService;
+    private readonly string _typeName;
+    private readonly ILogger _logger;
+    private readonly TimeSpan _reloadPeriodAfterInitialize;
+    private readonly TimeSpan _reloadPeriodOnInitialize;
+    private Timer _reloadTimer;
+    private bool _initialized;
+    private T _value;
+
+    protected LocalCache(TimeSpan? reloadPeriodAfterInitialize = null,
+        TimeSpan? reloadPeriodOnInitialize = null,
+        bool requiredToStartService = false)
+    {
             _requiredToStartService = requiredToStartService;
             _typeName = GetType().Name;
             _logger = LogManager.GetLogger(_typeName);
@@ -33,8 +33,8 @@ namespace ATI.Services.Common.Caching.LocalCache
             _reloadTimer = null;
         }
         
-        public async Task<bool> TryReloadAsync()
-        {
+    public async Task<bool> TryReloadAsync()
+    {
             try
             {
                 _logger.Trace($"{_typeName}.TryReloadAsync started");
@@ -54,10 +54,10 @@ namespace ATI.Services.Common.Caching.LocalCache
             }
         }
 
-        protected abstract Task<T> GetFromDbAsync();
+    protected abstract Task<T> GetFromDbAsync();
 
-        protected T GetCachedValue()
-        {
+    protected T GetCachedValue()
+    {
             if (_initialized == false)
             {
                 throw new InvalidOperationException($"{GetType()} doesn't _initialized yet.");
@@ -65,8 +65,8 @@ namespace ATI.Services.Common.Caching.LocalCache
             return _value;
         }
 
-        async Task IInitializer.InitializeAsync()
-        {
+    async Task IInitializer.InitializeAsync()
+    {
             _logger.Trace($"{_typeName}.InitializeAsync started");
 
             _reloadTimer?.Dispose();
@@ -97,19 +97,18 @@ namespace ATI.Services.Common.Caching.LocalCache
             _logger.Trace($"{_typeName}.InitializeAsync finished");
         }
 
-        public string InitStartConsoleMessage()
-        {
+    public string InitStartConsoleMessage()
+    {
             return $"Start Local Cache {typeof(T).Name} initializer";
         }
 
-        public string InitEndConsoleMessage()
-        {
+    public string InitEndConsoleMessage()
+    {
             return $"End Local Cache {typeof(T).Name} initializer, result {_initialized}";
         }
 
-        void IDisposable.Dispose()
-        {
+    void IDisposable.Dispose()
+    {
             _reloadTimer?.Dispose();
         }
-    }
 }

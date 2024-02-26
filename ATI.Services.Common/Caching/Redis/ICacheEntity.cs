@@ -1,7 +1,6 @@
-﻿namespace ATI.Services.Common.Caching.Redis
+﻿namespace ATI.Services.Common.Caching.Redis;
+
+public interface ICacheEntity
 {
-    public interface ICacheEntity
-    {
-        string GetKey();
-    }
+    string GetKey();
 }

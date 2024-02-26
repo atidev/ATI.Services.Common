@@ -4,15 +4,15 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 
-namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization
-{
-    [PublicAPI]
-    public class SystemTextJsonSerializer : ISerializer
-    {
-        private JsonSerializerOptions _jsonSerializerOptions;
+namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization;
 
-        public SystemTextJsonSerializer(bool enableCustomConverters = true)
-        {
+[PublicAPI]
+public class SystemTextJsonSerializer : ISerializer
+{
+    private JsonSerializerOptions _jsonSerializerOptions;
+
+    public SystemTextJsonSerializer(bool enableCustomConverters = true)
+    {
             _jsonSerializerOptions = enableCustomConverters
                 ? new JsonSerializerOptions
                 {
@@ -24,40 +24,39 @@ namespace ATI.Services.Common.Serializers.SystemTextJsonSerialization
                 } : new JsonSerializerOptions();
         }
 
-        public SystemTextJsonSerializer(JsonSerializerOptions serializerOptions)
-        {
+    public SystemTextJsonSerializer(JsonSerializerOptions serializerOptions)
+    {
             _jsonSerializerOptions = serializerOptions;
         }
 
-        public void SetSerializeSettings(object settings)
-        {
+    public void SetSerializeSettings(object settings)
+    {
             var set = (JsonSerializerOptions) settings;
             _jsonSerializerOptions = set;
         }
 
-        public string Serialize<T>(T value)
-        {
+    public string Serialize<T>(T value)
+    {
             return JsonSerializer.Serialize(value, _jsonSerializerOptions);
         }
 
-        public string Serialize(object value, Type type)
-        {
+    public string Serialize(object value, Type type)
+    {
             return JsonSerializer.Serialize(value, type, _jsonSerializerOptions);
         }
 
-        public T Deserialize<T>(string value)
-        {
+    public T Deserialize<T>(string value)
+    {
             return JsonSerializer.Deserialize<T>(value, _jsonSerializerOptions);
         }
 
-        public object Deserialize(string value, Type type)
-        {
+    public object Deserialize(string value, Type type)
+    {
             return JsonSerializer.Deserialize(value, type, _jsonSerializerOptions);
         }
 
-        public async Task<T> DeserializeAsync<T>(Stream stream)
-        {
+    public async Task<T> DeserializeAsync<T>(Stream stream)
+    {
             return await JsonSerializer.DeserializeAsync<T>(stream, _jsonSerializerOptions);
         }
-    }
 }

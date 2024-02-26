@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace ATI.Services.Common.Sql
+namespace ATI.Services.Common.Sql;
+
+public class DbManagerOptions
 {
-    public class DbManagerOptions
-    {
-        public Dictionary<string, DataBaseOptions> DataBaseOptions { get; set; }
-    }
+    public Dictionary<string, DataBaseOptions> DataBaseOptions { get; set; }
 }

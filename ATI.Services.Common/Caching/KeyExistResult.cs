@@ -1,8 +1,7 @@
-﻿namespace ATI.Services.Common.Caching
+﻿namespace ATI.Services.Common.Caching;
+
+public class KeyExistResult
 {
-    public class KeyExistResult
-    {
-        public bool LocalKeyExist  { get; set; }
-        public bool SharedKeyExist { get; set; }
-    }
+    public bool LocalKeyExist  { get; set; }
+    public bool SharedKeyExist { get; set; }
 }

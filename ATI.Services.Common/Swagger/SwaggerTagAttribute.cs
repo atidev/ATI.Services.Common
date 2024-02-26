@@ -1,14 +1,13 @@
 ﻿using System;
 
-namespace ATI.Services.Common.Swagger
+namespace ATI.Services.Common.Swagger;
+
+[AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+public class SwaggerTagAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-    public class SwaggerTagAttribute : Attribute
+    public SwaggerTagAttribute(SwaggerTag tag)
     {
-        public SwaggerTagAttribute(SwaggerTag tag)
-        {
-            Tag = tag;
-        }
-        public SwaggerTag Tag { get; }
+        Tag = tag;
     }
+    public SwaggerTag Tag { get; }
 }

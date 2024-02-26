@@ -14,18 +14,18 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using ConfigurationManager = ATI.Services.Common.Behaviors.ConfigurationManager;
 
-namespace ATI.Services.Common.Swagger
+namespace ATI.Services.Common.Swagger;
+
+[PublicAPI]
+public static class SwaggerExtensions
 {
-    [PublicAPI]
-    public static class SwaggerExtensions
+    /// <summary>
+    /// Добавляет Swagger
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="additionalOptions">Дополнительные параметры</param>
+    public static void AddAtiSwagger(this IServiceCollection services, Action<SwaggerGenOptions> additionalOptions = null)
     {
-        /// <summary>
-        /// Добавляет Swagger
-        /// </summary>
-        /// <param name="services"></param>
-        /// <param name="additionalOptions">Дополнительные параметры</param>
-        public static void AddAtiSwagger(this IServiceCollection services, Action<SwaggerGenOptions> additionalOptions = null)
-        {
             services.ConfigureByName<SwaggerOptions>();
             
             var swaggerOptions = ConfigurationManager.GetSection("SwaggerOptions").Get<SwaggerOptions>();
@@ -101,10 +101,10 @@ namespace ATI.Services.Common.Swagger
             services.AddSwaggerGenNewtonsoftSupport();
         }
         
-        public static void UseAtiSwagger(this IApplicationBuilder app,
-            Action<Swashbuckle.AspNetCore.Swagger.SwaggerOptions> customSwaggerOptions = null,
-            Action<SwaggerUIOptions> customUiOptions = null)
-        {
+    public static void UseAtiSwagger(this IApplicationBuilder app,
+        Action<Swashbuckle.AspNetCore.Swagger.SwaggerOptions> customSwaggerOptions = null,
+        Action<SwaggerUIOptions> customUiOptions = null)
+    {
             var swaggerOptions = app.ApplicationServices.GetRequiredService<IOptions<SwaggerOptions>>().Value;
             if (!swaggerOptions.Enabled) return;
             
@@ -124,5 +124,4 @@ namespace ATI.Services.Common.Swagger
                 customUiOptions?.Invoke(c);
             });
         }
-    }
 }

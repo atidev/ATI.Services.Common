@@ -8,13 +8,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ConfigurationManager = ATI.Services.Common.Behaviors.ConfigurationManager;
 
-namespace ATI.Services.Common.Metrics
+namespace ATI.Services.Common.Metrics;
+
+[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
+public static class MetricsExtensions
 {
-    [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
-    public static class MetricsExtensions
+    public static void AddMetrics(this IServiceCollection services)
     {
-        public static void AddMetrics(this IServiceCollection services)
-        {
             services.ConfigureByName<MetricsOptions>();
             services.AddTransient<MetricsInitializer>();
             
@@ -25,8 +25,8 @@ namespace ATI.Services.Common.Metrics
             MetricsLabelsAndHeaders.UserHeaders = MetricsLabelsAndHeaders.LabelsStatic.Values.ToArray();
         }
 
-        private static void InitializeExceptionsMetrics()
-        {
+    private static void InitializeExceptionsMetrics()
+    {
             var exceptionCollector = new ExceptionsMetricsCollector();
             var registry = Prometheus.Metrics.DefaultRegistry;
             
@@ -34,9 +34,8 @@ namespace ATI.Services.Common.Metrics
             registry.AddBeforeCollectCallback(exceptionCollector.UpdateMetrics);
         }
 
-        public static void UseMetrics(this IApplicationBuilder app)
-        {
+    public static void UseMetrics(this IApplicationBuilder app)
+    {
             app.UseMiddleware<MetricsStatusCodeCounterMiddleware>();
         }
-    }
 }

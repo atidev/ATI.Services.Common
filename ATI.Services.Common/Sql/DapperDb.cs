@@ -13,33 +13,33 @@ using Microsoft.Data.SqlClient;
 using Newtonsoft.Json;
 using NLog;
 
-namespace ATI.Services.Common.Sql
-{
-    [PublicAPI]
-    public class DapperDb
-    {
-        private const string ReturnValueFieldName = "RETURN_VALUE";
-        private readonly DataBaseOptions _options;
-        private readonly MetricsFactory _metricsFactory;
-        private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
-        private const string ReadMetricTypeLabel = "read";
-        private const string ConvertDataMetricTypeLabel = "convert";
-        private const string QueryMetricTypeLabel = "query";
-        private const string FullMetricTypeLabel = "full";
+namespace ATI.Services.Common.Sql;
 
-        public DapperDb(DataBaseOptions options)
-        {
+[PublicAPI]
+public class DapperDb
+{
+    private const string ReturnValueFieldName = "RETURN_VALUE";
+    private readonly DataBaseOptions _options;
+    private readonly MetricsFactory _metricsFactory;
+    private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
+    private const string ReadMetricTypeLabel = "read";
+    private const string ConvertDataMetricTypeLabel = "convert";
+    private const string QueryMetricTypeLabel = "query";
+    private const string FullMetricTypeLabel = "full";
+
+    public DapperDb(DataBaseOptions options)
+    {
             _options = options;
             _metricsFactory = MetricsFactory.CreateSqlMetricsFactory(nameof(DapperDb), _options.LongTimeRequest, "type");
         }
 
-        public async Task<OperationResult<List<T>>> ExecuteListAsync<T>(
-            string procedureName,
-            DynamicParameters parameters,
-            string metricEntity,
-            TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
-        {
+    public async Task<OperationResult<List<T>>> ExecuteListAsync<T>(
+        string procedureName,
+        DynamicParameters parameters,
+        string metricEntity,
+        TimeSpan? longTimeRequest = null,
+        int? timeoutInSeconds = null)
+    {
             SqlMapper.GridReader reader = null;
             try
             {
@@ -81,13 +81,13 @@ namespace ATI.Services.Common.Sql
             }
         }
 
-        public async Task<OperationResult<List<T>>> ExecuteListWithReturnValueAsync<T>(
-            string procedureName,
-            DynamicParameters parameters,
-            string metricEntity,
-            TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
-        {
+    public async Task<OperationResult<List<T>>> ExecuteListWithReturnValueAsync<T>(
+        string procedureName,
+        DynamicParameters parameters,
+        string metricEntity,
+        TimeSpan? longTimeRequest = null,
+        int? timeoutInSeconds = null)
+    {
             SqlMapper.GridReader reader = null;
             try
             {
@@ -136,15 +136,15 @@ namespace ATI.Services.Common.Sql
             }
         }
 
-        public async Task<OperationResult<Dictionary<TKey, TValue>>> ExecuteScalarDictionaryAsync<TKey, TValue>(
-            string procedureName,
-            Func<dynamic, TKey> keySelector,
-            Func<dynamic, TValue> valueSelector,
-            DynamicParameters parameters,
-            string metricEntity,
-            TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
-        {
+    public async Task<OperationResult<Dictionary<TKey, TValue>>> ExecuteScalarDictionaryAsync<TKey, TValue>(
+        string procedureName,
+        Func<dynamic, TKey> keySelector,
+        Func<dynamic, TValue> valueSelector,
+        DynamicParameters parameters,
+        string metricEntity,
+        TimeSpan? longTimeRequest = null,
+        int? timeoutInSeconds = null)
+    {
             SqlMapper.GridReader reader = null;
             try
             {
@@ -186,13 +186,13 @@ namespace ATI.Services.Common.Sql
             }
         }
 
-        public async Task<OperationResult> ExecuteWithReturnValueAsync(
-            string procedureName,
-            DynamicParameters parameters,
-            string metricEntity,
-            TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
-        {
+    public async Task<OperationResult> ExecuteWithReturnValueAsync(
+        string procedureName,
+        DynamicParameters parameters,
+        string metricEntity,
+        TimeSpan? longTimeRequest = null,
+        int? timeoutInSeconds = null)
+    {
             try
             {
                 using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
@@ -223,13 +223,13 @@ namespace ATI.Services.Common.Sql
             }
         }
         
-        public async Task<OperationResult<TResult>> ExecuteWithReturnValueAsync<TResult>(
-            string procedureName,
-            DynamicParameters parameters,
-            string metricEntity,
-            TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
-        {
+    public async Task<OperationResult<TResult>> ExecuteWithReturnValueAsync<TResult>(
+        string procedureName,
+        DynamicParameters parameters,
+        string metricEntity,
+        TimeSpan? longTimeRequest = null,
+        int? timeoutInSeconds = null)
+    {
             try
             {
                 using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
@@ -260,13 +260,13 @@ namespace ATI.Services.Common.Sql
             }
         }
 
-        public async Task<OperationResult<T>> ExecuteObjectAsync<T>(
-            string procedureName,
-            DynamicParameters parameters,
-            string metricEntity,
-            TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
-        {
+    public async Task<OperationResult<T>> ExecuteObjectAsync<T>(
+        string procedureName,
+        DynamicParameters parameters,
+        string metricEntity,
+        TimeSpan? longTimeRequest = null,
+        int? timeoutInSeconds = null)
+    {
             SqlMapper.GridReader reader = null;
             try
             {
@@ -308,13 +308,13 @@ namespace ATI.Services.Common.Sql
             }
         }
 
-        public async Task<OperationResult<T>> ExecuteObjectWithReturnValueAsync<T>(
-            string procedureName,
-            DynamicParameters parameters,
-            string metricEntity,
-            TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
-        {
+    public async Task<OperationResult<T>> ExecuteObjectWithReturnValueAsync<T>(
+        string procedureName,
+        DynamicParameters parameters,
+        string metricEntity,
+        TimeSpan? longTimeRequest = null,
+        int? timeoutInSeconds = null)
+    {
             SqlMapper.GridReader reader = null;
             try
             {
@@ -360,14 +360,14 @@ namespace ATI.Services.Common.Sql
             }
         }
 
-        public async Task<OperationResult<List<T>>> ExecuteResultSetWithReturnValueAsync<T>(
-            string procedureName,
-            DynamicParameters parameters,
-            Func<SqlMapper.GridReader, Task<List<T>>> convertData,
-            string metricEntity,
-            TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
-        {
+    public async Task<OperationResult<List<T>>> ExecuteResultSetWithReturnValueAsync<T>(
+        string procedureName,
+        DynamicParameters parameters,
+        Func<SqlMapper.GridReader, Task<List<T>>> convertData,
+        string metricEntity,
+        TimeSpan? longTimeRequest = null,
+        int? timeoutInSeconds = null)
+    {
             SqlMapper.GridReader reader = null;
             try
             {
@@ -415,21 +415,21 @@ namespace ATI.Services.Common.Sql
             }
         }
         
-        /// <param name="procedureName"></param>
-        /// <param name="parameters"></param>
-        /// <param name="convertData">TimersWrapper нужен для того, чтобы замерять время выполнения кастомной логики по маппингу внутри ConvertData после всех ReadAsync</param>
-        /// <param name="metricEntity"></param>
-        /// <param name="longTimeRequest"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public async Task<OperationResult<List<T>>> ExecuteResultSetWithReturnValueAsync<T>(
-            string procedureName,
-            DynamicParameters parameters,
-            Func<SqlMapper.GridReader, MetricsTimer, Task<List<T>>> convertData,
-            string metricEntity,
-            TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
-        {
+    /// <param name="procedureName"></param>
+    /// <param name="parameters"></param>
+    /// <param name="convertData">TimersWrapper нужен для того, чтобы замерять время выполнения кастомной логики по маппингу внутри ConvertData после всех ReadAsync</param>
+    /// <param name="metricEntity"></param>
+    /// <param name="longTimeRequest"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<OperationResult<List<T>>> ExecuteResultSetWithReturnValueAsync<T>(
+        string procedureName,
+        DynamicParameters parameters,
+        Func<SqlMapper.GridReader, MetricsTimer, Task<List<T>>> convertData,
+        string metricEntity,
+        TimeSpan? longTimeRequest = null,
+        int? timeoutInSeconds = null)
+    {
             SqlMapper.GridReader reader = null;
             try
             {
@@ -479,14 +479,14 @@ namespace ATI.Services.Common.Sql
             }
         }
         
-        public async Task<OperationResult<List<T>>> ExecuteResultSetAsync<T>(
-            string procedureName,
-            DynamicParameters parameters,
-            Func<SqlMapper.GridReader, Task<List<T>>> convertData,
-            string metricEntity,
-            TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
-        {
+    public async Task<OperationResult<List<T>>> ExecuteResultSetAsync<T>(
+        string procedureName,
+        DynamicParameters parameters,
+        Func<SqlMapper.GridReader, Task<List<T>>> convertData,
+        string metricEntity,
+        TimeSpan? longTimeRequest = null,
+        int? timeoutInSeconds = null)
+    {
             SqlMapper.GridReader reader = null;
             try
             {
@@ -528,24 +528,24 @@ namespace ATI.Services.Common.Sql
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="procedureName"></param>
-        /// <param name="parameters"></param>
-        /// <param name="convertData">TimersWrapper нужен для того, чтобы замерять время выполнения кастомной логики по маппингу внутри ConvertData после всех ReadAsync</param>
-        /// <param name="metricEntity"></param>
-        /// <param name="longTimeRequest"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public async Task<OperationResult<List<T>>> ExecuteResultSetAsync<T>(
-            string procedureName,
-            DynamicParameters parameters,
-            Func<SqlMapper.GridReader, MetricsTimer, Task<List<T>>> convertData,
-            string metricEntity,
-            TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
-        {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="procedureName"></param>
+    /// <param name="parameters"></param>
+    /// <param name="convertData">TimersWrapper нужен для того, чтобы замерять время выполнения кастомной логики по маппингу внутри ConvertData после всех ReadAsync</param>
+    /// <param name="metricEntity"></param>
+    /// <param name="longTimeRequest"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<OperationResult<List<T>>> ExecuteResultSetAsync<T>(
+        string procedureName,
+        DynamicParameters parameters,
+        Func<SqlMapper.GridReader, MetricsTimer, Task<List<T>>> convertData,
+        string metricEntity,
+        TimeSpan? longTimeRequest = null,
+        int? timeoutInSeconds = null)
+    {
             SqlMapper.GridReader reader = null;
             try
             {
@@ -589,13 +589,13 @@ namespace ATI.Services.Common.Sql
             }
         }
 
-        public async Task<OperationResult<T>> ExecuteScalarAsync<T>(
-            string procedureName,
-            DynamicParameters parameters,
-            string metricEntity,
-            TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
-        {
+    public async Task<OperationResult<T>> ExecuteScalarAsync<T>(
+        string procedureName,
+        DynamicParameters parameters,
+        string metricEntity,
+        TimeSpan? longTimeRequest = null,
+        int? timeoutInSeconds = null)
+    {
             try
             {
                 using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName,
@@ -623,13 +623,13 @@ namespace ATI.Services.Common.Sql
             }
         }
 
-        public async Task<OperationResult<T>> ExecuteScalarWithReturnValueAsync<T>(
-            string procedureName,
-            DynamicParameters parameters,
-            string metricEntity,
-            TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
-        {
+    public async Task<OperationResult<T>> ExecuteScalarWithReturnValueAsync<T>(
+        string procedureName,
+        DynamicParameters parameters,
+        string metricEntity,
+        TimeSpan? longTimeRequest = null,
+        int? timeoutInSeconds = null)
+    {
             try
             {
                 using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName,
@@ -666,13 +666,13 @@ namespace ATI.Services.Common.Sql
             }
         }
 
-        public async Task<OperationResult> ExecuteNonQueryAsync(
-            string procedureName,
-            DynamicParameters parameters,
-            string metricEntity,
-            TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
-        {
+    public async Task<OperationResult> ExecuteNonQueryAsync(
+        string procedureName,
+        DynamicParameters parameters,
+        string metricEntity,
+        TimeSpan? longTimeRequest = null,
+        int? timeoutInSeconds = null)
+    {
             try
             {
                 using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName,
@@ -702,13 +702,13 @@ namespace ATI.Services.Common.Sql
             }
         }
 
-        public async Task<OperationResult> ExecuteNonQueryWithReturnValueAsync(
-            string procedureName,
-            DynamicParameters parameters,
-            string metricEntity,
-            TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
-        {
+    public async Task<OperationResult> ExecuteNonQueryWithReturnValueAsync(
+        string procedureName,
+        DynamicParameters parameters,
+        string metricEntity,
+        TimeSpan? longTimeRequest = null,
+        int? timeoutInSeconds = null)
+    {
             try
             {
                 using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName,
@@ -741,14 +741,14 @@ namespace ATI.Services.Common.Sql
             }
         }
 
-        public async Task<OperationResult<T>> ExecuteObjectAsync<T>(
-            string procedureName,
-            DynamicParameters parameters,
-            Func<SqlMapper.GridReader, Task<T>> convertData,
-            string metricEntity,
-            TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
-        {
+    public async Task<OperationResult<T>> ExecuteObjectAsync<T>(
+        string procedureName,
+        DynamicParameters parameters,
+        Func<SqlMapper.GridReader, Task<T>> convertData,
+        string metricEntity,
+        TimeSpan? longTimeRequest = null,
+        int? timeoutInSeconds = null)
+    {
             SqlMapper.GridReader reader = null;
             try
             {
@@ -791,24 +791,24 @@ namespace ATI.Services.Common.Sql
             }
         }
         
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="procedureName"></param>
-        /// <param name="parameters"></param>
-        /// <param name="convertData">TimersWrapper нужен для того, чтобы замерять время выполнения кастомной логики по маппингу внутри ConvertData после всех ReadAsync</param>
-        /// <param name="metricEntity"></param>
-        /// <param name="longTimeRequest"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public async Task<OperationResult<T>> ExecuteObjectAsync<T>(
-            string procedureName,
-            DynamicParameters parameters,
-            Func<SqlMapper.GridReader, MetricsTimer, Task<T>> convertData,
-            string metricEntity,
-            TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
-        {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="procedureName"></param>
+    /// <param name="parameters"></param>
+    /// <param name="convertData">TimersWrapper нужен для того, чтобы замерять время выполнения кастомной логики по маппингу внутри ConvertData после всех ReadAsync</param>
+    /// <param name="metricEntity"></param>
+    /// <param name="longTimeRequest"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<OperationResult<T>> ExecuteObjectAsync<T>(
+        string procedureName,
+        DynamicParameters parameters,
+        Func<SqlMapper.GridReader, MetricsTimer, Task<T>> convertData,
+        string metricEntity,
+        TimeSpan? longTimeRequest = null,
+        int? timeoutInSeconds = null)
+    {
             SqlMapper.GridReader reader = null;
             try
             {
@@ -853,14 +853,14 @@ namespace ATI.Services.Common.Sql
             }
         }
 
-        public async Task<OperationResult<T>> ExecuteObjectWithReturnValueAsync<T>(
-            string procedureName,
-            DynamicParameters parameters,
-            Func<SqlMapper.GridReader, Task<T>> convertData,
-            string metricEntity,
-            TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
-        {
+    public async Task<OperationResult<T>> ExecuteObjectWithReturnValueAsync<T>(
+        string procedureName,
+        DynamicParameters parameters,
+        Func<SqlMapper.GridReader, Task<T>> convertData,
+        string metricEntity,
+        TimeSpan? longTimeRequest = null,
+        int? timeoutInSeconds = null)
+    {
             SqlMapper.GridReader reader = null;
             try
             {
@@ -909,24 +909,24 @@ namespace ATI.Services.Common.Sql
             }
         }
         
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="procedureName"></param>
-        /// <param name="parameters"></param>
-        /// <param name="convertData">TimersWrapper нужен для того, чтобы замерять время выполнения кастомной логики по маппингу внутри ConvertData после всех ReadAsync</param>
-        /// <param name="metricEntity"></param>
-        /// <param name="longTimeRequest"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public async Task<OperationResult<T>> ExecuteObjectWithReturnValueAsync<T>(
-            string procedureName,
-            DynamicParameters parameters,
-            Func<SqlMapper.GridReader, MetricsTimer, Task<T>> convertData,
-            string metricEntity,
-            TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
-        {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="procedureName"></param>
+    /// <param name="parameters"></param>
+    /// <param name="convertData">TimersWrapper нужен для того, чтобы замерять время выполнения кастомной логики по маппингу внутри ConvertData после всех ReadAsync</param>
+    /// <param name="metricEntity"></param>
+    /// <param name="longTimeRequest"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<OperationResult<T>> ExecuteObjectWithReturnValueAsync<T>(
+        string procedureName,
+        DynamicParameters parameters,
+        Func<SqlMapper.GridReader, MetricsTimer, Task<T>> convertData,
+        string metricEntity,
+        TimeSpan? longTimeRequest = null,
+        int? timeoutInSeconds = null)
+    {
             SqlMapper.GridReader reader = null;
             try
             {
@@ -978,8 +978,8 @@ namespace ATI.Services.Common.Sql
         }
 
 
-        private string BuildConnectionString()
-        {
+    private string BuildConnectionString()
+    {
             var connectionString = _options.ConnectionString;
             var builder = new SqlConnectionStringBuilder(connectionString);
             if (_options.Server != null)
@@ -1023,15 +1023,15 @@ namespace ATI.Services.Common.Sql
         }
 
         
-        private int GetTimeOut(string procedureName)
-        {
+    private int GetTimeOut(string procedureName)
+    {
             return _options.TimeoutDictionary.TryGetValue(procedureName, out var tempTimeout)
                    ? tempTimeout
                    : _options.Timeout.Seconds;
         }
         
-        private void LogWithParameters(Exception e, string procedureName, string metricEntity, DynamicParameters parameters)
-        {
+    private void LogWithParameters(Exception e, string procedureName, string metricEntity, DynamicParameters parameters)
+    {
             var parametersWithValues = GetProcedureParametersWithValues(parameters);
             //С большой вероятностью лог может быть discarded на стороне logstash, если будет слишком много записей
             if (parametersWithValues != null && parametersWithValues.Count <= 20)
@@ -1045,8 +1045,8 @@ namespace ATI.Services.Common.Sql
             }
         }
 
-        private Dictionary<string, string> GetProcedureParametersWithValues(DynamicParameters parameters)
-        {
+    private Dictionary<string, string> GetProcedureParametersWithValues(DynamicParameters parameters)
+    {
             if (parameters == null || parameters.ParameterNames == null || !parameters.ParameterNames.Any())
                 return null;
 
@@ -1092,5 +1092,4 @@ namespace ATI.Services.Common.Sql
 
             return paramsArray;
         }
-    }
 }

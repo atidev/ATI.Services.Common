@@ -1,11 +1,10 @@
 using System;
 
-namespace ATI.Services.Common.Logging
+namespace ATI.Services.Common.Logging;
+
+[Flags]
+public enum WarningError
 {
-    [Flags]
-    public enum WarningError
-    {
-        BadRequestException = 1,
-        ConnectionResetException = 2
-    }
+    BadRequestException = 1,
+    ConnectionResetException = 2
 }

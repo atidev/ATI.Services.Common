@@ -5,21 +5,21 @@ using ATI.Services.Common.Initializers;
 using ATI.Services.Common.Initializers.Interfaces;
 using Microsoft.Extensions.Options;
 
-namespace ATI.Services.Common.Variables
-{
-    [InitializeOrder(Order = InitializeOrder.First)]
-    public class ServiceVariablesInitializer : IInitializer
-    {
-        private static bool _initialized;
-        private readonly ServiceVariablesOptions _options;
+namespace ATI.Services.Common.Variables;
 
-        public ServiceVariablesInitializer(IOptions<ServiceVariablesOptions> options)
-        {
+[InitializeOrder(Order = InitializeOrder.First)]
+public class ServiceVariablesInitializer : IInitializer
+{
+    private static bool _initialized;
+    private readonly ServiceVariablesOptions _options;
+
+    public ServiceVariablesInitializer(IOptions<ServiceVariablesOptions> options)
+    {
             _options = options.Value;
         }
 
-        public Task InitializeAsync()
-        {
+    public Task InitializeAsync()
+    {
             if (_initialized)
             {
                 return Task.CompletedTask;
@@ -36,14 +36,13 @@ namespace ATI.Services.Common.Variables
             return Task.CompletedTask;
         }
         
-        public string InitStartConsoleMessage()
-        {
+    public string InitStartConsoleMessage()
+    {
             return "Start Service Variables initializer";
         }
 
-        public string InitEndConsoleMessage()
-        {
+    public string InitEndConsoleMessage()
+    {
             return $"End Service Variables initializer, result {_initialized}";
         }
-    }
 }

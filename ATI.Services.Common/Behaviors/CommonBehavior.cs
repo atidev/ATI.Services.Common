@@ -10,60 +10,59 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
+namespace ATI.Services.Common.Behaviors;
 
-namespace ATI.Services.Common.Behaviors
+public static class CommonBehavior
 {
-    public static class CommonBehavior
+    [PublicAPI]
+    public const string AllowAllOriginsCorsPolicyName = "AllowAllOrigins";
+    private const string InternalServerErrorMessage = "internal_error";
+    public const string ServiceNameItemKey = "ServiceName";
+    public const string ClientNameItemKey = "ClientName";
+
+    private static Dictionary<ActionStatus, ExtendedErrorResponse> CustomResponses { get; set; }
+
+    private static readonly Array EmptyArray = Array.Empty<object>();
+
+    /// <summary>
+    /// Устанавливает параметры сериализации. 
+    /// </summary>
+    /// <param name="jsonSerializerSettings"></param>
+    [PublicAPI]
+    public static void SetSerializer(JsonSerializerSettings jsonSerializerSettings)
     {
-        [PublicAPI]
-        public const string AllowAllOriginsCorsPolicyName = "AllowAllOrigins";
-        private const string InternalServerErrorMessage = "internal_error";
-        public const string ServiceNameItemKey = "ServiceName";
-        public const string ClientNameItemKey = "ClientName";
-
-        private static Dictionary<ActionStatus, ExtendedErrorResponse> CustomResponses { get; set; }
-
-        private static readonly Array EmptyArray = Array.Empty<object>();
-
-        /// <summary>
-        /// Устанавливает параметры сериализации. 
-        /// </summary>
-        /// <param name="jsonSerializerSettings"></param>
-        [PublicAPI]
-        public static void SetSerializer(JsonSerializerSettings jsonSerializerSettings)
-        {
             JsonSerializerSettings = jsonSerializerSettings;
         }
 
-        [PublicAPI]
-        public static void SetCustomResponses(Dictionary<ActionStatus, ExtendedErrorResponse> customStatusCodes)
-        {
+    [PublicAPI]
+    public static void SetCustomResponses(Dictionary<ActionStatus, ExtendedErrorResponse> customStatusCodes)
+    {
             CustomResponses = customStatusCodes;
         }
 
-        internal static JsonSerializerSettings JsonSerializerSettings =
-            new()
-            {
-                DefaultValueHandling = DefaultValueHandling.Include,
-                ContractResolver = new DefaultContractResolver
-                {
-                    NamingStrategy = new SnakeCaseNamingStrategy
-                    {
-                        ProcessDictionaryKeys = true,
-                        OverrideSpecifiedNames = true
-                    }
-                }
-            };
-
-        internal static string GetMessage(
-            Func<ActionStatus, string> beautifulMessageFunc,
-            ActionStatus actionStatus,
-            string privateError,
-            string publicError,
-            string defaultMessage,
-            bool isInternal
-        )
+    internal static JsonSerializerSettings JsonSerializerSettings =
+        new()
         {
+            DefaultValueHandling = DefaultValueHandling.Include,
+            ContractResolver = new DefaultContractResolver
+            {
+                NamingStrategy = new SnakeCaseNamingStrategy
+                {
+                    ProcessDictionaryKeys = true,
+                    OverrideSpecifiedNames = true
+                }
+            }
+        };
+
+    internal static string GetMessage(
+        Func<ActionStatus, string> beautifulMessageFunc,
+        ActionStatus actionStatus,
+        string privateError,
+        string publicError,
+        string defaultMessage,
+        bool isInternal
+    )
+    {
             if (isInternal && !string.IsNullOrWhiteSpace(privateError))
             {
                 return privateError;
@@ -82,12 +81,12 @@ namespace ATI.Services.Common.Behaviors
             return beautifulMessageFunc(actionStatus) ?? defaultMessage;
         }
 
-        internal static string GetError(ActionStatus actionStatus,
-            Func<ActionStatus, string> customErrorCodeFunc) =>
-            customErrorCodeFunc?.Invoke(actionStatus) ?? GetDefaultError(actionStatus);
+    internal static string GetError(ActionStatus actionStatus,
+        Func<ActionStatus, string> customErrorCodeFunc) =>
+        customErrorCodeFunc?.Invoke(actionStatus) ?? GetDefaultError(actionStatus);
 
-        private static string GetDefaultError(ActionStatus status)
-        {
+    private static string GetDefaultError(ActionStatus status)
+    {
             if (CustomResponses != null
                 && CustomResponses.TryGetValue(status, out var errorResponse)
                 && errorResponse.Error != null)
@@ -129,8 +128,8 @@ namespace ATI.Services.Common.Behaviors
 
             return "unknown_error";
         }
-        internal static string GetDefaultMessage(ActionStatus status)
-        {
+    internal static string GetDefaultMessage(ActionStatus status)
+    {
             if (CustomResponses != null
                 && CustomResponses.TryGetValue(status, out var errorResponse)
                 && errorResponse.Reason != null)
@@ -176,12 +175,12 @@ namespace ATI.Services.Common.Behaviors
             return ApiMessages.UnknownErrorMessage;
         }
 
-        internal static HttpStatusCode GetStatusCode(ActionStatus actionStatus,
-            Func<ActionStatus, HttpStatusCode?> customStatusFunc = null) =>
-            customStatusFunc?.Invoke(actionStatus) ?? GetDefaultStatusCode(actionStatus);
+    internal static HttpStatusCode GetStatusCode(ActionStatus actionStatus,
+        Func<ActionStatus, HttpStatusCode?> customStatusFunc = null) =>
+        customStatusFunc?.Invoke(actionStatus) ?? GetDefaultStatusCode(actionStatus);
 
-        private static HttpStatusCode GetDefaultStatusCode(ActionStatus actionStatus)
-        {
+    private static HttpStatusCode GetDefaultStatusCode(ActionStatus actionStatus)
+    {
             if (CustomResponses != null
                 && CustomResponses.TryGetValue(actionStatus, out var errorResponse))
                 return errorResponse.StatusCode;
@@ -221,17 +220,17 @@ namespace ATI.Services.Common.Behaviors
             }
         }
 
-        public static IActionResult GetActionResult(
-            ActionStatus status,
-            bool isInternal,
-            string reason = null,
-            string error = null,
-            string internalReason = null,
-            bool resultIsArray = false,
-            Func<ActionStatus, HttpStatusCode?> customStatusFunc = null,
-            Func<ActionStatus, string> customErrorCodeFunc = null,
-            Func<ActionStatus, string> customMessageFunc = null)
-        {
+    public static IActionResult GetActionResult(
+        ActionStatus status,
+        bool isInternal,
+        string reason = null,
+        string error = null,
+        string internalReason = null,
+        bool resultIsArray = false,
+        Func<ActionStatus, HttpStatusCode?> customStatusFunc = null,
+        Func<ActionStatus, string> customErrorCodeFunc = null,
+        Func<ActionStatus, string> customMessageFunc = null)
+    {
             switch (status)
             {
                 case ActionStatus.Ok:
@@ -253,14 +252,14 @@ namespace ATI.Services.Common.Behaviors
             { StatusCode = (int)GetStatusCode(status, customStatusFunc) };
         }
 
-        [PublicAPI]
-        public static IActionResult GetActionResult(ActionStatus status,
-            ModelStateDictionary modelState,
-            bool resultIsArray = false,
-            Func<ActionStatus, HttpStatusCode?> customStatusFunc = null,
-            Func<ActionStatus, string> customErrorCodeFunc = null,
-            bool useModelStateKeysAsErrors = false)
-        {
+    [PublicAPI]
+    public static IActionResult GetActionResult(ActionStatus status,
+        ModelStateDictionary modelState,
+        bool resultIsArray = false,
+        Func<ActionStatus, HttpStatusCode?> customStatusFunc = null,
+        Func<ActionStatus, string> customErrorCodeFunc = null,
+        bool useModelStateKeysAsErrors = false)
+    {
             switch (status)
             {
                 case ActionStatus.Ok:
@@ -315,13 +314,13 @@ namespace ATI.Services.Common.Behaviors
             { StatusCode = (int)GetStatusCode(status, customStatusFunc) };
         }
 
-        private static readonly IActionResult OkResult = new OkResult();
-        private static readonly IActionResult OkResultWithEmptyArray = new JsonResult(EmptyArray);
+    private static readonly IActionResult OkResult = new OkResult();
+    private static readonly IActionResult OkResultWithEmptyArray = new JsonResult(EmptyArray);
         
-        internal static IActionResult GetActionResult<T>(ActionStatus status, bool isInternal, string reason = null,
-            Func<ActionStatus, HttpStatusCode?> customStatusFunc = null,
-            Func<ActionStatus, string> customErrorCodeFunc = null)
-        {
+    internal static IActionResult GetActionResult<T>(ActionStatus status, bool isInternal, string reason = null,
+        Func<ActionStatus, HttpStatusCode?> customStatusFunc = null,
+        Func<ActionStatus, string> customErrorCodeFunc = null)
+    {
             switch (status)
             {
                 case ActionStatus.Ok:
@@ -341,5 +340,4 @@ namespace ATI.Services.Common.Behaviors
             })
             { StatusCode = (int)GetStatusCode(status, customStatusFunc) };
         }
-    }
 }

@@ -7,30 +7,30 @@ using ATI.Services.Common.Serializers.SystemTextJsonSerialization;
 using NLog;
 using Prometheus;
 
-namespace ATI.Services.Common.Metrics
-{
-    public class MetricsTimer : IDisposable
-    {
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private readonly Summary _summary;
-        private readonly Stopwatch _stopwatch;
-        private readonly string[] _summaryLabels;
-        private readonly TimeSpan? _longRequestTime;
-        private readonly object _context;
-        private readonly LogSource? _logSource;
-        private readonly ISerializer _serializer;
+namespace ATI.Services.Common.Metrics;
 
-        /// <summary>
-        /// Конструктор таймера метрик, который считает только метрику (время выполнения + счётчик) для прометеуса
-        /// </summary>
-        public MetricsTimer(
-            Summary summary,
-            string[] additionSummaryLabels,
-            TimeSpan? longRequestTime = null,
-            object context = null,
-            LogSource? logSource = null,
-            bool startTimerImmediately = true)
-        {
+public class MetricsTimer : IDisposable
+{
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    private readonly Summary _summary;
+    private readonly Stopwatch _stopwatch;
+    private readonly string[] _summaryLabels;
+    private readonly TimeSpan? _longRequestTime;
+    private readonly object _context;
+    private readonly LogSource? _logSource;
+    private readonly ISerializer _serializer;
+
+    /// <summary>
+    /// Конструктор таймера метрик, который считает только метрику (время выполнения + счётчик) для прометеуса
+    /// </summary>
+    public MetricsTimer(
+        Summary summary,
+        string[] additionSummaryLabels,
+        TimeSpan? longRequestTime = null,
+        object context = null,
+        LogSource? logSource = null,
+        bool startTimerImmediately = true)
+    {
             _summary = summary;
             _summaryLabels = additionSummaryLabels;
 
@@ -46,18 +46,18 @@ namespace ATI.Services.Common.Metrics
             _serializer.SetSerializeSettings(SystemTextJsonCustomOptions.IgnoreUserSensitiveDataOptions);
         }
 
-        public void Restart()
-        {
+    public void Restart()
+    {
             _stopwatch.Restart();
         }
 
-        public void Stop()
-        {
+    public void Stop()
+    {
             _stopwatch.Stop();
         }
 
-        public void Dispose()
-        {
+    public void Dispose()
+    {
             if (_summary == null)
             {
                 return;
@@ -85,8 +85,8 @@ namespace ATI.Services.Common.Metrics
             Logger.LogWithObject(LogLevel.Warn, null, "Long request WARN.", GetContext());
         }
 
-        private Dictionary<object, object> GetContext()
-        {
+    private Dictionary<object, object> GetContext()
+    {
             var metricString = _serializer.Serialize(
                 new
                 {
@@ -102,5 +102,4 @@ namespace ATI.Services.Common.Metrics
                 { "metricString", metricString }
             };
         }
-    }
 }

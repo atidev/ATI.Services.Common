@@ -1,18 +1,17 @@
 using Newtonsoft.Json;
 
-namespace ATI.Services.Common.Slack
+namespace ATI.Services.Common.Slack;
+
+internal class SlackNotificationPayload
 {
-    internal class SlackNotificationPayload
-    {
-        public string Channel { get; set; }
-        public string Username { get; set; }
-        public string IconEmoji { get; set; }
-        public string Text { get; set; }
+    public string Channel { get; set; }
+    public string Username { get; set; }
+    public string IconEmoji { get; set; }
+    public string Text { get; set; }
         
-        /// <summary>
-        /// Parent message id
-        /// </summary>
-        [JsonProperty("thread_ts")]
-        public string MessageId { get; set; }
-    }
+    /// <summary>
+    /// Parent message id
+    /// </summary>
+    [JsonProperty("thread_ts")]
+    public string MessageId { get; set; }
 }

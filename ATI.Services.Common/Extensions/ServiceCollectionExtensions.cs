@@ -5,13 +5,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ConfigurationManager = ATI.Services.Common.Behaviors.ConfigurationManager;
 
-namespace ATI.Services.Common.Extensions
+namespace ATI.Services.Common.Extensions;
+
+public static class ServiceCollectionExtensions
 {
-    public static class ServiceCollectionExtensions
+    public static void ConfigureByName<T>(this IServiceCollection serviceCollection, bool checkSectionExists = true)
+        where T : class
     {
-        public static void ConfigureByName<T>(this IServiceCollection serviceCollection, bool checkSectionExists = true)
-            where T : class
-        {
             var sectionName = typeof(T).Name;
             
             var section = ConfigurationManager.GetSection(sectionName);
@@ -22,8 +22,7 @@ namespace ATI.Services.Common.Extensions
             serviceCollection.Configure<T>(ConfigurationManager.GetSection(typeof(T).Name));
         }
 
-        [UsedImplicitly]
-        public static IServiceCollection AddInitializers(this IServiceCollection services)
-            => services.AddTransient<StartupInitializer>();
-    }
+    [UsedImplicitly]
+    public static IServiceCollection AddInitializers(this IServiceCollection services)
+        => services.AddTransient<StartupInitializer>();
 }

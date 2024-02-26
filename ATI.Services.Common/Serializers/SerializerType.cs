@@ -1,13 +1,12 @@
-namespace ATI.Services.Common.Serializers
+namespace ATI.Services.Common.Serializers;
+
+public enum SerializerType
 {
-    public enum SerializerType
-    {
-        Newtonsoft = 0,
-        SystemTextJson = 1,
+    Newtonsoft = 0,
+    SystemTextJson = 1,
         
-        /// <summary>
-        /// System.Text.Json with disabled converters. Since net6.0  
-        /// </summary>
-        SystemTextJsonClassic = 2
-    }
+    /// <summary>
+    /// System.Text.Json with disabled converters. Since net6.0  
+    /// </summary>
+    SystemTextJsonClassic = 2
 }

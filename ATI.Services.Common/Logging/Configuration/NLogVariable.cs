@@ -1,8 +1,7 @@
-﻿namespace ATI.Services.Common.Logging.Configuration
+﻿namespace ATI.Services.Common.Logging.Configuration;
+
+public class NLogVariable
 {
-    public class NLogVariable
-    {
-        public string Name { get; set; }
-        public string Value { get; set; }
-    }
+    public string Name { get; set; }
+    public string Value { get; set; }
 }

@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 
-namespace ATI.Services.Common.Slack
+namespace ATI.Services.Common.Slack;
+
+public class SlackProviderOptions
 {
-    public class SlackProviderOptions
-    {
-        public Dictionary<string, SlackAdapterOptions> SlackOptions { get; set; }
-    }
+    public Dictionary<string, SlackAdapterOptions> SlackOptions { get; set; }
 }
