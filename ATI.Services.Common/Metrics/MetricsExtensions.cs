@@ -16,7 +16,7 @@ public static class MetricsExtensions
     /// <summary>
     /// Alias to distinguish from Microsoft.Extensions.DependencyInjection.MetricsServiceExtensions.AddMetrics(IServiceCollection) 
     /// </summary>
-    public static void AddAtiMetrics(this IServiceCollection services) => services.AddMetrics();
+    public static void AddCommonMetrics(this IServiceCollection services) => services.AddMetrics();
 
     public static void AddMetrics(this IServiceCollection services)
     {

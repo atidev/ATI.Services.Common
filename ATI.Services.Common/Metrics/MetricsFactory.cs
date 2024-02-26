@@ -44,7 +44,7 @@ public class MetricsFactory
         params string[] additionalSummaryLabels)
     {
         var labels = ConcatLabelNames(
-            "route_template",
+            "route_template",    
             "entity_name",
             "external_http_service_name",
             MetricsLabelsAndHeaders.UserLabels,
@@ -158,7 +158,7 @@ public class MetricsFactory
     }
         
     public static MetricsFactory CreateRabbitMqMetricsFactory(
-        RabbitMetricsDirection direction,
+        RabbitMetricsType type,
         [NotNull] string className,
         TimeSpan? requestLongTime = null,
         params string[] additionalSummaryLabels)
@@ -173,7 +173,7 @@ public class MetricsFactory
         return new MetricsFactory(
             className,
             LogSource.RabbitMq,
-            $"{Prefix}_rabbitmq_{direction.ToString().ToLower()}",
+            $"{Prefix}_rabbitmq_{type.ToString().ToLower()}",
             requestLongTime ?? _defaultLongRequestTime,
             labels);
     }
