@@ -33,7 +33,7 @@ public class RedisOptions
     /// </summary>
     public int? SyncTimeoutMs { get; set; }
 
-    public SerializerType Serializer { get; set; } = SerializerType.SystemTextJson;
+    public string Serializer { get; set; } = ((int) SerializerType.SystemTextJson).ToString();
 
     public string BuildConnectionString()
     {

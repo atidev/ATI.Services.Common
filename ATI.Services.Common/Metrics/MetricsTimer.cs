@@ -31,75 +31,76 @@ public class MetricsTimer : IDisposable
         LogSource? logSource = null,
         bool startTimerImmediately = true)
     {
-            _summary = summary;
-            _summaryLabels = additionSummaryLabels;
+        _summary = summary;
+        _summaryLabels = additionSummaryLabels;
 
-            _stopwatch = new Stopwatch();
-            if (startTimerImmediately)
-            {
-                _stopwatch.Start();
-            }
-            _longRequestTime = longRequestTime;
-            _context = context;
-            _logSource = logSource;
-            _serializer = SerializerFactory.GetSerializerByType(SerializerType.SystemTextJson);
-            _serializer.SetSerializeSettings(SystemTextJsonCustomOptions.IgnoreUserSensitiveDataOptions);
+        _stopwatch = new Stopwatch();
+        if (startTimerImmediately)
+        {
+            _stopwatch.Start();
         }
+
+        _longRequestTime = longRequestTime;
+        _context = context;
+        _logSource = logSource;
+        _serializer = SerializerFactory.GetSerializerByType(SerializerType.SystemTextJson);
+        _serializer.SetSerializeSettings(SystemTextJsonCustomOptions.IgnoreUserSensitiveDataOptions);
+    }
 
     public void Restart()
     {
-            _stopwatch.Restart();
-        }
+        _stopwatch.Restart();
+    }
 
     public void Stop()
     {
-            _stopwatch.Stop();
-        }
+        _stopwatch.Stop();
+    }
 
     public void Dispose()
     {
-            if (_summary == null)
-            {
-                return;
-            }
-
-            if (_summaryLabels == null)
-            {
-                _summary.Observe(_stopwatch.ElapsedMilliseconds);
-            }
-            else
-            {
-                _summary.Labels(_summaryLabels).Observe(_stopwatch.ElapsedMilliseconds);
-            }
-
-            _stopwatch.Stop();
-
-            if (_longRequestTime == null
-                || !(_stopwatch.Elapsed > _longRequestTime)
-                || _context == null
-                || _logSource == null)
-            {
-                return;
-            }
-            
-            Logger.LogWithObject(LogLevel.Warn, null, "Long request WARN.", GetContext());
+        if (_summary == null)
+        {
+            return;
         }
+
+        if (_summaryLabels == null)
+        {
+            _summary.Observe(_stopwatch.ElapsedMilliseconds);
+        }
+        else
+        {
+            _summary.Labels(_summaryLabels).Observe(_stopwatch.ElapsedMilliseconds);
+        }
+
+        _stopwatch.Stop();
+
+        if (_longRequestTime == null
+            || !(_stopwatch.Elapsed > _longRequestTime)
+            || _context == null
+            || _logSource == null)
+        {
+            return;
+        }
+
+        Logger.LogWithObject(LogLevel.Warn, null, "Long request WARN.", GetContext());
+    }
 
     private Dictionary<object, object> GetContext()
     {
-            var metricString = _serializer.Serialize(
-                new
-                {
-                    LogSource = _logSource,
-                    RequestTime = _stopwatch.Elapsed,
-                    Labels = _summaryLabels,
-                    Context = _context
-                });
-
-            return new Dictionary<object, object>
+        var metricString = _serializer.Serialize(
+            new
             {
-                { "metricSource", _logSource.Value.ToString() },
-                { "metricString", metricString }
-            };
-        }
+                LogSource = _logSource,
+                RequestTime = _stopwatch.Elapsed,
+                Labels = _summaryLabels,
+                Context = _context
+            });
+
+        return new Dictionary<object, object>
+        {
+            { "metricSource", _logSource.Value.ToString() },
+            { "metricString", metricString }
+        };
+    }
 }

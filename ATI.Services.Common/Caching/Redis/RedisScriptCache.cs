@@ -5,8 +5,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
+using ATI.Services.Common.Caching.Redis.Abstractions;
 using ATI.Services.Common.Metrics;
-using ATI.Services.Common.Serializers;
 using JetBrains.Annotations;
 using Polly.CircuitBreaker;
 using Polly.Wrap;
@@ -20,7 +20,7 @@ internal class RedisScriptCache : BaseRedisCache
     private readonly IDatabase _redisDb;
     private readonly AsyncCircuitBreakerPolicy _circuitBreakerPolicy;
     private readonly AsyncPolicyWrap _policy;
-        
+
     /// <summary>
     /// Инициализируем готовыми Policy, чтобы они разделяли общий CircuitBreaker - иначе у них будут разные State с RedisCache
     /// </summary>
@@ -30,49 +30,54 @@ internal class RedisScriptCache : BaseRedisCache
     /// <param name="circuitBreakerPolicy"></param>
     /// <param name="policy"></param>
     public RedisScriptCache(
-        IDatabase redisDb, 
-        RedisOptions redisOptions, 
+        IDatabase redisDb,
+        RedisOptions redisOptions,
         MetricsFactory metricsFactory,
         AsyncCircuitBreakerPolicy circuitBreakerPolicy,
-        AsyncPolicyWrap policy
+        AsyncPolicyWrap policy,
+        IRedisSerializer serializer
     )
-        : base(SerializerFactory.GetSerializerByType(redisOptions.Serializer))
     {
-            Options = redisOptions;
-            _redisDb = redisDb;
-            _metricsFactory = metricsFactory;
-            _circuitBreakerPolicy = circuitBreakerPolicy;
-            _policy = policy;
+        Options = redisOptions;
+        _redisDb = redisDb;
+        _metricsFactory = metricsFactory;
+        _circuitBreakerPolicy = circuitBreakerPolicy;
+        _policy = policy;
+        Serializer = serializer;
     }
-        
-    public async Task<OperationResult> InsertManyByScriptAsync<T>([NotNull] List<T> redisValue, string metricEntity, TimeSpan? longRequestTime = null) where T : ICacheEntity
-    {
-            if (redisValue.Count < 0)
-                return OperationResult.Ok;
 
-            using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { RedisValues = redisValue }, longRequestTime: longRequestTime))
-            {
-                var result = await InsertManyByScriptAsync(redisValue.Select(v => v.GetKey()), redisValue);
-                return result;
-            }
-    }
-        
-    public async Task<OperationResult> InsertManyByScriptAsync<T>(Dictionary<string, T> redisValues, string metricEntity, TimeSpan? longRequestTime = null)
+    public async Task<OperationResult> InsertManyByScriptAsync<T>([NotNull] List<T> redisValue, string metricEntity,
+        TimeSpan? longRequestTime = null) where T : ICacheEntity
     {
-        if (redisValues == null || redisValues.Count == 0 )
+        if (redisValue.Count < 0)
             return OperationResult.Ok;
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { RedisValues = redisValues },
+        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+                   requestParams: new { RedisValues = redisValue }, longRequestTime: longRequestTime))
+        {
+            var result = await InsertManyByScriptAsync(redisValue.Select(v => v.GetKey()), redisValue);
+            return result;
+        }
+    }
+
+    public async Task<OperationResult> InsertManyByScriptAsync<T>(Dictionary<string, T> redisValues,
+        string metricEntity, TimeSpan? longRequestTime = null)
+    {
+        if (redisValues == null || redisValues.Count == 0)
+            return OperationResult.Ok;
+
+        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+                   requestParams: new { RedisValues = redisValues },
                    longRequestTime: longRequestTime))
         {
             var result = await InsertManyByScriptAsync(redisValues.Keys, redisValues.Values);
             return result;
         }
     }
-        
+
     private async Task<OperationResult> InsertManyByScriptAsync<T>(IEnumerable<string> keys, ICollection<T> values)
     {
-        var redisKeys = keys.Select(k => (RedisKey) k).ToArray();
+        var redisKeys = keys.Select(k => (RedisKey)k).ToArray();
 
         var redisValues = new RedisValue[values.Count + 1];
         var i = 0;
@@ -83,16 +88,16 @@ internal class RedisScriptCache : BaseRedisCache
         }
 
         // Последний параметр - длина жизни ключа в миллисекундах
-        redisValues[^1] = (int) (Options.TimeToLive?.TotalMilliseconds ?? -1);
+        redisValues[^1] = (int)(Options.TimeToLive?.TotalMilliseconds ?? -1);
 
         RedisMetadata.ScriptShaByScriptType.TryGetValue(RedisMetadata.InsertManyScriptKey, out var scriptSha);
 
         var result = await ExecuteEvalShaAsync(scriptSha, RedisLuaScripts.InsertMany, redisKeys, redisValues);
         if (result.Success)
-            RedisMetadata.ScriptShaByScriptType.AddOrUpdate(RedisMetadata.InsertManyScriptKey, result.Value, (_, _) => result.Value);
+            RedisMetadata.ScriptShaByScriptType.AddOrUpdate(RedisMetadata.InsertManyScriptKey, result.Value,
+                (_, _) => result.Value);
 
         return result;
-            
     }
 
     /// <summary>
@@ -103,12 +108,14 @@ internal class RedisScriptCache : BaseRedisCache
     /// <param name="keys">Список ключей.</param>
     /// <param name="arguments">Список параметров.</param>
     /// <returns>Возвращает хэш переданного в <paramref name="script"/> скрипта.</returns>
-    private async Task<OperationResult<byte[]>> ExecuteEvalShaAsync(byte[] scriptSha, string script, RedisKey[] keys, params RedisValue[] arguments)
+    private async Task<OperationResult<byte[]>> ExecuteEvalShaAsync(byte[] scriptSha, string script, RedisKey[] keys,
+        params RedisValue[] arguments)
     {
         if (scriptSha == null)
             return await ExecuteEvalScriptAsync(script, keys, arguments);
 
-        var result = await ExecuteAsync(async () => await _redisDb.ScriptEvaluateAsync(scriptSha, keys, arguments), keys, _circuitBreakerPolicy, _policy);
+        var result = await ExecuteAsync(async () => await _redisDb.ScriptEvaluateAsync(scriptSha, keys, arguments),
+            keys, _circuitBreakerPolicy, _policy);
         return result.Success
             ? new OperationResult<byte[]>(scriptSha)
             : await ExecuteEvalScriptAsync(script, keys, arguments);
@@ -117,9 +124,10 @@ internal class RedisScriptCache : BaseRedisCache
     private async Task<OperationResult<byte[]>> ExecuteEvalScriptAsync(string script, RedisKey[] keys,
         params RedisValue[] arguments)
     {
-        var result = await ExecuteAsync(async () => await _redisDb.ScriptEvaluateAsync(script, keys, arguments), keys, _circuitBreakerPolicy, _policy);
+        var result = await ExecuteAsync(async () => await _redisDb.ScriptEvaluateAsync(script, keys, arguments), keys,
+            _circuitBreakerPolicy, _policy);
         return result.Success
-            ? new OperationResult<byte[]>(SHA1.Create().ComputeHash(Encoding.UTF8.GetBytes(script))) 
+            ? new OperationResult<byte[]>(SHA1.HashData(Encoding.UTF8.GetBytes(script)))
             : new OperationResult<byte[]>(result);
     }
 }
