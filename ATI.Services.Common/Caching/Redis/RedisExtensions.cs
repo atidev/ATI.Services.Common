@@ -1,5 +1,6 @@
 using ATI.Services.Common.Extensions;
 using ATI.Services.Common.Initializers;
+using ATI.Services.Common.Serializers;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,8 +11,10 @@ public static class RedisExtensions
     [PublicAPI]
     public static void AddRedis(this IServiceCollection services)
     {
-            services.ConfigureByName<CacheManagerOptions>();
-            services.AddSingleton<RedisProvider>();
-            services.AddTransient<RedisInitializer>();
+        services.ConfigureByName<CacheManagerOptions>();
+        services.AddSingleton<RedisProvider>();
+        services.AddTransient<RedisInitializer>();
+        
+        services.AddSerializers();
     }
 }
