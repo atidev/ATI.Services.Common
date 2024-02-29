@@ -3,30 +3,31 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using NLog;
 
-namespace ATI.Services.Common.Slack;
-
-[PublicAPI]
-public class SlackProvider
+namespace ATI.Services.Common.Slack
 {
-    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    private readonly Dictionary<string, SlackAdapter> _configuredSlackAdapters = new();
-
-    public SlackProvider(IOptions<SlackProviderOptions> slackProviderOptions)
+    [PublicAPI]
+    public class SlackProvider
     {
-        foreach (var slackOptions in slackProviderOptions.Value.SlackOptions)
-        {
-            _configuredSlackAdapters.Add(slackOptions.Key, new SlackAdapter(slackOptions.Value));
-        }
-    }
+        private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+        private readonly Dictionary<string, SlackAdapter> _configuredSlackAdapters = new();
 
-    public SlackAdapter GetAdapter(string slackChannel)
-    {
-        var isSlackAdapterConfigured = _configuredSlackAdapters.TryGetValue(slackChannel, out var slackAdapter);
-        if (isSlackAdapterConfigured)
+        public SlackProvider(IOptions<SlackProviderOptions> slackProviderOptions)
         {
-            return slackAdapter;
+            foreach (var slackOptions in slackProviderOptions.Value.SlackOptions)
+            {
+                _configuredSlackAdapters.Add(slackOptions.Key, new SlackAdapter(slackOptions.Value));
+            }
         }
-        _logger.Error($"В пуле нет SlackAdapter с каналом = {slackChannel}");
-        return null;
+
+        public SlackAdapter GetAdapter(string slackChannel)
+        {
+            var isSlackAdapterConfigured = _configuredSlackAdapters.TryGetValue(slackChannel, out var slackAdapter);
+            if (isSlackAdapterConfigured)
+            {
+                return slackAdapter;
+            }
+            _logger.Error($"В пуле нет SlackAdapter с каналом = {slackChannel}");
+            return null;
+        }
     }
 }

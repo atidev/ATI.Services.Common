@@ -8,20 +8,20 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using NLog;
 
-namespace ATI.Services.Common.Metrics.HttpWrapper;
-
-[PublicAPI]
-public class MetricsHttpClientConfig
+namespace ATI.Services.Common.Metrics.HttpWrapper
 {
-    public MetricsHttpClientConfig(
-        string serviceName,
-        TimeSpan timeout,
-        SerializerType serializerType,
-        bool addCultureToRequest = true,
-        JsonSerializerSettings newtonsoftSettings = null,
-        JsonSerializerOptions systemTextJsonOptions = null,
-        bool propagateActivity = true)
+    [PublicAPI]
+    public class MetricsHttpClientConfig
     {
+        public MetricsHttpClientConfig(
+            string serviceName,
+            TimeSpan timeout,
+            SerializerType serializerType,
+            bool addCultureToRequest = true,
+            JsonSerializerSettings newtonsoftSettings = null,
+            JsonSerializerOptions systemTextJsonOptions = null,
+            bool propagateActivity = true)
+        {
             ServiceName = serviceName;
             Timeout = timeout;
             AddCultureToRequest = addCultureToRequest;
@@ -29,22 +29,22 @@ public class MetricsHttpClientConfig
             SetSerializer(serializerType, newtonsoftSettings, systemTextJsonOptions);
         }
 
-    public ISerializer Serializer { get; set; }
-    public string ServiceName { get; init; }
-    public TimeSpan Timeout { get; init; }
-    public bool AddCultureToRequest { get; init; }
+        public ISerializer Serializer { get; set; }
+        public string ServiceName { get; init; }
+        public TimeSpan Timeout { get; init; }
+        public bool AddCultureToRequest { get; init; }
 
-    public Dictionary<string, string> Headers { get; set; } = new();
-    public List<string> HeadersToProxy { get; set; } = new();
-    public bool PropagateActivity { get; set; }
+        public Dictionary<string, string> Headers { get; set; } = new();
+        public List<string> HeadersToProxy { get; set; } = new();
+        public bool PropagateActivity { get; set; }
 
-    public Func<LogLevel, LogLevel> LogLevelOverride { get; set; } = level => level;
+        public Func<LogLevel, LogLevel> LogLevelOverride { get; set; } = level => level;
 
-    private void SetSerializer(
-        SerializerType serializerType,
-        JsonSerializerSettings newtonsoftSettings = null,
-        JsonSerializerOptions systemTextJsonOptions = null)
-    {
+        private void SetSerializer(
+            SerializerType serializerType,
+            JsonSerializerSettings newtonsoftSettings = null,
+            JsonSerializerOptions systemTextJsonOptions = null)
+        {
             Serializer = SerializerFactory.GetSerializerByType(serializerType);
             if (serializerType == SerializerType.Newtonsoft)
             {
@@ -83,4 +83,5 @@ public class MetricsHttpClientConfig
                 }
             }
         }
+    }
 }

@@ -1,10 +1,11 @@
 ﻿using Dapper;
 using JetBrains.Annotations;
 
-namespace ATI.Services.Common.Sql;
-
-[PublicAPI]
-public static class EmptyFields
+namespace ATI.Services.Common.Sql
 {
-    public static DynamicParameters DynamicParameters => new();
+    [PublicAPI]
+    public static class EmptyFields
+    {
+        public static DynamicParameters DynamicParameters => new();
+    }
 }

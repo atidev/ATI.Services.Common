@@ -6,13 +6,13 @@ using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 
-namespace ATI.Services.Common.Localization;
-
-[PublicAPI]
-public static class LocaleHelper
+namespace ATI.Services.Common.Localization
 {
-    public static string GetLocale(bool withDefaultLocale = true)
+    [PublicAPI]
+    public static class LocaleHelper
     {
+        public static string GetLocale(bool withDefaultLocale = true)
+        {
             return !string.IsNullOrEmpty(CultureInfo.CurrentUICulture.Name)
                 ? CultureInfo.CurrentUICulture.Name
                 : withDefaultLocale
@@ -20,13 +20,13 @@ public static class LocaleHelper
                     : CultureInfo.CurrentUICulture.Name;
         }
 
-    public static string GetUserLanguage(this HttpContext requestContext, bool withDefaultLocale = true)
-    {
+        public static string GetUserLanguage(this HttpContext requestContext, bool withDefaultLocale = true)
+        {
             return GetLocale(withDefaultLocale);
         }
 
-    public static bool TryGetFromString(string acceptLanguage, out CultureInfo cultureInfo)
-    {
+        public static bool TryGetFromString(string acceptLanguage, out CultureInfo cultureInfo)
+        {
             cultureInfo = null;
             try
             {
@@ -48,4 +48,5 @@ public static class LocaleHelper
                 return false;
             }
         }
+    }
 }

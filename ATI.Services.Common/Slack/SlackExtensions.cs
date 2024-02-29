@@ -2,14 +2,15 @@ using ATI.Services.Common.Extensions;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ATI.Services.Common.Slack;
-
-[PublicAPI]
-public static class SlackExtensions
+namespace ATI.Services.Common.Slack
 {
-    public static void AddSlack(this IServiceCollection services)
+    [PublicAPI]
+    public static class SlackExtensions
     {
-        services.ConfigureByName<SlackProviderOptions>();
-        services.AddSingleton<SlackProvider>();
+        public static void AddSlack(this IServiceCollection services)
+        {
+            services.ConfigureByName<SlackProviderOptions>();
+            services.AddSingleton<SlackProvider>();
+        }
     }
 }

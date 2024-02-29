@@ -8,13 +8,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ATI.Services.Common.Localization;
-
-[PublicAPI]
-public static class LocalizationExtensions
+namespace ATI.Services.Common.Localization
 {
-    public static IServiceCollection AddInCodeLocalization(this IServiceCollection services)
+    [PublicAPI]
+    public static class LocalizationExtensions
     {
+        public static IServiceCollection AddInCodeLocalization(this IServiceCollection services)
+        {
             foreach (var type in AppDomain.CurrentDomain.GetAssemblies()
                                           .SelectMany(s => s.GetTypes())
                                           .Where(p => p.IsClass && p.IsAssignableTo(typeof(IInCodeLocalization))))
@@ -27,9 +27,9 @@ public static class LocalizationExtensions
         }
 
         
-    public static void UseAcceptLanguageLocalization(this IApplicationBuilder builder,
-        List<IRequestCultureProvider> additionalProviders = null)
-    {
+        public static void UseAcceptLanguageLocalization(this IApplicationBuilder builder,
+            List<IRequestCultureProvider> additionalProviders = null)
+        {
             var requestLocalizationOptions = new RequestLocalizationOptions()
                 .SetDefaultCulture(ServiceVariables.DefaultLocale)
                 .AddSupportedUICultures(ServiceVariables.SupportedLocales.ToArray());
@@ -59,4 +59,5 @@ public static class LocalizationExtensions
                 await next(context);
             });
         }
+    }
 }

@@ -6,20 +6,20 @@ using ATI.Services.Common.Metrics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace ATI.Services.Common.Variables;
-
-internal static class AppHttpContext
+namespace ATI.Services.Common.Variables
 {
-    private static IServiceProvider _services;
-
-    /// <summary>
-    /// Provides static access to the framework's services provider
-    /// </summary>
-    public static IServiceProvider Services
+    internal static class AppHttpContext
     {
-        get => _services;
-        set
+        private static IServiceProvider _services;
+
+        /// <summary>
+        /// Provides static access to the framework's services provider
+        /// </summary>
+        public static IServiceProvider Services
         {
+            get => _services;
+            set
+            {
                 if (_services != null)
                 {
                     return;
@@ -27,26 +27,26 @@ internal static class AppHttpContext
 
                 _services = value;
             }
-    }
+        }
 
-    public static string[] MetricsHeadersValues => GetHeadersValues(MetricsLabelsAndHeaders.UserHeaders);
-    public static Dictionary<string, string> HeadersAndValuesToProxy(List<string> headersToProxy) => GetHeadersAndValues(headersToProxy);
+        public static string[] MetricsHeadersValues => GetHeadersValues(MetricsLabelsAndHeaders.UserHeaders);
+        public static Dictionary<string, string> HeadersAndValuesToProxy(List<string> headersToProxy) => GetHeadersAndValues(headersToProxy);
 
-    /// <summary>
-    /// Provides static access to the current HttpContext
-    /// </summary>
-    private static HttpContext Current
-    {
-        get
+        /// <summary>
+        /// Provides static access to the current HttpContext
+        /// </summary>
+        private static HttpContext Current
         {
+            get
+            {
                 var httpContextAccessor =
                     _services.GetService(typeof(IHttpContextAccessor)) as IHttpContextAccessor;
                 return httpContextAccessor?.HttpContext;
             }
-    }
+        }
 
-    private static string[] GetHeadersValues(string[] headersNames)
-    {
+        private static string[] GetHeadersValues(string[] headersNames)
+        {
             if (headersNames == null || headersNames.Length == 0)
                 return headersNames;
 
@@ -55,8 +55,8 @@ internal static class AppHttpContext
             return headersValues;
         }
 
-    private static string GetHeaderValue(HttpContext context, string headerName)
-    {
+        private static string GetHeaderValue(HttpContext context, string headerName)
+        {
             if (context == null)
             {
                 return "This service";
@@ -73,8 +73,8 @@ internal static class AppHttpContext
             return "Empty";
         }
 
-    private static Dictionary<string, string> GetHeadersAndValues(IReadOnlyCollection<string> headersNames)
-    {
+        private static Dictionary<string, string> GetHeadersAndValues(IReadOnlyCollection<string> headersNames)
+        {
             if (headersNames == null || headersNames.Count == 0)
                 return null;
 
@@ -95,4 +95,5 @@ internal static class AppHttpContext
                 .ToDictionary(headerAndValue => headerAndValue.Header,
                     headerAndValue => headerAndValue.Value);
         }
+    }
 }

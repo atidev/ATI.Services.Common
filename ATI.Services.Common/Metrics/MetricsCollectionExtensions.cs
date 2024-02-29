@@ -6,31 +6,32 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Prometheus;
 
-namespace ATI.Services.Common.Metrics;
-
-[PublicAPI]
-public static class MetricsCollectionExtensions
+namespace ATI.Services.Common.Metrics
 {
-    private const string MetricsCollectionAddress = "metrics";
-
-    public static IEndpointConventionBuilder MapMetricsCollection(this IEndpointRouteBuilder builder)
+    [PublicAPI]
+    public static class MetricsCollectionExtensions
     {
-        return builder.MapGet(MetricsCollectionAddress, MetricsCollectionDelegate);
-    }
+        private const string MetricsCollectionAddress = "metrics";
 
-    private static async Task MetricsCollectionDelegate(HttpContext httpContext)
-    {
-        await GetMetrics(httpContext);
-    }
+        public static IEndpointConventionBuilder MapMetricsCollection(this IEndpointRouteBuilder builder)
+        {
+            return builder.MapGet(MetricsCollectionAddress, MetricsCollectionDelegate);
+        }
+
+        private static async Task MetricsCollectionDelegate(HttpContext httpContext)
+        {
+            await GetMetrics(httpContext);
+        }
         
-    private static async Task GetMetrics(HttpContext httpContext)
-    {
-        var response = httpContext.Response;
+        private static async Task GetMetrics(HttpContext httpContext)
+        {
+            var response = httpContext.Response;
 
-        response.ContentType = PrometheusConstants.TextContentType;
-        response.StatusCode = (int)HttpStatusCode.OK;
+            response.ContentType = PrometheusConstants.TextContentType;
+            response.StatusCode = (int)HttpStatusCode.OK;
 
-        await using var outputStream = response.Body;
-        await Prometheus.Metrics.DefaultRegistry.CollectAndExportAsTextAsync(outputStream);
+            await using var outputStream = response.Body;
+            await Prometheus.Metrics.DefaultRegistry.CollectAndExportAsTextAsync(outputStream);
+        }
     }
 }

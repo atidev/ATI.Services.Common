@@ -4,22 +4,22 @@ using ATI.Services.Common.Metrics;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 
-namespace ATI.Services.Common.Initializers;
-
-[UsedImplicitly]
-[InitializeOrder(Order = InitializeOrder.First)]
-public class MetricsInitializer : IInitializer
+namespace ATI.Services.Common.Initializers
 {
-    private static bool _initialized;
-    private readonly MetricsOptions _metricsOptions;
-
-    public MetricsInitializer(IOptions<MetricsOptions> metricsOptions)
+    [UsedImplicitly]
+    [InitializeOrder(Order = InitializeOrder.First)]
+    public class MetricsInitializer : IInitializer
     {
+        private static bool _initialized;
+        private readonly MetricsOptions _metricsOptions;
+
+        public MetricsInitializer(IOptions<MetricsOptions> metricsOptions)
+        {
             _metricsOptions = metricsOptions.Value;
         }
 
-    public Task InitializeAsync()
-    {
+        public Task InitializeAsync()
+        {
             if (_initialized)
             {
                 return Task.CompletedTask;
@@ -34,13 +34,14 @@ public class MetricsInitializer : IInitializer
             return Task.CompletedTask;
         }
 
-    public string InitStartConsoleMessage()
-    {
+        public string InitStartConsoleMessage()
+        {
             return "Start Metrics initializer";
         }
 
-    public string InitEndConsoleMessage()
-    {
+        public string InitEndConsoleMessage()
+        {
             return $"End Metrics initializer, result {_initialized}";
         }
+    }
 }

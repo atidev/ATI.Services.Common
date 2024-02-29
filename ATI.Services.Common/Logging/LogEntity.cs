@@ -1,7 +1,8 @@
-﻿namespace ATI.Services.Common.Logging;
-
-public class LogEntity
+﻿namespace ATI.Services.Common.Logging
 {
-    public string EntityName;
-    public object Entity;
+    public class LogEntity
+    {
+        public string EntityName;
+        public object Entity;
+    }
 }

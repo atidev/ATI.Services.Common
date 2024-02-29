@@ -1,21 +1,22 @@
 using System.Threading;
 using JetBrains.Annotations;
 
-namespace ATI.Services.Common.Context;
-
-[PublicAPI]
-public static class FlowContext<T> where T : new()
+namespace ATI.Services.Common.Context
 {
-    private static readonly AsyncLocal<T> AsyncLocal = new();
-
-    public static T Current
+    [PublicAPI]
+    public static class FlowContext<T> where T : new()
     {
-        get
+        private static readonly AsyncLocal<T> AsyncLocal = new();
+
+        public static T Current
         {
-            if (AsyncLocal.Value != null)
-                return AsyncLocal.Value;
-            return AsyncLocal.Value = new ();
+            get
+            {
+                if (AsyncLocal.Value != null)
+                    return AsyncLocal.Value;
+                return AsyncLocal.Value = new ();
+            }
+            set => AsyncLocal.Value = value;
         }
-        set => AsyncLocal.Value = value;
     }
 }

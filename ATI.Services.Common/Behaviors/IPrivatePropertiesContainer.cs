@@ -1,6 +1,7 @@
-﻿namespace ATI.Services.Common.Behaviors;
-
-public interface IPrivatePropertiesContainer
+﻿namespace ATI.Services.Common.Behaviors
 {
-    void SetShouldSerializePrivateProperties(bool shouldSerializePrivateProperties);
+    public interface IPrivatePropertiesContainer
+    {
+        void SetShouldSerializePrivateProperties(bool shouldSerializePrivateProperties);
+    }
 }

@@ -5,21 +5,21 @@ using ATI.Services.Common.Initializers.Interfaces;
 using JetBrains.Annotations;
 using NLog;
 
-namespace ATI.Services.Common.Initializers;
-
-public class StartupInitializer
+namespace ATI.Services.Common.Initializers
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
-
-    public StartupInitializer(IServiceProvider serviceProvider)
+    public class StartupInitializer
     {
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
+
+        public StartupInitializer(IServiceProvider serviceProvider)
+        {
             _serviceProvider = serviceProvider;
         }
 
-    [UsedImplicitly]
-    public async Task InitializeAsync()
-    {
+        [UsedImplicitly]
+        public async Task InitializeAsync()
+        {
             var initializers = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(assembly => assembly.GetTypes())
                 .Where(type => !type.IsInterface && typeof(IInitializer).IsAssignableFrom(type))
@@ -44,4 +44,5 @@ public class StartupInitializer
                 }
             }
         }
+    }
 }

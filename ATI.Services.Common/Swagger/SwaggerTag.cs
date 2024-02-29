@@ -1,14 +1,15 @@
 ﻿using System;
 using JetBrains.Annotations;
 
-namespace ATI.Services.Common.Swagger;
-
-[Flags]
-[PublicAPI]
-public enum SwaggerTag
+namespace ATI.Services.Common.Swagger
 {
-    All = 1,
-    Open = 2,
-    Public = 4,
-    Internal = 8
+    [Flags]
+    [PublicAPI]
+    public enum SwaggerTag
+    {
+        All = 1,
+        Open = 2,
+        Public = 4,
+        Internal = 8
+    }
 }

@@ -7,15 +7,15 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using NLog;
 
-namespace ATI.Services.Common.Logging;
-
-[PublicAPI]
-public static class GlobalLoggingExtensions
+namespace ATI.Services.Common.Logging
 {
-    private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
-        
-    public static void UseCustomExceptionHandler(this IApplicationBuilder app, WarningError errorAsWarning = 0)
+    [PublicAPI]
+    public static class GlobalLoggingExtensions
     {
+        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+        
+        public static void UseCustomExceptionHandler(this IApplicationBuilder app, WarningError errorAsWarning = 0)
+        {
             app.UseExceptionHandler(new ExceptionHandlerOptions
             {
                 ExceptionHandler = async context =>
@@ -60,4 +60,5 @@ public static class GlobalLoggingExtensions
                 }
             });
         }
+    }
 }
