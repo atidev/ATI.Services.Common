@@ -4,7 +4,7 @@ using StackExchange.Redis;
 
 namespace ATI.Services.Common.Caching.Redis.Abstractions;
 
-public class RedisStringSerializer : IRedisSerializer
+internal sealed class RedisStringSerializer : IRedisSerializer
 {
     private readonly ISerializer<string> _serializer;
 
