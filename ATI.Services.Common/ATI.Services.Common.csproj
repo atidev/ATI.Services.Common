@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup Label="Main">
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
     <Authors>Team Services</Authors>
     <Company>ATI</Company>
@@ -22,6 +22,7 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.3" />
     <PackageReference Include="NLog" Version="4.7.6" />
+    <PackageReference Include="NLog.DiagnosticSource" Version="1.3.0" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="4.9.3" />
     <PackageReference Include="Npgsql" Version="7.0.4" />
     <PackageReference Include="Polly" Version="7.2.3" />

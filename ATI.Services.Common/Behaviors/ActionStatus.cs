@@ -80,6 +80,10 @@
         /// <summary>
         /// Превышено допустимая частота запросов
         /// </summary>
-        TooManyRequests = 20
+        TooManyRequests = 20,
+        /// <summary>
+        /// Документ не изменился с указанного момента
+        /// </summary>
+        NotModified = 21
     }
 }

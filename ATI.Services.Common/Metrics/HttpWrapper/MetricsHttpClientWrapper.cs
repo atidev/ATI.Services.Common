@@ -352,7 +352,9 @@ namespace ATI.Services.Common.Metrics.HttpWrapper
 
                     try
                     {
-                        result.Content = Config.Serializer.Deserialize<TResult>(result.RawContent);
+                        result.Content = !string.IsNullOrEmpty(result.RawContent)
+                                             ? Config.Serializer.Deserialize<TResult>(result.RawContent)
+                                             : default;
                     }
                     catch (TaskCanceledException e) when (e.InnerException is TimeoutException)
                     {
@@ -378,7 +380,7 @@ namespace ATI.Services.Common.Metrics.HttpWrapper
                             });
                     }
 
-                    return new OperationResult<HttpResponseMessage<TResult>>(result);
+                    return new(result, OperationResult.GetActionStatusByHttpStatusCode(result.StatusCode));
                 }
             }
             catch (Exception e)
@@ -408,7 +410,7 @@ namespace ATI.Services.Common.Metrics.HttpWrapper
                     {
                         var stream = await responseMessage.Content.ReadAsStreamAsync();
                         var result = await Config.Serializer.DeserializeAsync<TResult>(stream);
-                        return new OperationResult<TResult>(result);
+                        return new OperationResult<TResult>(result, OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
                     }
 
                     var logMessage = string.Format(LogMessageTemplate, Config.ServiceName, message.Method,
@@ -420,8 +422,7 @@ namespace ATI.Services.Common.Metrics.HttpWrapper
                         : _logLevelOverride(LogLevel.Warn);
                     _logger.LogWithObject(logLevel, ex: null, logMessage, logObjects: responseContent);
 
-                    return new OperationResult<TResult>(
-                        OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
+                    return new OperationResult<TResult>(OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
                 }
                 catch (TaskCanceledException e) when (e.InnerException is TimeoutException)
                 {
@@ -455,7 +456,7 @@ namespace ATI.Services.Common.Metrics.HttpWrapper
                     var responseContent = await responseMessage.Content.ReadAsStringAsync();
 
                     if (responseMessage.IsSuccessStatusCode)
-                        return new OperationResult<string>(responseContent);
+                        return new OperationResult<string>(responseContent, OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
 
                     var logMessage = string.Format(LogMessageTemplate, Config.ServiceName, message.Method,
                         message.FullUri, responseMessage.StatusCode);
@@ -530,7 +531,7 @@ namespace ATI.Services.Common.Metrics.HttpWrapper
                     Headers.AddRange(AppHttpContext.HeadersAndValuesToProxy(config.HeadersToProxy));
 
                 foreach (var header in Headers)
-                    msg.Headers.Add(header.Key, header.Value);
+                    msg.Headers.TryAddWithoutValidation(header.Key, header.Value);
 
                 string acceptLanguage;
                 if (config.AddCultureToRequest
