@@ -109,15 +109,36 @@
 
 ---
 ### Метрики
-Добавляем метрики в `Startup.cs` : `services.AddMetrics();`
-Он автоматически добавит: `MetricsOptions`
+
+#### Виды метрик
+```
+common_metric_sql - collected by DapperDb and PostgressDapper
+common_metric_http_client - for outgoing http requests, ConsulMetricsHttpClientWrapper uses it
+common_metric_rabbitmq_in - incoming messages from rmq, used by ATI.Services.RabbitMQ and ChangeTracking
+common_metric_rabbitmq_out - outgoing messages to rmq, used by ATI.Services.RabbitMQ and ChangeTracking
+common_metric_repository - should be collected manually
+common_metric_controller - incoming http requests, added by MeasureAttribute in controllers
+common_metric_Exceptions - application exceptions
+common_metric_HttpStatusCodeCounter - aspnet response codes
+common_metric_redis - collected by RedisCache
+common_metric_mongo - should be collected manually
+common_metric_{something} - this one reserved for custom metric, if you really need it, try to keep number of unique metrics as low as possible
+```
+#### Добавление в проект 
 
 Так как Prometheus собирает метрики через консул, добавляем тег в конфиг консула `metrics-port-*портприложения*`.
-Добавляем [endpoint](http://stash.ri.domain:7990/projects/AS/repos/ati.firmservicecore/browse/ATI.FirmService.Core.Web.Api/Controllers/MetricsController.cs) для сбора метрик.
 
-Добавляем мидлвару
 ```csharp
-    app.UseMetrics();
+services.AddMetrics(); //или services.AddCommonMetrics();
+//...
+app.UseEndpoints(endpoints =>
+    {
+        //...
+        endpoints.MapMetricsCollection(); //Добавляем эндпоинт для сбора метрик
+        //...
+    });
+
+app.UseMetrics(); //Добавляем мидлвару
 ```
 
 Для использования кастомных метрик в `appsettings.json` нужно определить следующую модель:
@@ -126,14 +147,9 @@
     "LabelsAndHeaders": {
       "Лейбл метрики" : "Header HTTP-запроса"
     },
-    "MetricsServiceName": "notifications" //переопределяем название сервиса для метрик
   },
 ```
 Ключ словаря - лейбл метрики, значение - Header HTTP-запроса.
-
-
-
-Просим девопсов добавить сервис в Prometheus.
 
 Собственно сбор:
 На метод котроллера вешаем `MeasureAttribute`, в который передаем название сущности, с которой работает метод.
