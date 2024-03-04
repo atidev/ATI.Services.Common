@@ -4,29 +4,31 @@ using ATI.Services.Common.Variables;
 using Microsoft.AspNetCore.Http;
 using Prometheus;
 
-namespace ATI.Services.Common.Metrics
+namespace ATI.Services.Common.Metrics;
+
+public class MetricsStatusCodeCounterMiddleware
 {
-    public class MetricsStatusCodeCounterMiddleware
+    private readonly Counter _counter;
+    private readonly RequestDelegate _next;
+
+    public MetricsStatusCodeCounterMiddleware(RequestDelegate next)
     {
-        private static Counter counter = Prometheus.Metrics.CreateCounter("HttpStatusCodeCounter", "",
-            new CounterConfiguration
-            {
-                LabelNames = new[] {"http_status_code"}.Concat(MetricsLabelsAndHeaders.UserLabels).ToArray()
-            });
+        _counter = Prometheus.Metrics.CreateCounter($"{MetricsFactory.Prefix}_HttpStatusCodeCounter",
+                                                    "",
+                                                    new CounterConfiguration
+                                                    {
+                                                        LabelNames = new[] { "http_status_code" }
+                                                                     .Concat(MetricsLabelsAndHeaders.UserLabels)
+                                                                     .ToArray()
+                                                    });
+        _next = next;
+    }
 
-        private readonly RequestDelegate _next;
-
-        public MetricsStatusCodeCounterMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
-
-        public async Task InvokeAsync(HttpContext context)
-        {
-            await _next(context);
-            var param = new[] {context.Response.StatusCode.ToString()}.Concat(AppHttpContext.MetricsHeadersValues)
-                .ToArray();
-            counter.WithLabels(param).Inc();
-        }
+    public async Task InvokeAsync(HttpContext context)
+    {
+        await _next(context);
+        var param = new[] {context.Response.StatusCode.ToString()}.Concat(AppHttpContext.MetricsHeadersValues)
+                                                                  .ToArray();
+        _counter.WithLabels(param).Inc();
     }
 }
