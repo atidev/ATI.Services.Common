@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-
 namespace ATI.Services.Common.Extensions
 {
    public static class ListExtensions

@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
-using ATI.Services.Common.Metrics;
 using ATI.Services.Common.Metrics.HttpWrapper;
 using ATI.Services.Common.Serializers;
 using JetBrains.Annotations;

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
-
 namespace ATI.Services.Common.Behaviors.OperationBuilder
 {
     public class ActionBuilder : BaseActionBuilder

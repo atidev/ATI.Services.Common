@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-
 namespace ATI.Services.Common.Behaviors
 {
     public static class CommonBehavior

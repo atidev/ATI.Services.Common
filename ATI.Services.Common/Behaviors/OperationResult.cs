@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using JetBrains.Annotations;
 
-
 namespace ATI.Services.Common.Behaviors
 {
     [PublicAPI]

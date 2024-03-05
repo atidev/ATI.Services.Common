@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-
 namespace ATI.Services.Common.Behaviors.OperationBuilder
 {
     public abstract class BaseFunctionBuilder<T> : BaseActionBuilder
