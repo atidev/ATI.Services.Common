@@ -1019,6 +1019,8 @@ namespace ATI.Services.Common.Sql
                 builder.ConnectRetryInterval = _options.ConnectRetryInterval.Value;
             }
 
+            builder.TrustServerCertificate = _options.TrustServerCertificate ?? true;
+
             return builder.ToString();
         }
 
