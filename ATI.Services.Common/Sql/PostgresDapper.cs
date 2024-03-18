@@ -477,38 +477,47 @@ public class PostgresDapper
 
     public async Task<OperationResult<List<T>>> ExecuteRawSqlAsync<T>(
         string sql,
+        string queryName,
         DynamicParameters parameters,
         string metricEntity,
         bool receiveNotice = false,
         TimeSpan? longTimeRequest = null, 
         int? timeoutInSeconds = null)
     {
-        using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
-            metricEntity,
-            sql,
-            new { Action = sql, Parameters = parameters },
-            longTimeRequest,
-            FullMetricTypeLabel);
-
-        var timeout = timeoutInSeconds ?? _options.Timeout.Seconds;
-        await using var connection = new NpgsqlConnection(_options.ConnectionString);
-
-        if (receiveNotice)
-            connection.Notice += LoggOnNotice;
-
-        var result = await ExecuteTaskWithMetrics(
-            connection.QueryAsync<T>(
-                sql,
-                parameters,
-                commandTimeout: timeout),
-            _metricsFactory.CreateMetricsTimerWithLogging(
+        try
+        {
+            using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
                 metricEntity,
-                sql,
-                new { Action = sql, Parameters = parameters },
+                queryName,
+                new { Action = queryName, Parameters = parameters },
                 longTimeRequest,
-                QueryMetricTypeLabel));
+                FullMetricTypeLabel);
 
-        return new OperationResult<List<T>>(result.AsList());
+            var timeout = timeoutInSeconds ?? _options.Timeout.Seconds;
+            await using var connection = new NpgsqlConnection(_options.ConnectionString);
+
+            if (receiveNotice)
+                connection.Notice += LoggOnNotice;
+
+            var result = await ExecuteTaskWithMetrics(
+                connection.QueryAsync<T>(
+                    sql,
+                    parameters,
+                    commandTimeout: timeout),
+                _metricsFactory.CreateMetricsTimerWithLogging(
+                    metricEntity,
+                    queryName,
+                    new { Action = queryName, Parameters = parameters },
+                    longTimeRequest,
+                    QueryMetricTypeLabel));
+
+            return new OperationResult<List<T>>(result.AsList());
+        }
+        catch (Exception e)
+        {
+            LogWithParameters(e, queryName, metricEntity, parameters);
+            return new OperationResult<List<T>>(e);
+        }
     }
 
     private string GetFunctionQuery(DynamicParameters @params, string functionName)
