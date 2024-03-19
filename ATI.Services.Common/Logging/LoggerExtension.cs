@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using ATI.Services.Common.Serializers;
 using ATI.Services.Common.Serializers.SystemTextJsonSerialization;
 using JetBrains.Annotations;
@@ -11,9 +12,6 @@ namespace ATI.Services.Common.Logging;
 [PublicAPI]
 public static class LoggerExtension
 {
-    private static ISerializer _serializer =
-        new SystemTextJsonSerializer(SystemTextJsonCustomOptions.IgnoreUserSensitiveDataOptions);
-    
     public static void ErrorWithObject(this ILogger logger, Exception ex, string message,
         params object[] logObjects)
     {
@@ -58,7 +56,7 @@ public static class LoggerExtension
 
             var json = "";
             if (logObjects != null && logObjects.Length != 0)
-                json = _serializer.Serialize(logObjects);
+                json = JsonSerializer.Serialize(logObjects, SystemTextJsonCustomOptions.IgnoreUserSensitiveDataOptions);
 
 
             var eventInfo = new LogEventInfo(logLevel, logger.Name,

@@ -9,7 +9,6 @@ using ATI.Services.Common.Logging;
 using ATI.Services.Common.Metrics;
 using Dapper;
 using JetBrains.Annotations;
-using Newtonsoft.Json;
 using NLog;
 using Npgsql;
 
@@ -547,52 +546,29 @@ public class PostgresDapper
     private void LogWithParameters(Exception e, string procedureName, string metricEntity, DynamicParameters parameters)
     {
         var parametersWithValues = GetProcedureParametersWithValues(parameters);
-        //С большой вероятностью лог может быть discarded на стороне logstash, если будет слишком много записей
-        if (parametersWithValues != null && parametersWithValues.Count <= 20)
-        {
-            _logger.ErrorWithObject(e,
-                new { procedureName, parameters = GetProcedureParametersWithValues(parameters), metricEntity });
-        }
-        else
-        {
-            _logger.ErrorWithObject(e, new { procedureName, metricEntity });
-        }
+        _logger.ErrorWithObject(e, new { procedureName, parameters = parametersWithValues, metricEntity });
     }
 
-    private Dictionary<string, string> GetProcedureParametersWithValues(DynamicParameters parameters)
+    private static Dictionary<string, object> GetProcedureParametersWithValues(DynamicParameters parameters)
     {
         if (parameters == null || parameters.ParameterNames == null || !parameters.ParameterNames.Any())
             return null;
 
-        var paramsArray = new Dictionary<string, string>(parameters.ParameterNames.Count());
+        var paramsArray = new Dictionary<string, object>(parameters.ParameterNames.Count());
 
         foreach (var name in parameters.ParameterNames)
         {
             var pValue = parameters.Get<dynamic>(name);
-            // Для итераторов-оберток над табличным типом udt_ невозможно просто так получить значения для логирования, поэтому вытаскиваем их через рефлексию
-            // В pValue хранится приватное поле data, в котором лежит наш TableWrapper
-            // В TableWrapper лежат приватные поля - _sqlDataRecord , IEnumerable<T> _{name}, возможны и другие приватные структуры, если мы объявим их в нашем TableWrapper
-            // Берем все, кроме _sqlDataRecord
-            if (pValue is SqlMapper.ICustomQueryParameter tableWrapperParameter)
+            if (pValue is SqlMapper.ICustomQueryParameter customParameter)
             {
                 try
                 {
-                    var dataProperty = tableWrapperParameter.GetType()
-                        .GetFields(BindingFlags.NonPublic | BindingFlags.Instance).First(p => p.Name == "data");
+                    var dataProperty = customParameter.GetType()
+                        .GetFields(BindingFlags.NonPublic | BindingFlags.Instance).First(p => p.Name == "_value");
+                    
+                    var dataPropertyValue = dataProperty.GetValue(customParameter);
 
-                    var dataPropertyValue = dataProperty.GetValue(tableWrapperParameter);
-
-                    var tableWrapperProperties = dataPropertyValue.GetType()
-                        .GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
-                        .Where(p => p.Name != "_sqlDataRecord").ToList();
-
-                    var resultValue = string.Join(',',
-                        tableWrapperProperties.Select(pr =>
-                            JsonConvert.SerializeObject(pr.GetValue(dataPropertyValue))
-                        )
-                    );
-
-                    paramsArray.Add(name, resultValue);
+                    paramsArray.Add(name, dataPropertyValue);
                 }
                 catch (Exception ex)
                 {
