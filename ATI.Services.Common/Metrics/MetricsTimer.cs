@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text.Json;
 using ATI.Services.Common.Logging;
 using ATI.Services.Common.Serializers;
 using ATI.Services.Common.Serializers.SystemTextJsonSerialization;
@@ -18,7 +19,6 @@ public class MetricsTimer : IDisposable
     private readonly TimeSpan? _longRequestTime;
     private readonly object _context;
     private readonly LogSource? _logSource;
-    private readonly ISerializer _serializer;
 
     /// <summary>
     /// Конструктор таймера метрик, который считает только метрику (время выполнения + счётчик) для прометеуса
@@ -43,8 +43,6 @@ public class MetricsTimer : IDisposable
         _longRequestTime = longRequestTime;
         _context = context;
         _logSource = logSource;
-        _serializer = SerializerFactory.GetSerializerByType(SerializerType.SystemTextJson);
-        _serializer.SetSerializeSettings(SystemTextJsonCustomOptions.IgnoreUserSensitiveDataOptions);
     }
 
     public void Restart()
@@ -88,14 +86,14 @@ public class MetricsTimer : IDisposable
 
     private Dictionary<object, object> GetContext()
     {
-        var metricString = _serializer.Serialize(
+        var metricString = JsonSerializer.Serialize(
             new
             {
                 LogSource = _logSource,
                 RequestTime = _stopwatch.Elapsed,
                 Labels = _summaryLabels,
                 Context = _context
-            });
+            }, SystemTextJsonCustomOptions.IgnoreUserSensitiveDataOptions);
 
         return new Dictionary<object, object>
         {
