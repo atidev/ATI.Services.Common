@@ -11,24 +11,6 @@ namespace ATI.Services.Common.Variables;
 
 internal static class AppHttpContext
 {
-    private static IServiceProvider? _services;
-
-    /// <summary>
-    /// Provides static access to the framework's services provider
-    /// </summary>
-    public static IServiceProvider? Services
-    {
-        get => _services;
-        set
-        {
-            // If _services already initialized -> return
-            if (_services is not null)
-                return;
-
-            _services = value;
-        }
-    }
-
     public static string[] MetricsHeadersValues => GetHeadersValues(MetricsLabelsAndHeaders.UserHeaders);
     public static Dictionary<string, string> HeadersAndValuesToProxy(IReadOnlyCollection<string>? headersToProxy) => GetHeadersAndValues(headersToProxy);
 
@@ -39,9 +21,10 @@ internal static class AppHttpContext
     {
         get
         {
-            ArgumentNullException.ThrowIfNull(Services, "IServiceProvider can't be null. Try do services.AddServiceVariables() in app configuration");
+            var serviceProvider = StaticServiceProvider.ServiceProvider;
+            ArgumentNullException.ThrowIfNull(serviceProvider, "IServiceProvider can't be null. Try do services.AddServiceVariables() in app configuration");
 
-            var httpContextAccessor = Services.GetService<IHttpContextAccessor>();
+            var httpContextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
             return httpContextAccessor?.HttpContext;
         }
     }

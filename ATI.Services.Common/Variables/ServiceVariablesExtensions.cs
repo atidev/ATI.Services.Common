@@ -14,7 +14,7 @@ namespace ATI.Services.Common.Variables
             services.AddTransient<ServiceVariablesInitializer>();
 
             services.AddHttpContextAccessor();
-            AppHttpContext.Services = services.BuildServiceProvider(new ServiceProviderOptions().ValidateOnBuild);
+            StaticServiceProvider.ServiceProvider = services.BuildServiceProvider(new ServiceProviderOptions().ValidateOnBuild);
         }
     }
 }
