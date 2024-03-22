@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Net.Http.Headers;
 using ATI.Services.Common.Logging;
 using ATI.Services.Common.Options;
 using ATI.Services.Common.Variables;
@@ -54,10 +53,12 @@ public static class ServiceCollectionHttpClientExtensions
             logger.WarnWithObject($"Class ${className} has UseHttpClientFactory == false while AddCustomHttpClient");
             return services;
         }
+        
+        var serviceVariablesOptions = ConfigurationManager.GetSection(nameof(ServiceVariablesOptions)).Get<ServiceVariablesOptions>();
 
         services.AddHttpClient(settings.ConsulName, httpClient =>
             {
-                httpClient.SetBaseFields(settings.AdditionalHeaders);
+                httpClient.SetBaseFields(serviceVariablesOptions.GetServiceAsClientName(), serviceVariablesOptions.GetServiceAsClientHeaderName(),  settings.AdditionalHeaders);
             })
             .AddRetryPolicy(settings, logger)
             .AddHostSpecificCircuitBreakerPolicy(settings, logger)

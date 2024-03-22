@@ -68,7 +68,7 @@ public class MetricsHttpClientWrapper : IDisposable
         }
 
         httpClient.Timeout = Config.Timeout;
-        httpClient.SetBaseFields(additionalHeaders);
+        httpClient.SetBaseFields(ServiceVariables.ServiceAsClientName, ServiceVariables.ServiceAsClientHeaderName, additionalHeaders);
 
         return httpClient;
     }
