@@ -35,9 +35,16 @@ public class MetricsHttpClientWrapper : IDisposable
     {
         Config = config;
         _logger = LogManager.GetLogger(Config.ServiceName);
-        
-        if (!UseHttpClientFactory(config.ServiceName))
+
+        if (config.UseHttpClientFactory)
+        {
+           SetHttpClientFactory(config.ServiceName);
+        }
+        else
+        {
             _httpClient = CreateHttpClient(config.Headers, config.PropagateActivity);
+        }
+            
         
         _logLevelOverride = Config.LogLevelOverride;
     }
@@ -478,23 +485,26 @@ public class MetricsHttpClientWrapper : IDisposable
         }
     }
 
-    private bool UseHttpClientFactory(string serviceName)
+    private void SetHttpClientFactory(string serviceName)
     {
-        if (serviceName == null) return false;
+        if (serviceName == null)
+        {
+            const string message = "serviceName is null";
+            _logger.ErrorWithObject(null, message);
+            throw new Exception(message);
+        }
         var serviceProvider = StaticServiceProvider.ServiceProvider;
 
         var httpClientFactory = serviceProvider?.GetService<IHttpClientFactory>();
-        if (httpClientFactory == null) return false;
-        
-        var client = httpClientFactory.CreateClient(serviceName);
-        if (client == null)
+        if (httpClientFactory == null)
         {
-            return false;
+            const string message = "httpClientFactory is null";
+            _logger.ErrorWithObject(null, message);
+            throw new Exception(message);
         }
-        // Если нашли такой клиент - будем использовать httpClientFactory
+        
         _httpClientFactory = httpClientFactory;
         _httpClientFactoryName = serviceName;
-        return true;
 
     }
 
