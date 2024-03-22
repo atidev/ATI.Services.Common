@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NLog;
 using ConfigurationManager = ATI.Services.Common.Behaviors.ConfigurationManager;
 
-namespace ATI.Services.Common.Metrics.Http;
+namespace ATI.Services.Common.Http;
 
 [PublicAPI]
 public static class ServiceCollectionHttpClientExtensions
@@ -55,30 +55,9 @@ public static class ServiceCollectionHttpClientExtensions
             return services;
         }
 
-        var serviceVariablesOptions = ConfigurationManager.GetSection(nameof(ServiceVariablesOptions)).Get<ServiceVariablesOptions>();
-        var serviceAsClientName = serviceVariablesOptions.GetServiceAsClientName();
-        var serviceAsClientHeaderName = serviceVariablesOptions.GetServiceAsClientHeaderName();
-
         services.AddHttpClient(settings.ConsulName, httpClient =>
             {
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                if (!string.IsNullOrEmpty(serviceAsClientName)
-                    && !string.IsNullOrEmpty(serviceAsClientHeaderName))
-                {
-                    httpClient.DefaultRequestHeaders.Add(
-                        serviceAsClientHeaderName,
-                        serviceAsClientName);
-                }
-
-                var additionalHeaders = settings.AdditionalHeaders;
-
-                if (additionalHeaders is { Count: > 0 })
-                {
-                    foreach (var header in additionalHeaders)
-                    {
-                        httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
-                    }
-                }
+                httpClient.SetBaseFields(settings.AdditionalHeaders);
             })
             .AddRetryPolicy(settings, logger)
             .AddHostSpecificCircuitBreakerPolicy(settings, logger)

@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Extensions;
+using ATI.Services.Common.Http;
 using ATI.Services.Common.Logging;
 using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
@@ -67,22 +68,7 @@ public class MetricsHttpClientWrapper : IDisposable
         }
 
         httpClient.Timeout = Config.Timeout;
-        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        if (!ServiceVariables.ServiceAsClientName.IsNullOrEmpty() &&
-            !ServiceVariables.ServiceAsClientHeaderName.IsNullOrEmpty())
-        {
-            httpClient.DefaultRequestHeaders.Add(
-                ServiceVariables.ServiceAsClientHeaderName,
-                ServiceVariables.ServiceAsClientName);
-        }
-
-        if (additionalHeaders != null && additionalHeaders.Count > 0)
-        {
-            foreach (var header in additionalHeaders)
-            {
-                httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
-            }
-        }
+        httpClient.SetBaseFields(additionalHeaders);
 
         return httpClient;
     }

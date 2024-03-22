@@ -2,7 +2,7 @@ using System;
 
 namespace ATI.Services.Common.Variables;
 
-internal static class StaticServiceProvider
+public static class StaticServiceProvider
 {
     private static IServiceProvider? _serviceProvider;
 

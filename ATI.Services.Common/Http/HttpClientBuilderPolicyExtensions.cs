@@ -14,7 +14,7 @@ using Polly.Extensions.Http;
 using Polly.Registry;
 using Polly.Timeout;
 
-namespace ATI.Services.Common.Metrics.Http;
+namespace ATI.Services.Common.Http;
 
 /// <summary>
 /// https://habr.com/ru/companies/otus/articles/778574/
