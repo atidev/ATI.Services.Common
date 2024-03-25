@@ -161,23 +161,34 @@ app.UseMetrics(); //Добавляем мидлвару
               Entity entity = await DoSomething();
             }
 ```
-Для удобства был написан `ConsulMetricsHttpClientWrapper`. <br/>
-Включает в себя `ConsulServiceAddress`, `MetricsHttpClientWrapper` и `MetricsFactory`. <br/>
-Для инициализации нужно передать настройки сервиса, отнаследовав их от `BaseServiceOptions`, <br/>
-`adapterName` (будет отображаться в метриках), <br/>
-`serializer` (необязательный параметр, по умолчанию - `SnakeCase`) <br/>
-Пример использования:
+
+---
+### Http
+
+Для удобства походов в другие сервисы через consul были написаны следующие классы:
+1. `ConsulMetricsHttpClientWrapper`
+2. `BaseServiceOptions`
+
+Если вы хотите написать адаптер для похода в чужой сервис, нужно:
+1. Завести класс `XServiceOptions`, отнаследовать его от `BaseServiceOptions`
+2. Завести в `appsettings.json` секцию `XServiceOptions`, описать/переопределить все необходимые параметры
+3. Зарегистрируйте его в `startup.cs` - `services.ConfigureByName<XServiceOptions>`
+4. Если вы хотите, чтобы при походе в чужой сервис использовались retry/circuitbreaker/timeout политики, добавьте в `startup.cs` - `services.AddCustomHttpClient<XServiceOptions>`. Он добавит в `HttpClientFactory` HttpClient под именем настройки `ConsulName` 
+5. Вызовите в `startup.cs` `services.AddConsulMetricsHttpClientWrappers()` для того, чтобы зарегистрировать в DI `ConsulMetricsHttpClientWrapper`
+6. Напишите свой адаптер, пример использования:
 ```csharp
 public class FirmsAdapter
     {
-        private readonly ConsulMetricsHttpClientWrapper _httpWrapper;
+        private readonly ConsulMetricsHttpClientWrapper<FirmServiceOptions> _httpWrapper;
 
         private const string GetAccountUrlFormat = "_internal/accounts/{0}";
         private const string GetAccountsUrl = "_internal/accounts";
 
-        public FirmsAdapter(IOptions<FirmServiceOptions> serviceOptions)
+        public FirmsAdapter(ConsulMetricsHttpClientWrapper<FirmServiceOptions> httpWrapper)
         {
-            _httpWrapper = new ConsulMetricsHttpClientWrapper(serviceOptions.Value, nameof(FirmsAdapter));
+            _httpWrapper = httpWrapper;
+            // if you need to override serializer settings
+            _httpWrapper.SetSerializer(...);
         }
 
         public async Task<OperationResult<FirmInfoForSettings>> GetFirmInfoAsync(int firmId)
@@ -201,6 +212,8 @@ public class FirmsAdapter
             return await _httpWrapper.PostAsync<List<int>, List<FirmInfoForSettings>>(request);
         }
 ```
+
+Если вы не хотите добавлять  `services.AddCustomHttpClient<XServiceOptions>` для каждого Options, можно вызвать `services.AddCustomHttpClients()` - он автоматически соберет из проекта всех наследников BaseServiceOptions и для них сделает вызов `services.AddCustomHttpClient<>()` 
 
 ---
 ### Local Cache
