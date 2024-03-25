@@ -44,7 +44,7 @@ namespace ATI.Services.Common.Metrics.HttpWrapper
 
         public Func<LogLevel, LogLevel> LogLevelOverride { get; set; } = level => level;
 
-        private void SetSerializer(
+        public void SetSerializer(
             SerializerType serializerType,
             JsonSerializerSettings newtonsoftSettings = null,
             JsonSerializerOptions systemTextJsonOptions = null)

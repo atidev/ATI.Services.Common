@@ -3,15 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
-using ATI.Services.Common.Extensions;
 using ATI.Services.Common.Http;
 using ATI.Services.Common.Logging;
 using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
-using Microsoft.Extensions.DependencyInjection;
 using NLog;
 
 namespace ATI.Services.Common.Metrics.HttpWrapper;
@@ -32,14 +29,22 @@ public class MetricsHttpClientWrapper : IDisposable
     private const string LogMessageTemplate =
         "Сервис:{0} в ответ на запрос [HTTP {1} {2}] вернул ответ с статус кодом {3}.";
 
-    public MetricsHttpClientWrapper(MetricsHttpClientConfig config)
+    public MetricsHttpClientWrapper(MetricsHttpClientConfig config, IHttpClientFactory httpClientFactory = null)
     {
         Config = config;
         _logger = LogManager.GetLogger(Config.ServiceName);
 
         if (config.UseHttpClientFactory)
         {
-           SetHttpClientFactory(config.ServiceName);
+            if (httpClientFactory == null)
+            {
+                const string message = "httpClientFactory is null";
+                _logger.ErrorWithObject(null, message);
+                throw new Exception(message);
+            }
+            
+            _httpClientFactory = httpClientFactory;
+            _httpClientFactoryName = config.ServiceName;
         }
         else
         {
@@ -469,29 +474,6 @@ public class MetricsHttpClientWrapper : IDisposable
                                   logObjects: new { Method = methodName, Message = clientWrapperHttpMessage });
             return new OperationResult<string>(e);
         }
-    }
-
-    private void SetHttpClientFactory(string serviceName)
-    {
-        if (serviceName == null)
-        {
-            const string message = "serviceName is null";
-            _logger.ErrorWithObject(null, message);
-            throw new Exception(message);
-        }
-        var serviceProvider = StaticServiceProvider.ServiceProvider;
-
-        var httpClientFactory = serviceProvider?.GetService<IHttpClientFactory>();
-        if (httpClientFactory == null)
-        {
-            const string message = "httpClientFactory is null";
-            _logger.ErrorWithObject(null, message);
-            throw new Exception(message);
-        }
-        
-        _httpClientFactory = httpClientFactory;
-        _httpClientFactoryName = serviceName;
-
     }
 
     private HttpClient GetHttpClient()
