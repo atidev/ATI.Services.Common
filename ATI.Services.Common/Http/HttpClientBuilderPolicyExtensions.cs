@@ -17,7 +17,7 @@ using Polly.Timeout;
 namespace ATI.Services.Common.Http;
 
 /// <summary>
-/// https://habr.com/ru/companies/otus/articles/778574/
+/// https://habr.com/ru/companies/dododev/articles/503376/
 /// </summary>
 public static class HttpClientBuilderPolicyExtensions
 {
