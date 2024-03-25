@@ -318,7 +318,7 @@ public class MetricsHttpClientWrapper : IDisposable
 
             var message = new MetricsHttpClientWrapperHttpMessage(method ?? HttpMethod.Put, fullUri, headers)
             {
-                Content = model != null ? Config.Serializer.Serialize(model) : ""
+                Content = model != null ? Config.Serializer.Serialize(model) : string.Empty
             };
 
             using var requestMessage = message.ToRequestMessage(Config);
@@ -402,7 +402,7 @@ public class MetricsHttpClientWrapper : IDisposable
 
             if (responseMessage.IsSuccessStatusCode)
             {
-                var stream = await responseMessage.Content.ReadAsStreamAsync();
+                await using var stream = await responseMessage.Content.ReadAsStreamAsync();
                 var result = await Config.Serializer.DeserializeAsync<TResult>(stream);
                 return new OperationResult<TResult>(result, OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
             }
@@ -482,7 +482,7 @@ public class MetricsHttpClientWrapper : IDisposable
     }
 
     private Uri FullUri(string serviceAddress, string url) =>
-        serviceAddress != null ? new Uri(new Uri(serviceAddress), url ?? "") : null;
+        serviceAddress != null ? new Uri(new Uri(serviceAddress), url ?? string.Empty) : null;
 
     public void Dispose()
     {

@@ -481,7 +481,7 @@ public class RedisCache : BaseRedisCache
             return OperationResult.Ok;
 
         if (manyRedisValues.Count == 0)
-            return await ExecuteAsync(async () => await _redisDb.SetAddAsync(setKey, ""),
+            return await ExecuteAsync(async () => await _redisDb.SetAddAsync(setKey, string.Empty),
                 new { manyRedisValues, setKey });
 
         using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,

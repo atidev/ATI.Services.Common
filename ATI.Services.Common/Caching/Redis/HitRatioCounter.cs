@@ -13,8 +13,8 @@ namespace ATI.Services.Common.Caching.Redis
 
         public HitRatioCounter(string hitRatioCounterService, string[] lables)
         {
-            _hitRatio = Prometheus.Metrics.CreateGauge($"{hitRatioCounterService}_hits_ratio", "", lables);
-            _hitRatioNetto = Prometheus.Metrics.CreateGauge($"{hitRatioCounterService}_hits_ratio_netto", "", lables);
+            _hitRatio = Prometheus.Metrics.CreateGauge($"{hitRatioCounterService}_hits_ratio", string.Empty, lables);
+            _hitRatioNetto = Prometheus.Metrics.CreateGauge($"{hitRatioCounterService}_hits_ratio_netto", string.Empty, lables);
         }
 
         public void Hit(int count = 1)

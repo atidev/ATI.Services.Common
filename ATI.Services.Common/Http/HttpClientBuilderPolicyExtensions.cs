@@ -33,17 +33,15 @@ public static class HttpClientBuilderPolicyExtensions
         BaseServiceOptions serviceOptions,
         ILogger logger)
     {
+        var methodsToRetry = serviceOptions.HttpMethodsToRetry ?? new List<string> { HttpMethod.Get.Method };
+        
         return clientBuilder
             .AddPolicyHandler((_, message) =>
             {
-                if (serviceOptions.HttpMethodsToRetry is { Count: > 0 })
+                if (!methodsToRetry.Contains(message.Method.Method, StringComparer.OrdinalIgnoreCase))
                 {
-                    if (!serviceOptions.HttpMethodsToRetry.Contains(message.Method.Method, StringComparer.OrdinalIgnoreCase))
-                        return Policy.NoOpAsync<HttpResponseMessage>();
-                }
-                // Retry only idempotent operations - GET
-                else if (message.Method != HttpMethod.Get)
                     return Policy.NoOpAsync<HttpResponseMessage>();
+                }
 
                 return HttpPolicyExtensions
                     .HandleTransientHttpError()

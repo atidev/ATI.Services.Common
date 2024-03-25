@@ -54,7 +54,7 @@ public static class LoggerExtension
                 return;
             }
 
-            var json = "";
+            var json = string.Empty;
             if (logObjects != null && logObjects.Length != 0)
                 json = JsonSerializer.Serialize(logObjects, SystemTextJsonCustomOptions.IgnoreUserSensitiveDataOptions);
 

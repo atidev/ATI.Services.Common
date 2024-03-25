@@ -14,7 +14,7 @@ public class MetricsStatusCodeCounterMiddleware
     public MetricsStatusCodeCounterMiddleware(RequestDelegate next)
     {
         _counter = Prometheus.Metrics.CreateCounter($"{MetricsFactory.Prefix}_HttpStatusCodeCounter",
-                                                    "",
+            string.Empty,
                                                     new CounterConfiguration
                                                     {
                                                         LabelNames = new[] { "http_status_code" }
