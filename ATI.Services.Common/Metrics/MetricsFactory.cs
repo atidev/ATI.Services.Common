@@ -13,8 +13,6 @@ public class MetricsFactory
 {
     private Summary Summary { get; }
     public const string Prefix = "common_metric";
-    private static readonly string MachineName = Environment.MachineName;
-    private readonly string _className;
     private readonly string _externalHttpServiceName;
     private readonly LogSource _logSource;
     private static TimeSpan _defaultLongRequestTime = TimeSpan.FromSeconds(1);
@@ -209,7 +207,6 @@ public class MetricsFactory
         TimeSpan? longRequestTime = null,
         params string[] summaryLabelNames)
     {
-        _className = className;
         _externalHttpServiceName = externalHttpServiceName;
         _longRequestTime = longRequestTime ?? _defaultLongRequestTime;
         _logSource = logSource;
@@ -237,7 +234,6 @@ public class MetricsFactory
         TimeSpan longRequestTime,
         params string[] summaryLabelNames)
     {
-        _className = className;
         _longRequestTime = longRequestTime;
         _logSource = logSource;
 
@@ -270,7 +266,6 @@ public class MetricsFactory
         }
 
         var labels = ConcatLabelValues(
-            _className,
             actionName,
             entityName,
             _externalHttpServiceName,
@@ -308,7 +303,6 @@ public class MetricsFactory
         }
 
         var labels = ConcatLabelValues(
-            _className,
             actionName,
             entityName,
             _externalHttpServiceName,
@@ -332,7 +326,6 @@ public class MetricsFactory
         params string[] additionalLabels)
     {
         var labels = ConcatLabelValues(
-            _className,
             actionName,
             entityName,
             _externalHttpServiceName,
@@ -353,7 +346,6 @@ public class MetricsFactory
         params string[] additionalLabels)
     {
         var labels = ConcatLabelValues(
-            _className,
             actionName,
             entityName,
             _externalHttpServiceName,
@@ -367,7 +359,6 @@ public class MetricsFactory
     /// Метод управляющий порядком значений лэйблов 
     /// </summary>
     private static string[] ConcatLabelValues(
-        string className,
         string actionName,
         string entityName = null,
         string externHttpService = null,
@@ -375,8 +366,6 @@ public class MetricsFactory
         params string[] additionalLabels)
     {
         return ConcatLabels(
-            className,
-            MachineName,
             actionName,
             entityName,
             externHttpService,
@@ -395,8 +384,6 @@ public class MetricsFactory
         params string[] additionalLabels)
     {
         return ConcatLabels(
-            "class_name",
-            "machine_name",
             actionName,
             entityName,
             externHttpService,
@@ -409,8 +396,6 @@ public class MetricsFactory
     /// <param name="actionName"> Указывать только при объявлении лейблов. Записывается он в таймере, так как нужен для трейсинга</param>
     /// </summary>
     private static string[] ConcatLabels(
-        string className,
-        string machineName,
         string actionName,
         string entityName,
         string externHttpService,
@@ -419,13 +404,9 @@ public class MetricsFactory
     {
         var labels = new List<string>
         {
-            className,
             actionName
         };
             
-        if (machineName != null)
-            labels.Add(machineName);
-
         if (entityName != null)
             labels.Add(entityName);
 
