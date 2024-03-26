@@ -10,18 +10,18 @@ namespace ATI.Services.Common.Variables;
 
 internal static class HttpContextHelper
 {
-    public static string[] MetricsHeadersValues(IHttpContextAccessor? httpContextAccessor) => GetHeadersValues(httpContextAccessor, MetricsLabelsAndHeaders.UserHeaders);
-    public static Dictionary<string, string> HeadersAndValuesToProxy(IHttpContextAccessor? httpContextAccessor,IReadOnlyCollection<string>? headersToProxy) => GetHeadersAndValues(httpContextAccessor, headersToProxy);
+    public static string[] MetricsHeadersValues(HttpContext? httpContext) => GetHeadersValues(httpContext, MetricsLabelsAndHeaders.UserHeaders);
+    public static Dictionary<string, string> HeadersAndValuesToProxy(HttpContext? httpContext,IReadOnlyCollection<string>? headersToProxy) => GetHeadersAndValues(httpContext, headersToProxy);
     
 
-    private static string[] GetHeadersValues(IHttpContextAccessor? HttpContextAccessor, IReadOnlyCollection<string>? headersNames)
+    private static string[] GetHeadersValues(HttpContext? httpContext, IReadOnlyCollection<string>? headersNames)
     {
         try
         {
             if (headersNames is null || headersNames.Count == 0)
                 return Array.Empty<string>();
 
-            var headersValues = headersNames.Select(label => GetHeaderValue(HttpContextAccessor?.HttpContext, label)).ToArray();
+            var headersValues = headersNames.Select(label => GetHeaderValue(httpContext, label)).ToArray();
             return headersValues;
         }
         catch (ObjectDisposedException) // when thing happen outside http ctx e.g eventbus event handler
@@ -41,13 +41,13 @@ internal static class HttpContextHelper
         return "Empty";
     }
 
-    private static Dictionary<string, string> GetHeadersAndValues(IHttpContextAccessor? httpContextAccessor, IReadOnlyCollection<string>? headersNames)
+    private static Dictionary<string, string> GetHeadersAndValues(HttpContext? httpContext, IReadOnlyCollection<string>? headersNames)
     {
-        if (headersNames is null || headersNames.Count == 0 || httpContextAccessor?.HttpContext is null)
+        if (headersNames is null || headersNames.Count == 0 || httpContext is null)
             return new Dictionary<string, string>();
 
         return headersNames
-            .Select(header => httpContextAccessor.HttpContext.Request.Headers.TryGetValue(header, out var headerValues)
+            .Select(header => httpContext.Request.Headers.TryGetValue(header, out var headerValues)
                               && !StringValues.IsNullOrEmpty(headerValues)
                 ? new
                 {

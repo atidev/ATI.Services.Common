@@ -74,7 +74,7 @@ public class MetricsInstance
             actionName,
             entityName,
             _externalHttpServiceName,
-            HttpContextHelper.MetricsHeadersValues(_httpContextAccessor),
+            HttpContextHelper.MetricsHeadersValues(_httpContextAccessor.HttpContext),
             additionalLabels);
 
         return new MetricsTimer(
@@ -112,7 +112,7 @@ public class MetricsInstance
             actionName,
             entityName,
             _externalHttpServiceName,
-            HttpContextHelper.MetricsHeadersValues(_httpContextAccessor),
+            HttpContextHelper.MetricsHeadersValues(_httpContextAccessor.HttpContext),
             additionalLabels);
 
         return new MetricsTimer(
@@ -136,7 +136,7 @@ public class MetricsInstance
             actionName,
             entityName,
             _externalHttpServiceName,
-            HttpContextHelper.MetricsHeadersValues(_httpContextAccessor),
+            HttpContextHelper.MetricsHeadersValues(_httpContextAccessor.HttpContext),
             additionalLabels);
 
         return new MetricsTimer(
@@ -157,7 +157,7 @@ public class MetricsInstance
             actionName,
             entityName,
             _externalHttpServiceName,
-            HttpContextHelper.MetricsHeadersValues(_httpContextAccessor),
+            HttpContextHelper.MetricsHeadersValues(_httpContextAccessor.HttpContext),
             additionalLabels);
 
         return new MetricsTimer(Summary, labels);

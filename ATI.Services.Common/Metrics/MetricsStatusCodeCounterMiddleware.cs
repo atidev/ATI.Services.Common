@@ -24,10 +24,10 @@ public class MetricsStatusCodeCounterMiddleware
         _next = next;
     }
 
-    public async Task InvokeAsync(HttpContext context, IHttpContextAccessor httpContextAccessor)
+    public async Task InvokeAsync(HttpContext context)
     {
         await _next(context);
-        var param = new[] {context.Response.StatusCode.ToString()}.Concat(HttpContextHelper.MetricsHeadersValues(httpContextAccessor))
+        var param = new[] {context.Response.StatusCode.ToString()}.Concat(HttpContextHelper.MetricsHeadersValues(context))
                                                                   .ToArray();
         _counter.WithLabels(param).Inc();
     }

@@ -49,7 +49,7 @@ internal class MetricsHttpClientWrapperHttpMessage
         var msg = new HttpRequestMessage(Method, FullUri);
 
         if (config.HeadersToProxy.Count != 0)
-            Headers.AddRange(HttpContextHelper.HeadersAndValuesToProxy(httpContextAccessor, config.HeadersToProxy));
+            Headers.AddRange(HttpContextHelper.HeadersAndValuesToProxy(httpContextAccessor?.HttpContext, config.HeadersToProxy));
 
         foreach (var header in Headers)
             msg.Headers.TryAddWithoutValidation(header.Key, header.Value);
