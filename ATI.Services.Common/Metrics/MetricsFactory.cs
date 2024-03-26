@@ -10,9 +10,9 @@ public class MetricsFactory
 {
     public const string Prefix = "common_metric";
     private static TimeSpan _defaultLongRequestTime = TimeSpan.FromSeconds(1);
-    private readonly HttpContextAccessor _httpContextAccessor;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     
-    public MetricsFactory(IOptions<MetricsOptions> options, HttpContextAccessor httpContextAccessor)
+    public MetricsFactory(IOptions<MetricsOptions> options, IHttpContextAccessor httpContextAccessor)
     {
         _httpContextAccessor = httpContextAccessor;
         if (options.Value.DefaultLongRequestTime != null)
