@@ -18,6 +18,10 @@ public class BaseServiceOptions
     
     public int RetryCount { get; set; } = 3;
     
+    /// <summary>
+    /// Delay between retries
+    /// Median for spreading queries over time
+    /// </summary>
     public TimeSpan MedianFirstRetryDelay { get; set; } = TimeSpan.FromSeconds(1);
 
     /// <summary>

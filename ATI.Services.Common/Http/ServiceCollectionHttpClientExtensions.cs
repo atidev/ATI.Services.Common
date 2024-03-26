@@ -37,7 +37,8 @@ public static class ServiceCollectionHttpClientExtensions
     }
     
     /// <summary>
-    /// Add HttpClient to HttpClientFactory with retry/cb/timeout policy 
+    /// Add HttpClient to HttpClientFactory with retry/cb/timeout policy
+    /// Will add only if UseHttpClientFactory == true
     /// </summary>
     /// <param name="services"></param>
     /// <typeparam name="T"></typeparam>
@@ -46,7 +47,7 @@ public static class ServiceCollectionHttpClientExtensions
     {
         var className = typeof(T).Name;
         var settings = ConfigurationManager.GetSection(className).Get<T>();
-        var logger = LogManager.GetLogger(className);
+        var logger = LogManager.GetLogger(settings.ConsulName);
         
         if (!settings.UseHttpClientFactory)
         {
