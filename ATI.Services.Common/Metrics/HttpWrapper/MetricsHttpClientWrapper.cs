@@ -9,6 +9,7 @@ using ATI.Services.Common.Http;
 using ATI.Services.Common.Logging;
 using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.Http;
 using NLog;
 
 namespace ATI.Services.Common.Metrics.HttpWrapper;
@@ -21,15 +22,21 @@ namespace ATI.Services.Common.Metrics.HttpWrapper;
 public class MetricsHttpClientWrapper : IDisposable
 {
     private readonly ILogger _logger;
-    private readonly HttpClient _httpClient;
     private readonly Func<LogLevel, LogLevel> _logLevelOverride;
+    
+    private readonly HttpClient _httpClient;
     private IHttpClientFactory _httpClientFactory;
     private string _httpClientFactoryName;
+
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     private const string LogMessageTemplate =
         "Сервис:{0} в ответ на запрос [HTTP {1} {2}] вернул ответ с статус кодом {3}.";
 
-    public MetricsHttpClientWrapper(MetricsHttpClientConfig config, IHttpClientFactory httpClientFactory = null)
+    public MetricsHttpClientWrapper(
+        MetricsHttpClientConfig config, 
+        IHttpClientFactory httpClientFactory = null, 
+        IHttpContextAccessor httpContextAccessor = null)
     {
         Config = config;
         _logger = LogManager.GetLogger(Config.ServiceName);
@@ -50,7 +57,8 @@ public class MetricsHttpClientWrapper : IDisposable
         {
             _httpClient = CreateHttpClient(config.Headers, config.PropagateActivity);
         }
-            
+
+        _httpContextAccessor = httpContextAccessor;
         
         _logLevelOverride = Config.LogLevelOverride;
     }
@@ -321,7 +329,7 @@ public class MetricsHttpClientWrapper : IDisposable
                 Content = model != null ? Config.Serializer.Serialize(model) : string.Empty
             };
 
-            using var requestMessage = message.ToRequestMessage(Config);
+            using var requestMessage = message.ToRequestMessage(Config, _httpContextAccessor);
 
             using var responseMessage = await GetHttpClient().SendAsync(requestMessage);
             var responseContent = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -396,7 +404,7 @@ public class MetricsHttpClientWrapper : IDisposable
                 return new OperationResult<TResult>(ActionStatus.InternalServerError,
                                                     "Адрес сообщения не указан (message.FullUri==null)");
 
-            using var requestMessage = clientWrapperHttpMessage.ToRequestMessage(Config);
+            using var requestMessage = clientWrapperHttpMessage.ToRequestMessage(Config, _httpContextAccessor);
 
             using var responseMessage = await GetHttpClient().SendAsync(requestMessage);
 
@@ -441,7 +449,7 @@ public class MetricsHttpClientWrapper : IDisposable
             if (clientWrapperHttpMessage.FullUri == null)
                 return new OperationResult<string>(ActionStatus.InternalServerError);
 
-            using var requestMessage = clientWrapperHttpMessage.ToRequestMessage(Config);
+            using var requestMessage = clientWrapperHttpMessage.ToRequestMessage(Config, _httpContextAccessor);
 
             using var responseMessage = await GetHttpClient().SendAsync(requestMessage);
             var responseContent = await responseMessage.Content.ReadAsStringAsync();

@@ -18,7 +18,7 @@ namespace ATI.Services.Common.Sql;
 public class PostgresDapper
 {
     private readonly DataBaseOptions _options;
-    private readonly MetricsFactory _metricsFactory;
+    private readonly MetricsInstance _metrics;
     private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
     private const string ReadMetricTypeLabel = "read";
     private const string ConvertDataMetricTypeLabel = "convert";
@@ -28,10 +28,10 @@ public class PostgresDapper
     private const string FunctionQuery = "SELECT * FROM";
     private const string ProcedureQuery = "CALL";
 
-    public PostgresDapper(DataBaseOptions options)
+    public PostgresDapper(DataBaseOptions options, MetricsFactory metricsFactory)
     {
         _options = options;
-        _metricsFactory = MetricsFactory.CreateSqlMetricsFactory(nameof(PostgresDapper), _options.LongTimeRequest, "type");
+        _metrics = metricsFactory.CreateSqlMetricsFactory(nameof(PostgresDapper), _options.LongTimeRequest, "type");
     }
 
     public async Task<OperationResult> ExecuteFunctionAsync(
@@ -81,7 +81,7 @@ public class PostgresDapper
     {
         try
         {
-            using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
+            using var _ = _metrics.CreateMetricsTimerWithLogging(
                 metricEntity,
                 actionName,
                 new { Action = actionName, Parameters = parameters },
@@ -95,7 +95,7 @@ public class PostgresDapper
 
             var timeout = timeoutInSeconds ?? GetTimeOut(actionName);
 
-            using var disposable = _metricsFactory.CreateMetricsTimerWithLogging(
+            using var disposable = _metrics.CreateMetricsTimerWithLogging(
                 metricEntity,
                 actionName,
                 new { Action = actionName, Parameters = parameters },
@@ -124,7 +124,7 @@ public class PostgresDapper
     {
         try
         {
-            using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
+            using var _ = _metrics.CreateMetricsTimerWithLogging(
                 metricEntity,
                 functionName,
                 new { Action = functionName, Parameters = parameters },
@@ -141,7 +141,7 @@ public class PostgresDapper
                     GetFunctionQuery(parameters, functionName),
                     parameters,
                     commandTimeout: timeout),
-                _metricsFactory.CreateMetricsTimerWithLogging(
+                _metrics.CreateMetricsTimerWithLogging(
                     metricEntity,
                     functionName,
                     new { Action = functionName, Parameters = parameters },
@@ -168,7 +168,7 @@ public class PostgresDapper
     {
         try
         {
-            using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
+            using var _ = _metrics.CreateMetricsTimerWithLogging(
                 metricEntity,
                 functionName,
                 new { Action = functionName, Parameters = parameters },
@@ -187,14 +187,14 @@ public class PostgresDapper
                     GetFunctionQuery(parameters, functionName),
                     parameters,
                     commandTimeout: timeout),
-                _metricsFactory.CreateMetricsTimerWithLogging(
+                _metrics.CreateMetricsTimerWithLogging(
                     metricEntity,
                     functionName,
                     new { Action = functionName, Parameters = parameters },
                     longTimeRequest,
                     QueryMetricTypeLabel));
 
-            using var disposable = _metricsFactory.CreateMetricsTimerWithLogging(
+            using var disposable = _metrics.CreateMetricsTimerWithLogging(
                 metricEntity,
                 functionName,
                 new { Action = functionName, Parameters = parameters },
@@ -222,7 +222,7 @@ public class PostgresDapper
     {
         try
         {
-            using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
+            using var _ = _metrics.CreateMetricsTimerWithLogging(
                 metricEntity,
                 functionName,
                 new { Action = functionName, Parameters = parameters },
@@ -240,20 +240,20 @@ public class PostgresDapper
                     GetFunctionQuery(parameters, functionName),
                     parameters,
                     commandTimeout: timeout),
-                _metricsFactory.CreateMetricsTimerWithLogging(
+                _metrics.CreateMetricsTimerWithLogging(
                     metricEntity,
                     functionName,
                     new { Action = functionName, Parameters = parameters },
                     longTimeRequest,
                     QueryMetricTypeLabel));
 
-            using (_metricsFactory.CreateMetricsTimerWithLogging(
+            using (_metrics.CreateMetricsTimerWithLogging(
                        metricEntity,
                        functionName,
                        new { Action = functionName, Parameters = parameters },
                        longTimeRequest,
                        ReadMetricTypeLabel))
-            using (var convertDataTimer = _metricsFactory.CreateMetricsTimerWithDelayedLogging(
+            using (var convertDataTimer = _metrics.CreateMetricsTimerWithDelayedLogging(
                        metricEntity,
                        functionName,
                        new { Action = functionName, Parameters = parameters },
@@ -281,7 +281,7 @@ public class PostgresDapper
     {
         try
         {
-            using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
+            using var _ = _metrics.CreateMetricsTimerWithLogging(
                 metricEntity,
                 functionName,
                 new { StoredProcedure = functionName, Parameters = parameters },
@@ -299,7 +299,7 @@ public class PostgresDapper
                     GetFunctionQuery(parameters, functionName),
                     parameters,
                     commandTimeout: timeout),
-                _metricsFactory.CreateMetricsTimerWithLogging(
+                _metrics.CreateMetricsTimerWithLogging(
                     metricEntity,
                     functionName,
                     new { Action = functionName, Parameters = parameters },
@@ -326,7 +326,7 @@ public class PostgresDapper
     {
         try
         {
-            using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
+            using var _ = _metrics.CreateMetricsTimerWithLogging(
                 metricEntity,
                 functionName,
                 new { Action = functionName, Parameters = parameters },
@@ -344,14 +344,14 @@ public class PostgresDapper
                     GetFunctionQuery(parameters, functionName),
                     parameters,
                     commandTimeout: timeout),
-                _metricsFactory.CreateMetricsTimerWithLogging(
+                _metrics.CreateMetricsTimerWithLogging(
                     metricEntity,
                     functionName,
                     new { Action = functionName, Parameters = parameters },
                     longTimeRequest,
                     QueryMetricTypeLabel));
 
-            using var disposable = _metricsFactory.CreateMetricsTimerWithLogging(
+            using var disposable = _metrics.CreateMetricsTimerWithLogging(
                 metricEntity,
                 functionName,
                 new { Action = functionName, Parameters = parameters },
@@ -378,7 +378,7 @@ public class PostgresDapper
     {
         try
         {
-            using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
+            using var _ = _metrics.CreateMetricsTimerWithLogging(
                 metricEntity,
                 functionName,
                 new { Action = functionName, Parameters = parameters },
@@ -396,20 +396,20 @@ public class PostgresDapper
                     GetFunctionQuery(parameters, functionName),
                     parameters,
                     commandTimeout: timeout),
-                _metricsFactory.CreateMetricsTimerWithLogging(
+                _metrics.CreateMetricsTimerWithLogging(
                     metricEntity,
                     functionName,
                     new { Action = functionName, Parameters = parameters },
                     longTimeRequest,
                     QueryMetricTypeLabel));
 
-            using (_metricsFactory.CreateMetricsTimerWithLogging(
+            using (_metrics.CreateMetricsTimerWithLogging(
                        metricEntity,
                        functionName,
                        new { Action = functionName, Parameters = parameters },
                        longTimeRequest,
                        ReadMetricTypeLabel))
-            using (var convertDataTimer = _metricsFactory.CreateMetricsTimerWithDelayedLogging(
+            using (var convertDataTimer = _metrics.CreateMetricsTimerWithDelayedLogging(
                        metricEntity,
                        functionName,
                        new { Action = functionName, Parameters = parameters },
@@ -439,7 +439,7 @@ public class PostgresDapper
     {
         try
         {
-            using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
+            using var _ = _metrics.CreateMetricsTimerWithLogging(
                 metricEntity,
                 functionName,
                 new { Action = functionName, Parameters = parameters },
@@ -457,7 +457,7 @@ public class PostgresDapper
                     GetFunctionQuery(parameters, functionName),
                     parameters,
                     commandTimeout: timeout),
-                _metricsFactory.CreateMetricsTimerWithLogging(
+                _metrics.CreateMetricsTimerWithLogging(
                     metricEntity,
                     functionName,
                     new { Action = functionName, Parameters = parameters },
@@ -485,7 +485,7 @@ public class PostgresDapper
     {
         try
         {
-            using var _ = _metricsFactory.CreateMetricsTimerWithLogging(
+            using var _ = _metrics.CreateMetricsTimerWithLogging(
                 metricEntity,
                 queryName,
                 new { Action = queryName, Parameters = parameters },
@@ -503,7 +503,7 @@ public class PostgresDapper
                     sql,
                     parameters,
                     commandTimeout: timeout),
-                _metricsFactory.CreateMetricsTimerWithLogging(
+                _metrics.CreateMetricsTimerWithLogging(
                     metricEntity,
                     queryName,
                     new { Action = queryName, Parameters = parameters },

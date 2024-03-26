@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ATI.Services.Common.Caching.Redis.Abstractions;
+using ATI.Services.Common.Metrics;
 using ATI.Services.Common.Serializers;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
@@ -15,7 +16,7 @@ public class RedisProvider
     private readonly Dictionary<string, RedisCache> _redisCaches = new();
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-    public RedisProvider(IOptions<CacheManagerOptions> cacheManagerOptions, SerializerProvider serializerProvider)
+    public RedisProvider(IOptions<CacheManagerOptions> cacheManagerOptions, SerializerProvider serializerProvider, MetricsFactory metricsFactory)
     {
         var cacheOptions = cacheManagerOptions.Value.CacheOptions;
         var manager = new CacheHitRatioManager(cacheManagerOptions.Value.HitRatioManagerUpdatePeriod);
@@ -33,7 +34,7 @@ public class RedisProvider
                 { } jsonSerializer => new RedisStringSerializer(jsonSerializer)
             };
             
-            var cache = new RedisCache(options, manager, serializer);
+            var cache = new RedisCache(options, manager, serializer, metricsFactory);
             _redisCaches.Add(redisName, cache);
         }
     }

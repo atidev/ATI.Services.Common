@@ -6,6 +6,7 @@ using ATI.Services.Common.Context;
 using ATI.Services.Common.Extensions;
 using ATI.Services.Common.Localization;
 using ATI.Services.Common.Variables;
+using Microsoft.AspNetCore.Http;
 
 namespace ATI.Services.Common.Metrics.HttpWrapper;
 
@@ -43,12 +44,12 @@ internal class MetricsHttpClientWrapperHttpMessage
     public Dictionary<string, string> Headers { get; }
     private string ContentType { get; }
 
-    internal HttpRequestMessage ToRequestMessage(MetricsHttpClientConfig config)
+    internal HttpRequestMessage ToRequestMessage(MetricsHttpClientConfig config, IHttpContextAccessor httpContextAccessor)
     {
         var msg = new HttpRequestMessage(Method, FullUri);
 
         if (config.HeadersToProxy.Count != 0)
-            Headers.AddRange(AppHttpContext.HeadersAndValuesToProxy(config.HeadersToProxy));
+            Headers.AddRange(HttpContextHelper.HeadersAndValuesToProxy(httpContextAccessor, config.HeadersToProxy));
 
         foreach (var header in Headers)
             msg.Headers.TryAddWithoutValidation(header.Key, header.Value);

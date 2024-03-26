@@ -20,17 +20,17 @@ namespace ATI.Services.Common.Sql
     {
         private const string ReturnValueFieldName = "RETURN_VALUE";
         private readonly DataBaseOptions _options;
-        private readonly MetricsFactory _metricsFactory;
+        private readonly MetricsInstance _metrics;
         private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
         private const string ReadMetricTypeLabel = "read";
         private const string ConvertDataMetricTypeLabel = "convert";
         private const string QueryMetricTypeLabel = "query";
         private const string FullMetricTypeLabel = "full";
 
-        public DapperDb(DataBaseOptions options)
+        public DapperDb(DataBaseOptions options, MetricsFactory metricsFactory)
         {
             _options = options;
-            _metricsFactory = MetricsFactory.CreateSqlMetricsFactory(nameof(DapperDb), _options.LongTimeRequest, "type");
+            _metrics = metricsFactory.CreateSqlMetricsFactory(nameof(DapperDb), _options.LongTimeRequest, "type");
         }
 
         public async Task<OperationResult<List<T>>> ExecuteListAsync<T>(
@@ -43,13 +43,13 @@ namespace ATI.Services.Common.Sql
             SqlMapper.GridReader reader = null;
             try
             {
-                using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                            longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
@@ -61,7 +61,7 @@ namespace ATI.Services.Common.Sql
 
                         List<T> result;
                         
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, ReadMetricTypeLabel))
                         {
                             result = (await reader.ReadAsync<T>()).AsList();
@@ -91,14 +91,14 @@ namespace ATI.Services.Common.Sql
             SqlMapper.GridReader reader = null;
             try
             {
-                using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                     longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
@@ -115,7 +115,7 @@ namespace ATI.Services.Common.Sql
                         
                         List<T> result;
                         
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, ReadMetricTypeLabel))
                         {
                             result = (await reader.ReadAsync<T>()).AsList();
@@ -148,13 +148,13 @@ namespace ATI.Services.Common.Sql
             SqlMapper.GridReader reader = null;
             try
             {
-                using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                     longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
@@ -166,7 +166,7 @@ namespace ATI.Services.Common.Sql
 
                         List<dynamic> result;
                         
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, ReadMetricTypeLabel))
                         {
                             result = (await reader.ReadAsync()).AsList();
@@ -195,14 +195,14 @@ namespace ATI.Services.Common.Sql
         {
             try
             {
-                using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                     longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             await connection.ExecuteAsync(
@@ -232,14 +232,14 @@ namespace ATI.Services.Common.Sql
         {
             try
             {
-                using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                            longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Object, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                                    longTimeRequest, QueryMetricTypeLabel))
                         {
                             await connection.ExecuteAsync(
@@ -270,13 +270,13 @@ namespace ATI.Services.Common.Sql
             SqlMapper.GridReader reader = null;
             try
             {
-                using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                     longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
@@ -288,7 +288,7 @@ namespace ATI.Services.Common.Sql
 
                         T result;
                         
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, ReadMetricTypeLabel))
                         {
                             result = await reader.ReadFirstOrDefaultAsync<T>();
@@ -318,14 +318,14 @@ namespace ATI.Services.Common.Sql
             SqlMapper.GridReader reader = null;
             try
             {
-                using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                     longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, 
                             QueryMetricTypeLabel))
                         {
@@ -340,7 +340,7 @@ namespace ATI.Services.Common.Sql
                         
                         T result;
                         
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, ReadMetricTypeLabel))
                         {
                             result = await reader.ReadFirstOrDefaultAsync<T>();
@@ -371,14 +371,14 @@ namespace ATI.Services.Common.Sql
             SqlMapper.GridReader reader = null;
             try
             {
-                using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName,
+                using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
@@ -395,7 +395,7 @@ namespace ATI.Services.Common.Sql
 
                         List<T> result;
                         
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, ReadMetricTypeLabel))
                         {
                             result = await convertData(reader);
@@ -433,14 +433,14 @@ namespace ATI.Services.Common.Sql
             SqlMapper.GridReader reader = null;
             try
             {
-                using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName,
+                using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName,
                            new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
@@ -457,9 +457,9 @@ namespace ATI.Services.Common.Sql
 
                         List<T> result;
                         
-                        using (_metricsFactory.CreateMetricsTimerWithDelayedLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithDelayedLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, ReadMetricTypeLabel))
-                        using (var convertDataTimer = _metricsFactory.CreateMetricsTimerWithDelayedLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (var convertDataTimer = _metrics.CreateMetricsTimerWithDelayedLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, ConvertDataMetricTypeLabel))
                         {
                             result = await convertData(reader, convertDataTimer);
@@ -490,13 +490,13 @@ namespace ATI.Services.Common.Sql
             SqlMapper.GridReader reader = null;
             try
             {
-                using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName,
+                using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
@@ -508,7 +508,7 @@ namespace ATI.Services.Common.Sql
 
                         List<T> result;
                         
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, ReadMetricTypeLabel))
                         {
                             result = await convertData(reader);
@@ -549,13 +549,13 @@ namespace ATI.Services.Common.Sql
             SqlMapper.GridReader reader = null;
             try
             {
-                using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName,
+                using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
@@ -567,9 +567,9 @@ namespace ATI.Services.Common.Sql
 
                         List<T> result;
                         
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, ReadMetricTypeLabel))
-                        using (var convertDataTimer = _metricsFactory.CreateMetricsTimerWithDelayedLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (var convertDataTimer = _metrics.CreateMetricsTimerWithDelayedLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, ConvertDataMetricTypeLabel))
                         {
                             result = await convertData(reader, convertDataTimer);
@@ -598,13 +598,13 @@ namespace ATI.Services.Common.Sql
         {
             try
             {
-                using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName,
+                using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             return new OperationResult<T>(await connection.ExecuteScalarAsync<T>(
@@ -632,7 +632,7 @@ namespace ATI.Services.Common.Sql
         {
             try
             {
-                using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName,
+                using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
@@ -641,7 +641,7 @@ namespace ATI.Services.Common.Sql
                     {
                         T result;
                         
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             result = await connection.ExecuteScalarAsync<T>(
@@ -675,13 +675,13 @@ namespace ATI.Services.Common.Sql
         {
             try
             {
-                using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName,
+                using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             await connection.ExecuteAsync(
@@ -711,14 +711,14 @@ namespace ATI.Services.Common.Sql
         {
             try
             {
-                using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName,
+                using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             await connection.ExecuteAsync(
@@ -752,14 +752,14 @@ namespace ATI.Services.Common.Sql
             SqlMapper.GridReader reader = null;
             try
             {
-                using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName,
+                using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
 
                     await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
@@ -771,7 +771,7 @@ namespace ATI.Services.Common.Sql
 
                         T result;
                         
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, ReadMetricTypeLabel))
                         {
                             result = await convertData(reader);
@@ -812,14 +812,14 @@ namespace ATI.Services.Common.Sql
             SqlMapper.GridReader reader = null;
             try
             {
-                using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName,
+                using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
 
                     await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
@@ -831,9 +831,9 @@ namespace ATI.Services.Common.Sql
 
                         T result;
                         
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, ReadMetricTypeLabel))
-                        using (var convertDataTimer = _metricsFactory.CreateMetricsTimerWithDelayedLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (var convertDataTimer = _metrics.CreateMetricsTimerWithDelayedLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, ConvertDataMetricTypeLabel))
                         {
                             result = await convertData(reader, convertDataTimer);
@@ -864,7 +864,7 @@ namespace ATI.Services.Common.Sql
             SqlMapper.GridReader reader = null;
             try
             {
-                using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName,
+                using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
@@ -872,7 +872,7 @@ namespace ATI.Services.Common.Sql
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
@@ -889,7 +889,7 @@ namespace ATI.Services.Common.Sql
 
                         T result;
                         
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, ReadMetricTypeLabel))
                         {
                             result = await convertData(reader);
@@ -930,7 +930,7 @@ namespace ATI.Services.Common.Sql
             SqlMapper.GridReader reader = null;
             try
             {
-                using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName,
+                using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName,
                     new { StoredProcedure = procedureName, Parameters = parameters }, longTimeRequest, FullMetricTypeLabel))
                 {
                     var timeout = timeoutInSeconds ?? GetTimeOut(procedureName);
@@ -938,7 +938,7 @@ namespace ATI.Services.Common.Sql
                     parameters.Add(ReturnValueFieldName, 0, DbType.Int32, ParameterDirection.ReturnValue);
                     await using (var connection = new SqlConnection(BuildConnectionString()))
                     {
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
@@ -955,9 +955,9 @@ namespace ATI.Services.Common.Sql
 
                         T result;
                         
-                        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, ReadMetricTypeLabel))
-                        using (var convertDataTimer = _metricsFactory.CreateMetricsTimerWithDelayedLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
+                        using (var convertDataTimer = _metrics.CreateMetricsTimerWithDelayedLogging(metricEntity, procedureName, new { StoredProcedure = procedureName, Parameters = parameters },
                             longTimeRequest, ConvertDataMetricTypeLabel))
                         {
                             result = await convertData(reader, convertDataTimer);
