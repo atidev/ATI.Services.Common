@@ -55,7 +55,7 @@ public static class HttpClientBuilderPolicyExtensions
                                 serviceOptions.ConsulName,
                                 message.RequestUri,
                                 message.Method,
-                                response.Result.StatusCode,
+                                response?.Result?.StatusCode,
                                 sleepDuration,
                                 retryCount
                             } );
@@ -104,7 +104,7 @@ public static class HttpClientBuilderPolicyExtensions
                         serviceOptions.ConsulName,
                         message.RequestUri,
                         message.Method,
-                        response.Result.StatusCode,
+                        response?.Result?.StatusCode,
                         circuitState,
                         timeSpan
                     });
