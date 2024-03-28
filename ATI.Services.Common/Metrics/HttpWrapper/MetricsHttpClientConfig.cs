@@ -20,12 +20,14 @@ namespace ATI.Services.Common.Metrics.HttpWrapper
             bool addCultureToRequest = true,
             JsonSerializerSettings newtonsoftSettings = null,
             JsonSerializerOptions systemTextJsonOptions = null,
-            bool propagateActivity = true)
+            bool propagateActivity = true,
+            bool useHttpClientFactory = false)
         {
             ServiceName = serviceName;
             Timeout = timeout;
             AddCultureToRequest = addCultureToRequest;
             PropagateActivity = propagateActivity;
+            UseHttpClientFactory = useHttpClientFactory;
             SetSerializer(serializerType, newtonsoftSettings, systemTextJsonOptions);
         }
 
@@ -37,10 +39,12 @@ namespace ATI.Services.Common.Metrics.HttpWrapper
         public Dictionary<string, string> Headers { get; set; } = new();
         public List<string> HeadersToProxy { get; set; } = new();
         public bool PropagateActivity { get; set; }
+        
+        public bool UseHttpClientFactory { get; set; }
 
         public Func<LogLevel, LogLevel> LogLevelOverride { get; set; } = level => level;
 
-        private void SetSerializer(
+        public void SetSerializer(
             SerializerType serializerType,
             JsonSerializerSettings newtonsoftSettings = null,
             JsonSerializerOptions systemTextJsonOptions = null)

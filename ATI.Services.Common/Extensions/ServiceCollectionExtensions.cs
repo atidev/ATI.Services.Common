@@ -19,7 +19,7 @@ namespace ATI.Services.Common.Extensions
             if(checkSectionExists && !section.Exists())
                 throw new Exception($"Секции {sectionName} нет в appsettings.json");
             
-            serviceCollection.Configure<T>(ConfigurationManager.GetSection(typeof(T).Name));
+            serviceCollection.Configure<T>(section);
         }
 
         [UsedImplicitly]

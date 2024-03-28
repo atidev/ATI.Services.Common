@@ -30,7 +30,7 @@ public class RedisCache : BaseRedisCache
     private readonly AsyncCircuitBreakerPolicy _circuitBreakerPolicy;
     private readonly AsyncPolicyWrap _policy;
     private readonly HitRatioCounter _counter;
-    private readonly MetricsFactory _metricsFactory;
+    private readonly MetricsInstance _metrics;
     private bool _connected;
 
     private RedisScriptCache _redisScriptCache;
@@ -48,10 +48,10 @@ public class RedisCache : BaseRedisCache
             .WaitAndRetryAsync(3, _ => TimeSpan.FromSeconds(5));
 
 
-    public RedisCache(RedisOptions options, CacheHitRatioManager manager, IRedisSerializer serializer)
+    public RedisCache(RedisOptions options, CacheHitRatioManager manager, IRedisSerializer serializer, MetricsFactory metricsFactory)
     {
         Options = options;
-        _metricsFactory = MetricsFactory.CreateRedisMetricsFactory(nameof(RedisCache), Options.LongRequestTime);
+        _metrics = metricsFactory.CreateRedisMetricsFactory(nameof(RedisCache), Options.LongRequestTime);
         _circuitBreakerPolicy = Policy.Handle<Exception>()
             .CircuitBreakerAsync(Options.CircuitBreakerExceptionsCount, Options.CircuitBreakerSeconds);
         _policy = Policy.WrapAsync(Policy.TimeoutAsync(Options.RedisTimeout, TimeoutStrategy.Pessimistic),
@@ -87,7 +87,7 @@ public class RedisCache : BaseRedisCache
             });
             _redisDb = connectionMultiplexer.GetDatabase(Options.CacheDbNumber);
             _redisScriptCache =
-                new RedisScriptCache(_redisDb, Options, _metricsFactory, _circuitBreakerPolicy, _policy, Serializer);
+                new RedisScriptCache(_redisDb, Options, _metrics, _circuitBreakerPolicy, _policy, Serializer);
             _connected = true;
         }
         catch (Exception e)
@@ -213,7 +213,7 @@ public class RedisCache : BaseRedisCache
         if (redisValue.Count < 0)
             return OperationResult.Ok;
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { RedisValues = redisValue }, longRequestTime: longRequestTime))
         {
             var tasks = new List<Task>(redisValue.Select(async cacheEntity =>
@@ -232,7 +232,7 @@ public class RedisCache : BaseRedisCache
         if (redisValues == null || redisValues.Count == 0 || !_connected)
             return;
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { RedisValues = redisValues }, longRequestTime: longRequestTime))
         {
             var tasks =
@@ -254,7 +254,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(key))
             return new OperationResult<T>();
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { RedisKey = key },
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { RedisKey = key },
                    longRequestTime: longRequestTime))
         {
             var operationResult = await ExecuteAsync(async () => await _redisDb.StringGetAsync(key), key);
@@ -279,7 +279,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(key))
             return OperationResult.Ok;
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { RedisKey = key },
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { RedisKey = key },
                    longRequestTime: longRequestTime))
         {
             return await ExecuteAsync(async () => await _redisDb.KeyDeleteAsync(key), key);
@@ -294,7 +294,7 @@ public class RedisCache : BaseRedisCache
         if (keys == null || keys.Count == 0)
             return OperationResult.Ok;
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { RedisKeys = keys },
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { RedisKeys = keys },
                    longRequestTime: longRequestTime))
         {
             return await ExecuteAsync(async () =>
@@ -315,7 +315,7 @@ public class RedisCache : BaseRedisCache
         if (keys == null || keys.Count == 0)
             return new OperationResult<List<T>>();
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { RedisKeys = keys, WithNulls = withNulls }, longRequestTime: longRequestTime))
         {
             var keysArray = keys.Select(key => (RedisKey)key).ToArray();
@@ -345,7 +345,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(key))
             return new OperationResult<List<string>>();
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { Key = key },
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { Key = key },
                    longRequestTime: longRequestTime))
         {
             var operationResult = await ExecuteAsync(async () => await _redisDb.SetMembersAsync(key), key);
@@ -380,7 +380,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(key))
             return new OperationResult<bool>();
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { Key = key },
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { Key = key },
                    longRequestTime: longRequestTime))
         {
             return await ExecuteAsync(async () => await _redisDb.KeyExistsAsync(key), key);
@@ -395,7 +395,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(setKey))
             return OperationResult.Ok;
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { SetKey = setKey, Value = value }, longRequestTime: longRequestTime))
         {
             return await ExecuteAsync(async () => await _redisDb.SetAddAsync(setKey, value), new { setKey, value });
@@ -410,7 +410,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(setKey) || values.Count == 0)
             return new OperationResult(ActionStatus.Ok);
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { SetKey = setKey, Values = values }, longRequestTime: longRequestTime))
         {
             return await ExecuteAsync(
@@ -427,7 +427,7 @@ public class RedisCache : BaseRedisCache
         if (setKeys == null || setKeys.Count == 0)
             return OperationResult.Ok;
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { SetsKeys = setKeys, Value = value }, longRequestTime: longRequestTime))
         {
             var setAddTasks = setKeys.Select(async setKey => await InsertEntityToSetWithPolicy(setKey, value));
@@ -446,7 +446,7 @@ public class RedisCache : BaseRedisCache
         if (keys == null || keys.Count == 0)
             return new OperationResult<List<string>>();
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { RedisKeys = keys, WithNulls = withNulls }, longRequestTime: longRequestTime))
         {
             var transaction = _redisDb.CreateTransaction();
@@ -481,10 +481,10 @@ public class RedisCache : BaseRedisCache
             return OperationResult.Ok;
 
         if (manyRedisValues.Count == 0)
-            return await ExecuteAsync(async () => await _redisDb.SetAddAsync(setKey, ""),
+            return await ExecuteAsync(async () => await _redisDb.SetAddAsync(setKey, string.Empty),
                 new { manyRedisValues, setKey });
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { RedisValues = manyRedisValues, SetKey = setKey },
                    longRequestTime: longRequestTime))
         {
@@ -512,7 +512,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(key))
             return new OperationResult<long>(ActionStatus.BadRequest);
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { Key = key, ExpireAt = expireAt }, longRequestTime: longTimeRequest))
         {
             var transaction = _redisDb.CreateTransaction();
@@ -534,7 +534,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(setKey))
             return OperationResult.Ok;
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { SetKey = setKey, MemberOfSet = member }, longRequestTime: longTimeRequest))
         {
             return await ExecuteAsync(async () => await _redisDb.SetRemoveAsync(setKey, member), setKey);
@@ -549,7 +549,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(setKey))
             return new OperationResult<bool>();
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { SetKey = setKey, MemberOfSet = member }, longRequestTime: longTimeRequest))
         {
             return await ExecuteAsync(async () => await _redisDb.SetContainsAsync(setKey, member),
@@ -565,7 +565,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(hashKey) || string.IsNullOrEmpty(hashField))
             return new OperationResult<RedisValue>();
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { HashKey = hashKey, HashField = hashField }, longRequestTime: longTimeRequest))
         {
             return await ExecuteAsync(async () => await _redisDb.HashGetAsync(hashKey, hashField),
@@ -581,7 +581,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(hashKey) || string.IsNullOrEmpty(hashField))
             return OperationResult.Ok;
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { HashKey = hashKey, HashField = hashField }, longRequestTime: longTimeRequest))
         {
             return await ExecuteAsync(async () => await _redisDb.HashSetAsync(hashKey, hashField, value),
@@ -597,7 +597,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(hashKey) || string.IsNullOrEmpty(hashField))
             return OperationResult.Ok;
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { HashKey = hashKey, HashField = hashField }, longRequestTime: longTimeRequest))
         {
             return await ExecuteAsync(async () => await _redisDb.HashDeleteAsync(hashKey, hashField),
@@ -613,7 +613,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(key))
             return OperationResult.Ok;
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { Key = key, Expiration = expiration }, longRequestTime: longRequestTime))
         {
             return await ExecuteAsync(async () => await _redisDb.KeyExpireAsync(key, expiration.ToUniversalTime()),
@@ -629,7 +629,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(key))
             return OperationResult.Ok;
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { Key = key, TimeToLive = ttl }, longRequestTime: longRequestTime))
         {
             return await ExecuteAsync(async () => await _redisDb.KeyExpireAsync(key, ttl), new { key, ttl });
@@ -645,7 +645,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrWhiteSpace(sortedSetKey))
             return new OperationResult(ActionStatus.BadRequest, "sorted set key was not specified.");
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new
                    {
                        Value = member,
@@ -674,7 +674,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrWhiteSpace(sortedSetKey))
             return new OperationResult(ActionStatus.BadRequest, "sorted set key was not specified.");
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new
                    {
                        Value = member,
@@ -704,7 +704,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(key))
             return new OperationResult<bool>();
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { Value = redisValue, Key = key, TimeToLive = timeToLive },
                    longRequestTime: longTimeRequest))
         {
@@ -722,7 +722,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(hashKey))
             return OperationResult.Ok;
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { RedisValues = data, HashKey = hashKey }, longRequestTime: longTimeRequest))
         {
             var fields = ToHashEntries(data).ToArray();
@@ -744,7 +744,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(hashKey))
             return OperationResult.Ok;
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { RedisValues = fieldsToInsert, HashKey = hashKey },
                    longRequestTime: longTimeRequest))
         {
@@ -769,7 +769,7 @@ public class RedisCache : BaseRedisCache
         if (valuesByHashKeys.Count == 0)
             return OperationResult.Ok;
 
-        using var metric = _metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using var metric = _metrics.CreateMetricsTimerWithLogging(metricEntity,
             requestParams: new { RedisValues = valuesByHashKeys }, longRequestTime: longTimeRequest);
 
         var transaction = _redisDb.CreateTransaction();
@@ -796,7 +796,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(hashKey))
             return OperationResult.Ok;
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { RedisValues = manyRedisValues, HashKey = hashKey },
                    longRequestTime: longTimeRequest))
         {
@@ -815,7 +815,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(hashKey) || string.IsNullOrEmpty(hashField))
             return new OperationResult<T>();
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { HashKey = hashKey, HashField = hashField }, longRequestTime: longTimeRequest))
         {
             var operationResult = await ExecuteAsync(async () => await _redisDb.HashGetAsync(hashKey, hashField),
@@ -842,7 +842,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(hashKey))
             return new OperationResult<T>();
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { HashKey = hashKey }, longRequestTime: longTimeRequest))
         {
             var operationResult = await ExecuteAsync(async () => await _redisDb.HashGetAllAsync(hashKey), hashKey);
@@ -870,7 +870,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(hashKey))
             return new OperationResult<List<KeyValuePair<TKey, TValue>>>();
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { HashKey = hashKey }, longRequestTime: longTimeRequest))
         {
             var operationResult = await ExecuteAsync(async () => await _redisDb.HashGetAllAsync(hashKey), hashKey);
@@ -904,7 +904,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(hashKey))
             return new OperationResult<List<T>>();
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { HashKey = hashKey },
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity, requestParams: new { HashKey = hashKey },
                    longRequestTime: longTimeRequest))
         {
             var operationResult = await ExecuteAsync(async () => await _redisDb.HashValuesAsync(hashKey), hashKey);
@@ -936,7 +936,7 @@ public class RedisCache : BaseRedisCache
         if (string.IsNullOrEmpty(key))
             return new OperationResult<double>();
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { Key = key, Value = value }, longRequestTime: longTimeRequest))
         {
             var transaction = _redisDb.CreateTransaction();

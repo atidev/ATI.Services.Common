@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using ATI.Services.Common.Extensions;
-using ATI.Services.Common.Initializers;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -20,8 +19,10 @@ public static class MetricsExtensions
 
     public static void AddMetrics(this IServiceCollection services)
     {
-        services.ConfigureByName<MetricsOptions>();
-        services.AddTransient<MetricsInitializer>();
+        services.ConfigureByName<MetricsOptions>(); ;
+        
+        services.AddHttpContextAccessor();
+        services.AddSingleton<MetricsFactory>();
             
         InitializeExceptionsMetrics();
 

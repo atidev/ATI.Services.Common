@@ -1,43 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using System;
 using ATI.Services.Common.Logging;
-using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
-using Prometheus;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 
 namespace ATI.Services.Common.Metrics;
 
-[PublicAPI]
 public class MetricsFactory
 {
-    private Summary Summary { get; }
     public const string Prefix = "common_metric";
-    private static readonly string MachineName = Environment.MachineName;
-    private readonly string _className;
-    private readonly string _externalHttpServiceName;
-    private readonly LogSource _logSource;
     private static TimeSpan _defaultLongRequestTime = TimeSpan.FromSeconds(1);
-
-    private static readonly QuantileEpsilonPair[] SummaryQuantileEpsilonPairs = {
-        new(0.5, 0.05),
-        new(0.9, 0.05),
-        new(0.95, 0.01),
-        new(0.99, 0.005),
-    };
-
-    //Время запроса считающегося достаточно долгим, что бы об этом доложить в кибану
-    private readonly TimeSpan _longRequestTime;
-
-    public static void Init(TimeSpan? defaultLongRequestTime = null)
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    
+    public MetricsFactory(IOptions<MetricsOptions> options, IHttpContextAccessor httpContextAccessor)
     {
-        if (defaultLongRequestTime != null)
+        _httpContextAccessor = httpContextAccessor;
+        if (options.Value.DefaultLongRequestTime != null)
         {
-            _defaultLongRequestTime = defaultLongRequestTime.Value;
+            _defaultLongRequestTime = options.Value.DefaultLongRequestTime.Value;
         }
     }
 
-    public static MetricsFactory CreateHttpClientMetricsFactory(
+    [PublicAPI]
+    public MetricsInstance CreateHttpClientMetricsFactory(
         [NotNull] string className,
         string externalHttpServiceName,
         TimeSpan? longRequestTime = null,
@@ -50,16 +35,17 @@ public class MetricsFactory
             MetricsLabelsAndHeaders.UserLabels,
             additionalSummaryLabels);
 
-        return new MetricsFactory(
+        return new MetricsInstance(
+            _httpContextAccessor,
             className,
             LogSource.HttpClient,
             $"{Prefix}_http_client",
             externalHttpServiceName,
-            longRequestTime,
+            longRequestTime ?? _defaultLongRequestTime,
             labels);
     }
 
-    public static MetricsFactory CreateRedisMetricsFactory(
+    public MetricsInstance CreateRedisMetricsFactory(
         [NotNull] string className,
         TimeSpan? longRequestTime = null,
         params string[] additionalSummaryLabels)
@@ -71,15 +57,18 @@ public class MetricsFactory
             MetricsLabelsAndHeaders.UserLabels,
             additionalSummaryLabels);
 
-        return new MetricsFactory(
+        return new MetricsInstance(
+            _httpContextAccessor,
             className,
             LogSource.Redis,
             $"{Prefix}_redis",
+            null,
             longRequestTime ?? _defaultLongRequestTime,
             labels);
     }
 
-    public static MetricsFactory CreateMongoMetricsFactory(
+    [PublicAPI]
+    public MetricsInstance CreateMongoMetricsFactory(
         [NotNull] string className,
         params string[] additionalSummaryLabels)
     {
@@ -90,15 +79,17 @@ public class MetricsFactory
             MetricsLabelsAndHeaders.UserLabels,
             additionalSummaryLabels);
 
-        return new MetricsFactory(
+        return new MetricsInstance(
+            _httpContextAccessor,
             className,
             LogSource.Mongo,
             $"{Prefix}_mongo",
+            null,
             _defaultLongRequestTime,
             labels);
     }
 
-    public static MetricsFactory CreateSqlMetricsFactory(
+    public MetricsInstance CreateSqlMetricsFactory(
         [NotNull] string className,
         TimeSpan? longTimeRequest = null,
         params string[] additionalSummaryLabels)
@@ -110,15 +101,17 @@ public class MetricsFactory
             MetricsLabelsAndHeaders.UserLabels,
             additionalSummaryLabels);
 
-        return new MetricsFactory(
+        return new MetricsInstance(
+            _httpContextAccessor,
             className,
             LogSource.Sql,
             $"{Prefix}_sql",
-            _defaultLongRequestTime,
+            null,
+            longTimeRequest ?? _defaultLongRequestTime,
             labels);
     }
 
-    public static MetricsFactory CreateControllerMetricsFactory(
+    public MetricsInstance CreateControllerMetricsFactory(
         [NotNull] string className,
         params string[] additionalSummaryLabels)
     {
@@ -129,15 +122,18 @@ public class MetricsFactory
             MetricsLabelsAndHeaders.UserLabels,
             additionalSummaryLabels);
 
-        return new MetricsFactory(
+        return new MetricsInstance(
+            _httpContextAccessor,
             className,
             LogSource.Controller,
             $"{Prefix}_controller",
+            null,
             _defaultLongRequestTime,
             labels);
     }
 
-    public static MetricsFactory CreateRepositoryMetricsFactory(
+    [PublicAPI]
+    public MetricsInstance CreateRepositoryMetricsFactory(
         [NotNull] string className,
         TimeSpan? requestLongTime = null,
         params string[] additionalSummaryLabels)
@@ -149,15 +145,18 @@ public class MetricsFactory
             MetricsLabelsAndHeaders.UserLabels,
             additionalSummaryLabels);
 
-        return new MetricsFactory(
+        return new MetricsInstance(
+            _httpContextAccessor,
             className,
             LogSource.Repository,
             $"{Prefix}_repository",
+            null,
             requestLongTime ?? _defaultLongRequestTime,
             labels);
     }
         
-    public static MetricsFactory CreateRabbitMqMetricsFactory(
+    [PublicAPI]
+    public MetricsInstance CreateRabbitMqMetricsFactory(
         RabbitMetricsType type,
         [NotNull] string className,
         TimeSpan? requestLongTime = null,
@@ -170,15 +169,18 @@ public class MetricsFactory
             MetricsLabelsAndHeaders.UserLabels,
             additionalSummaryLabels);
 
-        return new MetricsFactory(
+        return new MetricsInstance(
+            _httpContextAccessor,
             className,
             LogSource.RabbitMq,
             $"{Prefix}_rabbitmq_{type.ToString().ToLower()}",
+            null,
             requestLongTime ?? _defaultLongRequestTime,
             labels);
     }
-        
-    public static MetricsFactory CreateCustomMetricsFactory(
+     
+    [PublicAPI]
+    public MetricsInstance CreateCustomMetricsFactory(
         [NotNull] string className,
         string customMetricName,
         TimeSpan? requestLongTime = null,
@@ -193,197 +195,16 @@ public class MetricsFactory
             MetricsLabelsAndHeaders.UserLabels,
             additionalSummaryLabels);
 
-        return new MetricsFactory(
+        return new MetricsInstance(
+            _httpContextAccessor,
             className,
             LogSource.Custom,
             $"{Prefix}_{customMetricName}",
+            null,
             requestLongTime ?? _defaultLongRequestTime,
             labels);
     }
-
-    private MetricsFactory(
-        string className,
-        LogSource logSource,
-        string summaryServiceName,
-        string externalHttpServiceName,
-        TimeSpan? longRequestTime = null,
-        params string[] summaryLabelNames)
-    {
-        _className = className;
-        _externalHttpServiceName = externalHttpServiceName;
-        _longRequestTime = longRequestTime ?? _defaultLongRequestTime;
-        _logSource = logSource;
-
-        if (summaryServiceName != null)
-        {
-            var options = new SummaryConfiguration
-            {
-                MaxAge = TimeSpan.FromMinutes(1),
-                Objectives = SummaryQuantileEpsilonPairs
-            };
-
-            Summary = Prometheus.Metrics.CreateSummary(
-                summaryServiceName,
-                string.Empty,
-                summaryLabelNames,
-                options);
-        }
-    }
-
-    private MetricsFactory(
-        string className,
-        LogSource logSource,
-        [CanBeNull] string summaryServiceName,
-        TimeSpan longRequestTime,
-        params string[] summaryLabelNames)
-    {
-        _className = className;
-        _longRequestTime = longRequestTime;
-        _logSource = logSource;
-
-        if (summaryServiceName != null)
-        {
-            var options = new SummaryConfiguration
-            {
-                MaxAge = TimeSpan.FromMinutes(1),
-                Objectives = SummaryQuantileEpsilonPairs
-            };
-
-            Summary = Prometheus.Metrics.CreateSummary(
-                summaryServiceName,
-                string.Empty,
-                summaryLabelNames,
-                options);
-        }
-    }
-
-    public IDisposable CreateMetricsTimerWithLogging(
-        string entityName,
-        [CallerMemberName] string actionName = null,
-        object requestParams = null,
-        TimeSpan? longRequestTime = null,
-        params string[] additionalLabels)
-    {
-        if (Summary == null)
-        {
-            throw new NullReferenceException($"{nameof(Summary)} is not initialized");
-        }
-
-        var labels = ConcatLabelValues(
-            _className,
-            actionName,
-            entityName,
-            _externalHttpServiceName,
-            AppHttpContext.MetricsHeadersValues,
-            additionalLabels);
-
-        return new MetricsTimer(
-            Summary,
-            labels,
-            longRequestTime ?? _longRequestTime,
-            requestParams,
-            _logSource);
-    }
-
-    /// <summary>
-    /// В случае создания данного экземпляра таймер для метрик стартует не сразу, а только после вызова метода Restart()
-    /// </summary>
-    /// <param name="entityName"></param>
-    /// <param name="actionName"></param>
-    /// <param name="requestParams"></param>
-    /// <param name="longRequestTime"></param>
-    /// <param name="additionalLabels"></param>
-    /// <returns></returns>
-    /// <exception cref="NullReferenceException"></exception>
-    public MetricsTimer CreateMetricsTimerWithDelayedLogging(
-        string entityName,
-        [CallerMemberName] string actionName = null,
-        object requestParams = null,
-        TimeSpan? longRequestTime = null,
-        params string[] additionalLabels)
-    {
-        if (Summary == null)
-        {
-            throw new NullReferenceException($"{nameof(Summary)} is not initialized");
-        }
-
-        var labels = ConcatLabelValues(
-            _className,
-            actionName,
-            entityName,
-            _externalHttpServiceName,
-            AppHttpContext.MetricsHeadersValues,
-            additionalLabels);
-
-        return new MetricsTimer(
-            Summary,
-            labels,
-            longRequestTime ?? _longRequestTime,
-            requestParams,
-            _logSource,
-            false);
-    }
-
-    public IDisposable CreateLoggingMetricsTimer(
-        string entityName,
-        [CallerMemberName] string actionName = null,
-        object requestParams = null,
-        TimeSpan? longRequestTime = null,
-        params string[] additionalLabels)
-    {
-        var labels = ConcatLabelValues(
-            _className,
-            actionName,
-            entityName,
-            _externalHttpServiceName,
-            AppHttpContext.MetricsHeadersValues,
-            additionalLabels);
-
-        return new MetricsTimer(
-            Summary,
-            labels,
-            longRequestTime ?? _longRequestTime,
-            requestParams,
-            _logSource);
-    }
-
-    public IDisposable CreateMetricsTimer(
-        string entityName,
-        [CallerMemberName] string actionName = null,
-        params string[] additionalLabels)
-    {
-        var labels = ConcatLabelValues(
-            _className,
-            actionName,
-            entityName,
-            _externalHttpServiceName,
-            AppHttpContext.MetricsHeadersValues,
-            additionalLabels);
-
-        return new MetricsTimer(Summary, labels);
-    }
-
-    /// <summary>
-    /// Метод управляющий порядком значений лэйблов 
-    /// </summary>
-    private static string[] ConcatLabelValues(
-        string className,
-        string actionName,
-        string entityName = null,
-        string externHttpService = null,
-        string[] userLabels = null,
-        params string[] additionalLabels)
-    {
-        return ConcatLabels(
-            className,
-            MachineName,
-            actionName,
-            entityName,
-            externHttpService,
-            userLabels,
-            additionalLabels);
-    }
-
+    
     /// <summary>
     /// Метод управляющий порядком названий лэйблов
     /// </summary>
@@ -394,7 +215,7 @@ public class MetricsFactory
         string[] userLabels = null,
         params string[] additionalLabels)
     {
-        return ConcatLabels(
+        return MetricsHelper.ConcatLabels(
             "class_name",
             "machine_name",
             actionName,
@@ -402,42 +223,5 @@ public class MetricsFactory
             externHttpService,
             userLabels,
             additionalLabels);
-    }
-
-    /// <summary>
-    /// Метод управляющий порядком лэйблов и их значений
-    /// <param name="actionName"> Указывать только при объявлении лейблов. Записывается он в таймере, так как нужен для трейсинга</param>
-    /// </summary>
-    private static string[] ConcatLabels(
-        string className,
-        string machineName,
-        string actionName,
-        string entityName,
-        string externHttpService,
-        string[] userLabels,
-        params string[] additionalLabels)
-    {
-        var labels = new List<string>
-        {
-            className,
-            actionName
-        };
-            
-        if (machineName != null)
-            labels.Add(machineName);
-
-        if (entityName != null)
-            labels.Add(entityName);
-
-        if (externHttpService != null)
-            labels.Add(externHttpService);
-
-        if (userLabels != null && userLabels.Length != 0)
-            labels.AddRange(userLabels);
-
-        if (additionalLabels.Length != 0)
-            labels.AddRange(additionalLabels);
-
-        return labels.ToArray();
     }
 }

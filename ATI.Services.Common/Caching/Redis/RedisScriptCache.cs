@@ -16,7 +16,7 @@ namespace ATI.Services.Common.Caching.Redis;
 
 internal class RedisScriptCache : BaseRedisCache
 {
-    private readonly MetricsFactory _metricsFactory;
+    private readonly MetricsInstance _metrics;
     private readonly IDatabase _redisDb;
     private readonly AsyncCircuitBreakerPolicy _circuitBreakerPolicy;
     private readonly AsyncPolicyWrap _policy;
@@ -26,13 +26,13 @@ internal class RedisScriptCache : BaseRedisCache
     /// </summary>
     /// <param name="redisDb"></param>
     /// <param name="redisOptions"></param>
-    /// <param name="metricsFactory"></param>
+    /// <param name="metrics"></param>
     /// <param name="circuitBreakerPolicy"></param>
     /// <param name="policy"></param>
     public RedisScriptCache(
         IDatabase redisDb,
         RedisOptions redisOptions,
-        MetricsFactory metricsFactory,
+        MetricsInstance metrics,
         AsyncCircuitBreakerPolicy circuitBreakerPolicy,
         AsyncPolicyWrap policy,
         IRedisSerializer serializer
@@ -40,7 +40,7 @@ internal class RedisScriptCache : BaseRedisCache
     {
         Options = redisOptions;
         _redisDb = redisDb;
-        _metricsFactory = metricsFactory;
+        _metrics = metrics;
         _circuitBreakerPolicy = circuitBreakerPolicy;
         _policy = policy;
         Serializer = serializer;
@@ -52,7 +52,7 @@ internal class RedisScriptCache : BaseRedisCache
         if (redisValue.Count < 0)
             return OperationResult.Ok;
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { RedisValues = redisValue }, longRequestTime: longRequestTime))
         {
             var result = await InsertManyByScriptAsync(redisValue.Select(v => v.GetKey()), redisValue);
@@ -66,7 +66,7 @@ internal class RedisScriptCache : BaseRedisCache
         if (redisValues == null || redisValues.Count == 0)
             return OperationResult.Ok;
 
-        using (_metricsFactory.CreateMetricsTimerWithLogging(metricEntity,
+        using (_metrics.CreateMetricsTimerWithLogging(metricEntity,
                    requestParams: new { RedisValues = redisValues },
                    longRequestTime: longRequestTime))
         {

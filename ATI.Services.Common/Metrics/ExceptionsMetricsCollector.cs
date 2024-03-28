@@ -35,7 +35,7 @@ public class ExceptionsMetricsCollector : EventListener
     public void RegisterMetrics(CollectorRegistry registry)
     {
         _metricFactory = Prometheus.Metrics.WithCustomRegistry(registry);
-        _gauge = _metricFactory.CreateGauge($"{MetricsFactory.Prefix}_Exceptions", "", "machine_name", "exception_type");
+        _gauge = _metricFactory.CreateGauge($"{MetricsFactory.Prefix}_Exceptions", string.Empty, "machine_name", "exception_type");
     }
 
     public void UpdateMetrics()

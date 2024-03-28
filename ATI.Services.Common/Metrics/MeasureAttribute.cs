@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ATI.Services.Common.Metrics;
 
@@ -14,7 +15,7 @@ public class MeasureAttribute : ActionFilterAttribute
     private readonly TimeSpan? _longRequestTime;
     private readonly bool _longRequestLoggingEnabled = true;
         
-    private static readonly ConcurrentDictionary<string, MetricsFactory> ControllerNameMetricsFactories
+    private static readonly ConcurrentDictionary<string, MetricsInstance> ControllerNameMetricsInstances
         = new();
 
     public MeasureAttribute() { }
@@ -39,6 +40,8 @@ public class MeasureAttribute : ActionFilterAttribute
 
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
+        var metricsFactory = context.HttpContext.RequestServices.GetService<MetricsFactory>();
+        
         var controllerActionDescriptor = (ControllerActionDescriptor)context.ActionDescriptor;
         var actionName =
             $"{context.HttpContext.Request.Method}:{controllerActionDescriptor.AttributeRouteInfo.Template}";
@@ -49,21 +52,21 @@ public class MeasureAttribute : ActionFilterAttribute
             _metricEntity = controllerActionDescriptor.ControllerName;
         }
 
-        var metricsFactory =
-            ControllerNameMetricsFactories.GetOrAdd(
+        var metricsInstance =
+            ControllerNameMetricsInstances.GetOrAdd(
                 controllerName,
-                MetricsFactory.CreateControllerMetricsFactory(controllerName));
+                metricsFactory.CreateControllerMetricsFactory(controllerName));
 
-        using (CreateTimer(context, metricsFactory, actionName))
+        using (CreateTimer(context, metricsInstance, actionName))
         {
             await next.Invoke();
         }
     }
 
-    private IDisposable CreateTimer(ActionExecutingContext context, MetricsFactory metricsFactory, string actionName)
+    private IDisposable CreateTimer(ActionExecutingContext context, MetricsInstance metricsInstance, string actionName)
     {
         return _longRequestLoggingEnabled
-                   ? metricsFactory.CreateLoggingMetricsTimer(_metricEntity, actionName, context.ActionArguments, _longRequestTime)
-                   : metricsFactory.CreateMetricsTimer(_metricEntity, actionName);
+                   ? metricsInstance.CreateLoggingMetricsTimer(_metricEntity, actionName, context.ActionArguments, _longRequestTime)
+                   : metricsInstance.CreateMetricsTimer(_metricEntity, actionName);
     }
 }

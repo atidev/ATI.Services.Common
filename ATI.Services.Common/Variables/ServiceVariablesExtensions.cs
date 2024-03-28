@@ -1,6 +1,5 @@
 ﻿using ATI.Services.Common.Extensions;
 using JetBrains.Annotations;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ATI.Services.Common.Variables
@@ -12,9 +11,6 @@ namespace ATI.Services.Common.Variables
         {
             services.ConfigureByName<ServiceVariablesOptions>();
             services.AddTransient<ServiceVariablesInitializer>();
-
-            services.AddHttpContextAccessor();
-            AppHttpContext.Services = services.BuildServiceProvider(new ServiceProviderOptions().ValidateOnBuild);
         }
     }
 }
