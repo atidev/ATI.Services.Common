@@ -414,7 +414,7 @@ public class RedisCache : BaseRedisCache
                    requestParams: new { SetKey = setKey, Values = values }, longRequestTime: longRequestTime))
         {
             return await ExecuteAsync(
-                async () => await _redisDb.SetAddAsync(setKey, values.Cast<RedisValue>().ToArray()),
+                async () => await _redisDb.SetAddAsync(setKey, values.Select(value => (RedisValue)value).ToArray()),
                 new { setKey, values });
         }
     }
