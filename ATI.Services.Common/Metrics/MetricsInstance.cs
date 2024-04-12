@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using ATI.Services.Common.Http;
 using ATI.Services.Common.Logging;
 using ATI.Services.Common.Variables;
 using Microsoft.AspNetCore.Http;

@@ -10,7 +10,17 @@ namespace ATI.Services.Common.Options;
 public class BaseServiceOptions
 {
     public string ConsulName { get; set; }
-    
+
+    private string _serviceName;
+    /// <summary>
+    /// Name for HttpClientFactory and logs
+    /// </summary>
+    public string ServiceName
+    {
+        get => _serviceName ?? ConsulName;
+        set => _serviceName = value;
+    }
+
     /// <summary>
     /// Timeout for one request. If you use RetryPolicy - it will be also a timeout for one request (not total time of policy)
     /// </summary>
@@ -46,5 +56,9 @@ public class BaseServiceOptions
 
     public bool UseHttpClientFactory { get; set; }
     
+    /// <summary>
+    /// Http methods to retry
+    /// Make empty list if you dont want to use RetryPolicy
+    /// </summary>
     public List<string> HttpMethodsToRetry { get; set; }
 }

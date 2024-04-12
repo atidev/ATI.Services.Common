@@ -14,7 +14,7 @@ using Polly.Extensions.Http;
 using Polly.Registry;
 using Polly.Timeout;
 
-namespace ATI.Services.Common.Http;
+namespace ATI.Services.Common.Http.Extensions;
 
 /// <summary>
 /// https://habr.com/ru/companies/dododev/articles/503376/
@@ -52,7 +52,7 @@ public static class HttpClientBuilderPolicyExtensions
                         {
                             logger.ErrorWithObject(response?.Exception, "Error while WaitAndRetry",  new
                             {
-                                serviceOptions.ConsulName,
+                                serviceOptions.ServiceName,
                                 message.RequestUri,
                                 message.Method,
                                 response?.Result?.StatusCode,
@@ -71,7 +71,7 @@ public static class HttpClientBuilderPolicyExtensions
         var registry = new PolicyRegistry();
         return clientBuilder.AddPolicyHandler(message =>
         {
-            var policyKey = message.RequestUri.Host;
+            var policyKey = $"{message.RequestUri.Host}:{message.RequestUri.Port}";
             var policy = registry.GetOrAdd(policyKey, BuildCircuitBreakerPolicy(message, serviceOptions, logger));
             return policy;
         });
@@ -101,7 +101,7 @@ public static class HttpClientBuilderPolicyExtensions
                 {
                     logger.ErrorWithObject(null, "CB onBreak", new
                     {
-                        serviceOptions.ConsulName,
+                        serviceOptions.ServiceName,
                         message.RequestUri,
                         message.Method,
                         response?.Result?.StatusCode,
@@ -113,7 +113,7 @@ public static class HttpClientBuilderPolicyExtensions
                 {
                     logger.ErrorWithObject(null, "CB onReset", new
                     {
-                        serviceOptions.ConsulName,
+                        serviceOptions.ServiceName,
                         message.RequestUri,
                         message.Method,
                         context
@@ -123,7 +123,7 @@ public static class HttpClientBuilderPolicyExtensions
                 {
                     logger.ErrorWithObject(null, "CB onHalfOpen", new
                     {
-                        serviceOptions.ConsulName,
+                        serviceOptions.ServiceName,
                         message.RequestUri,
                         message.Method,
                     });
