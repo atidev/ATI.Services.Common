@@ -20,6 +20,7 @@ namespace ATI.Services.Common.Metrics.HttpWrapper;
 /// Он внутри себя инкапсулирует ConsulServiceAddress и MetricsFactory
 /// </summary>
 [PublicAPI]
+[Obsolete("Use HttpClientFactory instead")]
 public class MetricsHttpClientWrapper : IDisposable
 {
     private readonly ILogger _logger;
