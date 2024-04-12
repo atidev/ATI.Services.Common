@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
-using ATI.Services.Common.Serializers.SystemTextJsonSerialization;
 using JetBrains.Annotations;
 using NLog;
 
@@ -18,7 +18,9 @@ public static class HttpClientExtensions
 
     private static readonly JsonSerializerOptions SnakeCaseSerializerOptions = new()
     {
-        PropertyNamingPolicy = new SnakeCaseNamingPolicy()
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseUpper,
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
     };
 
 
