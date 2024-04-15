@@ -1,7 +1,7 @@
 using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using ATI.Services.Common.Options;
-using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +15,7 @@ public static class ServiceCollectionHttpClientExtensions
 {
     /// <summary>
     /// Add HttpClient to HttpClientFactory with retry/cb/timeout policy, logging, metrics
+    /// Use it for external requests, like requests to integrators
     /// </summary>
     /// <param name="services"></param>
     /// <typeparam name="T"></typeparam>
@@ -25,11 +26,16 @@ public static class ServiceCollectionHttpClientExtensions
         var settings = ConfigurationManager.GetSection(className).Get<T>();
         var logger = LogManager.GetLogger(settings.ServiceName);
 
-        var serviceVariablesOptions = ConfigurationManager.GetSection(nameof(ServiceVariablesOptions)).Get<ServiceVariablesOptions>();
-
         services.AddHttpClient(settings.ServiceName, httpClient =>
             {
-                httpClient.SetBaseFields(serviceVariablesOptions.GetServiceAsClientName(), serviceVariablesOptions.GetServiceAsClientHeaderName(),  settings.AdditionalHeaders);
+                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                if (settings.AdditionalHeaders is { Count: > 0 })
+                {
+                    foreach (var header in settings.AdditionalHeaders)
+                    {
+                        httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                    }
+                }
                 additionalActions(httpClient);
             })
             .WithLogging<T>()

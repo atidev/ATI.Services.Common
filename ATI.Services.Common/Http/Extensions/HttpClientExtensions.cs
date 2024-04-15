@@ -112,6 +112,7 @@ public static class HttpClientExtensions
         try
         {
             using var requestMessage = CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity, urlTemplate, headers);
+            requestMessage.Content = content;
 
             using var responseMessage = await httpClient.SendAsync(requestMessage);
             return await responseMessage.ParseHttpResponseAsync<TResponse>(serializerOptions ?? SnakeCaseSerializerOptions);
@@ -135,6 +136,7 @@ public static class HttpClientExtensions
         try
         {
             using var requestMessage = CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity, urlTemplate, headers);
+            requestMessage.Content = content;
 
             using var responseMessage = await httpClient.SendAsync(requestMessage);
             return await responseMessage.GetByteArrayFromHttpResponseAsync();
