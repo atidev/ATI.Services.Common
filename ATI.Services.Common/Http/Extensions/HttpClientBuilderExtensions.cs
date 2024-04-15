@@ -11,7 +11,7 @@ public static class HttpClientBuilderExtensions
     public static IHttpClientBuilder WithProxyFields<TServiceOptions>(this IHttpClientBuilder httpClientBuilder)
         where TServiceOptions : BaseServiceOptions
     {
-        httpClientBuilder.Services.AddSingleton<HttpProxyFieldsHandler<TServiceOptions>>();
+        httpClientBuilder.Services.AddTransient<HttpProxyFieldsHandler<TServiceOptions>>();
 
         return httpClientBuilder
             .AddHttpMessageHandler<HttpProxyFieldsHandler<TServiceOptions>>();
@@ -20,7 +20,7 @@ public static class HttpClientBuilderExtensions
     public static IHttpClientBuilder WithLogging<TServiceOptions>(this IHttpClientBuilder httpClientBuilder)
         where TServiceOptions : BaseServiceOptions
     {
-        httpClientBuilder.Services.AddSingleton<HttpLoggingHandler<TServiceOptions>>();
+        httpClientBuilder.Services.AddTransient<HttpLoggingHandler<TServiceOptions>>();
 
         return httpClientBuilder
             .AddHttpMessageHandler<HttpLoggingHandler<TServiceOptions>>();
@@ -29,7 +29,7 @@ public static class HttpClientBuilderExtensions
     public static IHttpClientBuilder WithMetrics<TServiceOptions>(this IHttpClientBuilder httpClientBuilder)
         where TServiceOptions : BaseServiceOptions
     {
-        httpClientBuilder.Services.AddSingleton<HttpMetricsHandler<TServiceOptions>>();
+        httpClientBuilder.Services.AddTransient<HttpMetricsHandler<TServiceOptions>>();
 
         return httpClientBuilder
             .AddHttpMessageHandler<HttpMetricsHandler<TServiceOptions>>();
