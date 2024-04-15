@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
+using ATI.Services.Common.Policies;
 using JetBrains.Annotations;
 using NLog;
 
@@ -55,11 +56,12 @@ public static class HttpClientExtensions
         string metricEntity,
         string urlTemplate = null,
         Dictionary<string, string> headers = null,
-        JsonSerializerOptions serializerOptions = null)
+        JsonSerializerOptions serializerOptions = null,
+        RetryPolicySettings retryPolicySettings = null)
     {
         try
         {
-            using var requestMessage = CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity, urlTemplate, headers);
+            using var requestMessage = CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity, urlTemplate, headers, retryPolicySettings);
 
             using var responseMessage = await httpClient.SendAsync(requestMessage);
             
@@ -80,11 +82,12 @@ public static class HttpClientExtensions
         string metricEntity,
         string urlTemplate = null,
         Dictionary<string, string> headers = null,
-        JsonSerializerOptions serializerOptions = null)
+        JsonSerializerOptions serializerOptions = null,
+        RetryPolicySettings retryPolicySettings = null)
     {
         try
         {
-            using var requestMessage = CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity, urlTemplate, headers);
+            using var requestMessage = CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity, urlTemplate, headers, retryPolicySettings);
 
             var serializeOptions = serializerOptions ?? SnakeCaseSerializerOptions;
             requestMessage.SetContent(request, serializeOptions);
@@ -107,11 +110,12 @@ public static class HttpClientExtensions
         string metricEntity,
         string urlTemplate = null,
         Dictionary<string, string> headers = null,
-        JsonSerializerOptions serializerOptions = null)
+        JsonSerializerOptions serializerOptions = null,
+        RetryPolicySettings retryPolicySettings = null)
     {
         try
         {
-            using var requestMessage = CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity, urlTemplate, headers);
+            using var requestMessage = CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity, urlTemplate, headers, retryPolicySettings);
             requestMessage.Content = content;
 
             using var responseMessage = await httpClient.SendAsync(requestMessage);
@@ -131,11 +135,12 @@ public static class HttpClientExtensions
         HttpContent content,
         string metricEntity,
         string urlTemplate = null,
-        Dictionary<string, string> headers = null)
+        Dictionary<string, string> headers = null,
+        RetryPolicySettings retryPolicySettings = null)
     {
         try
         {
-            using var requestMessage = CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity, urlTemplate, headers);
+            using var requestMessage = CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity, urlTemplate, headers, retryPolicySettings);
             requestMessage.Content = content;
 
             using var responseMessage = await httpClient.SendAsync(requestMessage);
@@ -154,7 +159,8 @@ public static class HttpClientExtensions
         string url,
         string metricEntity,
         string urlTemplate,
-        Dictionary<string, string> headers)
+        Dictionary<string, string> headers,
+        RetryPolicySettings retryPolicySettings)
     {
         var requestMessage = new HttpRequestMessage(httpMethod, url);
 
@@ -167,6 +173,9 @@ public static class HttpClientExtensions
             foreach (var header in headers)
                 requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value);
         }
+
+        if (retryPolicySettings != null)
+            requestMessage.Options.AddRetryPolicy(retryPolicySettings);
 
         return requestMessage;
     }

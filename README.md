@@ -166,54 +166,85 @@ app.UseMetrics(); //Добавляем мидлвару
 ### Http
 
 Для удобства походов в другие сервисы через consul были написаны следующие классы:
-1. `ConsulMetricsHttpClientWrapper`
-2. `BaseServiceOptions`
+1. `BaseServiceOptions`
 
 Если вы хотите написать адаптер для похода в чужой сервис, нужно:
 1. Завести класс `XServiceOptions`, отнаследовать его от `BaseServiceOptions`
-2. Завести в `appsettings.json` секцию `XServiceOptions`, описать/переопределить все необходимые параметры
+2. Завести в `appsettings.json` секцию `XServiceOptions`, описать/переопределить все необходимые параметры. Указать `UseHttpClientFactory: "true"`
 3. Зарегистрируйте его в `startup.cs` - `services.ConfigureByName<XServiceOptions>`
-4. Если вы хотите, чтобы при походе в чужой сервис использовались retry/circuitbreaker/timeout политики, добавьте в `startup.cs` - `services.AddCustomHttpClient<XServiceOptions>`. Он добавит в `HttpClientFactory` HttpClient под именем настройки `ConsulName` 
-5. Вызовите в `startup.cs` `services.AddConsulMetricsHttpClientWrappers()` для того, чтобы зарегистрировать в DI `ConsulMetricsHttpClientWrapper`
-6. Напишите свой адаптер, пример использования:
+4. Добавьте в `startup.cs` `services.AddCustomHttpClient<XServiceOptions>`. Это добавит в `HttpClientFactory` HttpClient под именем настройки `ServiceName`
+5. Напишите свой адаптер, пример использования:
 ```csharp
 public class FirmsAdapter
-    {
-        private readonly ConsulMetricsHttpClientWrapper<FirmServiceOptions> _httpWrapper;
+{
+        private readonly FirmServiceOptions _options;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        private const string GetAccountUrlFormat = "_internal/accounts/{0}";
-        private const string GetAccountsUrl = "_internal/accounts";
-
-        public FirmsAdapter(ConsulMetricsHttpClientWrapper<FirmServiceOptions> httpWrapper)
+        public FirmsAdapter(IOptions<FirmServiceOptions> options, IHttpClientFactory httpClientFactory)
         {
-            _httpWrapper = httpWrapper;
-            // if you need to override serializer settings
-            _httpWrapper.SetSerializer(...);
+            _options = options.Value;
+            _httpClientFactory = httpClientFactory;
         }
 
-        public async Task<OperationResult<FirmInfoForSettings>> GetFirmInfoAsync(int firmId)
+        public async Task<OperationResult<FirmInfoForSettings>> GetFirmInfoAsync(int userId)
         {
-            var request = new HttpRequestParams(GetAccountUrlFormat,
-                string.Format(GetAccountUrlFormat, firmId),
-                MetricEntity.FirmAccount,
-                new {FirmId = firmId});
+            const string urlTemplate = "_internal/accounts/{0}";
+        
+            var url = string.Format(urlTemplate, userId);
 
-            return await _httpWrapper.GetAsync<FirmInfoForSettings>(request);
+            var httpClient = _httpClientFactory.CreateClient(_serviceOptions.ServiceName);
+
+            return await httpClient.SendAsync<List<FirmInfoForSettings>>(HttpMethod.Get, url, MetricEntities.FirmService,
+                urlTemplate: urlTemplate);
         }
-
-        public async Task<OperationResult<List<FirmInfoForSettings>>> GetFirmsInfoAsync(List<int> firmIds)
-        {
-            var request = new HttpRequestParamsWithBody<List<int>>(GetAccountsUrl,
-                GetAccountsUrl,
-                MetricEntity.FirmAccount,
-                firmIds,
-                new {FirmIds = firmIds});
-
-            return await _httpWrapper.PostAsync<List<int>, List<FirmInfoForSettings>>(request);
-        }
+}
 ```
 
-Если вы не хотите добавлять  `services.AddCustomHttpClient<XServiceOptions>` для каждого Options, можно вызвать `services.AddCustomHttpClients()` - он автоматически соберет из проекта всех наследников BaseServiceOptions и для них сделает вызов `services.AddCustomHttpClient<>()` 
+`services.AddCustomHttpClient<XServiceOptions>()` делает следующее:
+1. Добавляет `AdditionalHeaders` из `XServiceOptions` в каждый запрос
+2. Добавляет `HttpLoggingHandler`, который логирует Exception/не 200 ответ от стороннего сервиса
+3. Добавляет `HttpProxyFieldsHandler`, который проксирует поля `HeadersToProxy` из `XServiceOptions` в каждом запросе (вытаскивает их из `IHttpContextAccessor`)
+4. Добавляет `Retry+CircuitBreaker+Timeout Policies (Handlers)`, параметры переопределения лежат в `BaseServiceOptions.cs`
+5. Добавляет `HttpMetricsHandler`, который фиксирует время выполнения каждого запроса (каждого ретрая, если включена политика ретраев)
+
+#### RetryPolicies
+```csharp
+{
+    /// <summary>
+    /// Timeout for one request. If you use RetryPolicy - it will be also a timeout for one request (not total time of policy)
+    /// </summary>
+    public TimeSpan TimeOut { get; set; }
+    
+    /// <summary>
+    /// Set 0 if you dont want to use RetryPolicy
+    /// </summary>
+    public int RetryCount { get; set; } = 3;
+    
+    /// <summary>
+    /// Delay between retries
+    /// Median for spreading queries over time
+    /// </summary>
+    public TimeSpan MedianFirstRetryDelay { get; set; } = TimeSpan.FromSeconds(1);
+
+    /// <summary>
+    /// Number of exceptions after which CB will be opened (will stop making requests)
+    /// Set 0 if you dont want to use CB
+    /// </summary>
+    public int CircuitBreakerExceptionsCount { get; set; } = 20;
+    
+    /// <summary>
+    /// Time after which CB will be closed (will make requests)
+    /// </summary>
+    public TimeSpan CircuitBreakerDuration { get; set; } = TimeSpan.FromSeconds(2);
+    
+    /// <summary>
+    /// Http methods to retry
+    /// </summary>
+    public List<string> HttpMethodsToRetry { get; set; }
+}
+```
+Если вы вызовете `AddCustomHttpClient<>`, по умолчанию будут включены все Policies. Если вы хотите выключить RetryPolicy - поставьте значение 0 у параметра `RetryCount`, CB Policy - `CircuitBreakerExceptionsCount`.
+Также можно переопределить политики выполнения конкретного запроса. Для этого в `HttpClient.SendAsync` нужно передать настройку `retryPolicySettings`. NOTE - если передать не NULL, тогда проверки на `HttpMethodsToRetry` не будет (но на `RetryCount` - останется)
 
 ---
 ### Local Cache

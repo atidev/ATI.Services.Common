@@ -26,6 +26,9 @@ public class BaseServiceOptions
     /// </summary>
     public TimeSpan TimeOut { get; set; }
     
+    /// <summary>
+    /// Set 0 if you dont want to use RetryPolicy
+    /// </summary>
     public int RetryCount { get; set; } = 3;
     
     /// <summary>
@@ -36,6 +39,7 @@ public class BaseServiceOptions
 
     /// <summary>
     /// Number of exceptions after which CB will be opened (will stop making requests)
+    /// Set 0 if you dont want to use CB
     /// </summary>
     public int CircuitBreakerExceptionsCount { get; set; } = 20;
     
@@ -58,7 +62,6 @@ public class BaseServiceOptions
     
     /// <summary>
     /// Http methods to retry
-    /// Make empty list if you dont want to use RetryPolicy
     /// </summary>
     public List<string> HttpMethodsToRetry { get; set; }
 }
