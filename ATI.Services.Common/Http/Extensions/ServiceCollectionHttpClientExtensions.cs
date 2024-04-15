@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using ATI.Services.Common.Options;
@@ -36,6 +37,7 @@ public static class ServiceCollectionHttpClientExtensions
                         httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
                     }
                 }
+
                 additionalActions(httpClient);
             })
             .WithLogging<T>()
@@ -43,7 +45,11 @@ public static class ServiceCollectionHttpClientExtensions
             .AddRetryPolicy(settings, logger)
             .AddHostSpecificCircuitBreakerPolicy(settings, logger)
             .AddTimeoutPolicy(settings.TimeOut)
-            .WithMetrics<T>();
+            .WithMetrics<T>()
+            .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+            {
+                ActivityHeadersPropagator = DistributedContextPropagator.CreateNoOutputPropagator()
+            });
 
         return services;
     }

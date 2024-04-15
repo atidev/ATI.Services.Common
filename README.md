@@ -239,6 +239,7 @@ public class FirmsAdapter
     
     /// <summary>
     /// Http methods to retry
+    /// If not set - retry only GET methods
     /// </summary>
     public List<string> HttpMethodsToRetry { get; set; }
 }
