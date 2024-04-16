@@ -22,12 +22,13 @@ public class HttpLoggingHandler<T> : HttpLoggingHandler where T : BaseServiceOpt
 public class HttpLoggingHandler : DelegatingHandler
 {
     private readonly BaseServiceOptions _serviceOptions;
-    private readonly ILogger Logger;
+    private readonly ILogger _logger;
 
     protected HttpLoggingHandler(BaseServiceOptions serviceOptions)
     {
         _serviceOptions = serviceOptions;
-        Logger = LogManager.GetLogger(serviceOptions.ServiceName);
+        _logger = LogManager.GetLogger(serviceOptions.ServiceName);
+        _logger.WarnWithObject("HttpLoggingHandler constructor", new { serviceOptions.ServiceName });
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
@@ -48,13 +49,13 @@ public class HttpLoggingHandler : DelegatingHandler
             var logLevel = responseMessage.StatusCode == HttpStatusCode.InternalServerError
                 ? _serviceOptions.LogLevelOverride(LogLevel.Error)
                 : _serviceOptions.LogLevelOverride(LogLevel.Warn);
-            Logger.LogWithObject(logLevel, ex: null, logMessage, logObjects: responseContent);
+            _logger.LogWithObject(logLevel, ex: null, logMessage, logObjects: responseContent);
 
             return responseMessage;
         }
         catch (Exception ex)
         {
-            Logger.LogWithObject(_serviceOptions.LogLevelOverride(LogLevel.Error),
+            _logger.LogWithObject(_serviceOptions.LogLevelOverride(LogLevel.Error),
                 ex,
                 logObjects: new
                 {

@@ -3,9 +3,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using ATI.Services.Common.Context;
 using ATI.Services.Common.Localization;
+using ATI.Services.Common.Logging;
 using ATI.Services.Common.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using NLog;
 
 namespace ATI.Services.Common.Http.HttpHandlers;
 
@@ -21,11 +23,13 @@ public class HttpProxyFieldsHandler : DelegatingHandler
 {
     private readonly BaseServiceOptions serviceOptions;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
     protected HttpProxyFieldsHandler(BaseServiceOptions serviceOptions, IHttpContextAccessor httpContextAccessor)
     {
         this.serviceOptions = serviceOptions;
         _httpContextAccessor = httpContextAccessor;
+        Logger.WarnWithObject("HttpProxyFieldsHandler constructor", new { serviceOptions.ServiceName });
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)

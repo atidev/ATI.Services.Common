@@ -3,9 +3,11 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using ATI.Services.Common.Http.Extensions;
+using ATI.Services.Common.Logging;
 using ATI.Services.Common.Metrics;
 using ATI.Services.Common.Options;
 using Microsoft.Extensions.Options;
+using NLog;
 
 namespace ATI.Services.Common.Http.HttpHandlers;
 
@@ -20,11 +22,14 @@ public class HttpMetricsHandler<T> : HttpMetricsHandler where T : BaseServiceOpt
 public class HttpMetricsHandler : DelegatingHandler
 {
     private readonly MetricsInstance _metrics;
+    private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
     protected HttpMetricsHandler(MetricsFactory metricsFactory, BaseServiceOptions serviceOptions)
     {
         _metrics = metricsFactory.CreateHttpClientMetricsFactory(serviceOptions.ServiceName,
             serviceOptions.ServiceName, serviceOptions.LongRequestTime);
+        
+        Logger.WarnWithObject("HttpMetricsHandler constructor", new { serviceOptions.ServiceName });
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
