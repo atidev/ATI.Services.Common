@@ -17,7 +17,9 @@ namespace ATI.Services.Common.Sql;
 [PublicAPI]
 public class PostgresDapper
 {
-    private readonly DataBaseOptions _options;
+    public DataBaseOptions _options { get; set; }
+
+    //private DataBaseOptions _options;
     private readonly MetricsInstance _metrics;
     private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
     private const string ReadMetricTypeLabel = "read";

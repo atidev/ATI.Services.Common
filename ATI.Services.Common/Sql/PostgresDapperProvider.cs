@@ -26,8 +26,10 @@ public class PostgresDapperProvider
     {
         foreach (var kvDataBaseOptions in dataBaseOptions)
         {
-            if(_configuredDataBases.TryGetValue(kvDataBaseOptions.Key, out var config))
-                _configuredDataBases[kvDataBaseOptions.Key] = new PostgresDapper(kvDataBaseOptions.Value, metricsFactory);
+            if (_configuredDataBases.TryGetValue(kvDataBaseOptions.Key, out var config))
+            {
+                _configuredDataBases[kvDataBaseOptions.Key]._options = kvDataBaseOptions.Value;
+            }
             else
                 _configuredDataBases.Add(kvDataBaseOptions.Key, new PostgresDapper(kvDataBaseOptions.Value, metricsFactory));
         }
