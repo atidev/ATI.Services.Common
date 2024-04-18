@@ -597,8 +597,20 @@ public class PostgresDapper
     
     private string BuildConnectionString()
     {
-        var connectionString = _options.ConnectionString;
-        var builder = new NpgsqlConnectionStringBuilder(connectionString);
+        var builder = new NpgsqlConnectionStringBuilder();
+
+        if (_options.ConnectionString != null)
+        {
+            builder.ConnectionString = _options.ConnectionString;
+            return builder.ToString();
+        }
+
+        if (_options.Port != null 
+            && int.TryParse(_options.Port, out var port))
+        {
+            builder.Port = port;
+        }
+
         if (_options.Server != null)
         {
             builder.Host = _options.Server;
