@@ -12,9 +12,9 @@ public class PostgresDapperProvider
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
     private readonly Dictionary<string, PostgresDapper> _configuredDataBases = new();
 
-    public PostgresDapperProvider(IOptions<DbManagerOptions> dbManagerOptions, MetricsFactory metricsFactory)
+    public PostgresDapperProvider(IOptionsMonitor<DbManagerOptions> dbManagerOptions, MetricsFactory metricsFactory)
     {
-        foreach (var kvDataBaseOptions in dbManagerOptions.Value.DataBaseOptions)
+        foreach (var kvDataBaseOptions in dbManagerOptions.CurrentValue.DataBaseOptions)
         {
             _configuredDataBases.Add(kvDataBaseOptions.Key, new PostgresDapper(kvDataBaseOptions.Value, metricsFactory));
         }

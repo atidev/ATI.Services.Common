@@ -88,7 +88,7 @@ public class PostgresDapper
                 longTimeRequest,
                 FullMetricTypeLabel);
 
-            await using var connection = new NpgsqlConnection(_options.ConnectionString);
+            await using var connection = new NpgsqlConnection(BuildConnectionString());
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -132,7 +132,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
-            await using var connection = new NpgsqlConnection(_options.ConnectionString);
+            await using var connection = new NpgsqlConnection(BuildConnectionString());
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -177,7 +177,7 @@ public class PostgresDapper
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
 
-            await using var connection = new NpgsqlConnection(_options.ConnectionString);
+            await using var connection = new NpgsqlConnection(BuildConnectionString());
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -230,7 +230,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
-            await using var connection = new NpgsqlConnection(_options.ConnectionString);
+            await using var connection = new NpgsqlConnection(BuildConnectionString());
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -289,7 +289,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
-            await using var connection = new NpgsqlConnection(_options.ConnectionString);
+            await using var connection = new NpgsqlConnection(BuildConnectionString());
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -334,7 +334,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
-            await using var connection = new NpgsqlConnection(_options.ConnectionString);
+            await using var connection = new NpgsqlConnection(BuildConnectionString());
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -386,7 +386,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
-            await using var connection = new NpgsqlConnection(_options.ConnectionString);
+            await using var connection = new NpgsqlConnection(BuildConnectionString());
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -447,7 +447,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
-            await using var connection = new NpgsqlConnection(_options.ConnectionString);
+            await using var connection = new NpgsqlConnection(BuildConnectionString());
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -493,7 +493,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? _options.Timeout.Seconds;
-            await using var connection = new NpgsqlConnection(_options.ConnectionString);
+            await using var connection = new NpgsqlConnection(BuildConnectionString());
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -593,5 +593,43 @@ public class PostgresDapper
     private void LoggOnNotice(object sender, NpgsqlNoticeEventArgs e)
     {
         _logger.Warn(e.Notice.MessageText);
+    }
+    
+    private string BuildConnectionString()
+    {
+        var connectionString = _options.ConnectionString;
+        var builder = new NpgsqlConnectionStringBuilder(connectionString);
+        if (_options.Server != null)
+        {
+            builder.Host = _options.Server;
+        }
+        if (_options.Database != null)
+        {
+            builder.Database = _options.Database;
+        }
+        if (_options.UserName != null)
+        {
+            builder.Username = _options.UserName;
+        }
+        if (_options.Password != null)
+        {
+            builder.Password = _options.Password;
+        }
+        if (_options.MinPoolSize != null)
+        {
+            builder.MinPoolSize = _options.MinPoolSize.Value;
+        }
+        if (_options.MaxPoolSize != null)
+        {
+            builder.MaxPoolSize = _options.MaxPoolSize.Value;
+        }
+        if (_options.ConnectTimeout != null)
+        {
+            builder.ConnectionLifetime = _options.ConnectTimeout.Value;
+        }
+
+        builder.TrustServerCertificate = _options.TrustServerCertificate ?? true;
+
+        return builder.ToString();
     }
 }
