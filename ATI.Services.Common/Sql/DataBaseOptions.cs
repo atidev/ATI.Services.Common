@@ -10,7 +10,7 @@ public class DataBaseOptions
     public IDictionary<string, int> TimeoutDictionary { get; set; } = new Dictionary<string, int>();
     public TimeSpan? LongTimeRequest { get; set; }
     
-    public string Port { get; set; }
+    public int? Port { get; set; }
     public string Server { get; set; }
     public string Database { get; set; }
     public string UserName { get; set; }

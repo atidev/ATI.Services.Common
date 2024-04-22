@@ -606,10 +606,9 @@ public class PostgresDapper
             return builder.ToString();
         }
 
-        if (_options.Port != null 
-            && int.TryParse(_options.Port, out var port))
+        if (_options.Port != null)
         {
-            builder.Port = port;
+            builder.Port = _options.Port.Value;
         }
 
         if (_options.Server != null)
