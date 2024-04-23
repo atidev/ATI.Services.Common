@@ -17,7 +17,7 @@ namespace ATI.Services.Common.Sql;
 [PublicAPI]
 public class PostgresDapper
 {
-    public DataBaseOptions _options { get; set; }
+    public DataBaseOptions Options { get; set; }
 
     private readonly MetricsInstance _metrics;
     private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
@@ -31,8 +31,8 @@ public class PostgresDapper
 
     public PostgresDapper(DataBaseOptions options, MetricsFactory metricsFactory)
     {
-        _options = options;
-        _metrics = metricsFactory.CreateSqlMetricsFactory(nameof(PostgresDapper), _options.LongTimeRequest, "type");
+        Options = options;
+        _metrics = metricsFactory.CreateSqlMetricsFactory(nameof(PostgresDapper), Options.LongTimeRequest, "type");
     }
 
     public async Task<OperationResult> ExecuteFunctionAsync(
@@ -493,7 +493,7 @@ public class PostgresDapper
                 longTimeRequest,
                 FullMetricTypeLabel);
 
-            var timeout = timeoutInSeconds ?? _options.Timeout.Seconds;
+            var timeout = timeoutInSeconds ?? Options.Timeout.Seconds;
             await using var connection = new NpgsqlConnection(BuildConnectionString());
 
             if (receiveNotice)
@@ -539,9 +539,9 @@ public class PostgresDapper
 
     private int GetTimeOut(string procedureName)
     {
-        return _options.TimeoutDictionary.TryGetValue(procedureName, out var tempTimeout)
+        return Options.TimeoutDictionary.TryGetValue(procedureName, out var tempTimeout)
             ? tempTimeout
-            : _options.Timeout.Seconds;
+            : Options.Timeout.Seconds;
     }
 
     private void LogWithParameters(Exception e, string procedureName, string metricEntity, DynamicParameters parameters)
@@ -598,49 +598,50 @@ public class PostgresDapper
     
     private string BuildConnectionString()
     {
+        var options = Options;
         var builder = new NpgsqlConnectionStringBuilder();
 
-        if (_options.ConnectionString != null)
+        if (options.ConnectionString != null)
         {
-            builder.ConnectionString = _options.ConnectionString;
+            builder.ConnectionString = options.ConnectionString;
             return builder.ToString();
         }
 
-        if (_options.Port != null)
+        if (options.Port != null)
         {
-            builder.Port = _options.Port.Value;
+            builder.Port = options.Port.Value;
         }
 
-        if (_options.Server != null)
+        if (options.Server != null)
         {
-            builder.Host = _options.Server;
+            builder.Host = options.Server;
         }
-        if (_options.Database != null)
+        if (options.Database != null)
         {
-            builder.Database = _options.Database;
+            builder.Database = options.Database;
         }
-        if (_options.UserName != null)
+        if (options.UserName != null)
         {
-            builder.Username = _options.UserName;
+            builder.Username = options.UserName;
         }
-        if (_options.Password != null)
+        if (options.Password != null)
         {
-            builder.Password = _options.Password;
+            builder.Password = options.Password;
         }
-        if (_options.MinPoolSize != null)
+        if (options.MinPoolSize != null)
         {
-            builder.MinPoolSize = _options.MinPoolSize.Value;
+            builder.MinPoolSize = options.MinPoolSize.Value;
         }
-        if (_options.MaxPoolSize != null)
+        if (options.MaxPoolSize != null)
         {
-            builder.MaxPoolSize = _options.MaxPoolSize.Value;
+            builder.MaxPoolSize = options.MaxPoolSize.Value;
         }
-        if (_options.ConnectTimeout != null)
+        if (options.ConnectTimeout != null)
         {
-            builder.ConnectionLifetime = _options.ConnectTimeout.Value;
+            builder.ConnectionLifetime = options.ConnectTimeout.Value;
         }
 
-        builder.TrustServerCertificate = _options.TrustServerCertificate ?? true;
+        builder.TrustServerCertificate = options.TrustServerCertificate ?? true;
 
         return builder.ToString();
     }
