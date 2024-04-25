@@ -645,6 +645,12 @@ public class PostgresDapper
             builder.KeepAlive = options.KeepAlive.Value;
         }
 
+        if (options.IdleConnectTimeout != null)
+        {
+            builder.ConnectionIdleLifetime = options.IdleConnectTimeout.Value;
+        }
+        
+
         builder.TrustServerCertificate = options.TrustServerCertificate ?? true;
 
         return builder.ToString();
