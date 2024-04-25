@@ -3,6 +3,7 @@ using ATI.Services.Common.Metrics;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using NLog;
+using Npgsql;
 
 namespace ATI.Services.Common.Sql;
 
@@ -28,7 +29,9 @@ public class PostgresDapperProvider
         {
             if (_configuredDataBases.TryGetValue(kvDataBaseOptions.Key, out var config))
             {
+                NpgsqlConnection.ClearPool(new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(_configuredDataBases[kvDataBaseOptions.Key].Options)));
                 _configuredDataBases[kvDataBaseOptions.Key].Options = kvDataBaseOptions.Value;
+                
             }
             else
                 _configuredDataBases.Add(kvDataBaseOptions.Key, new PostgresDapper(kvDataBaseOptions.Value, metricsFactory));

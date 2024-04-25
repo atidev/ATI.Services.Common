@@ -29,7 +29,7 @@ public class PostgresDapper
     private const string FunctionQuery = "SELECT * FROM";
     private const string ProcedureQuery = "CALL";
 
-    public PostgresDapper(DataBaseOptions options, MetricsFactory metricsFactory)
+    public  PostgresDapper(DataBaseOptions options, MetricsFactory metricsFactory)
     {
         Options = options;
         _metrics = metricsFactory.CreateSqlMetricsFactory(nameof(PostgresDapper), Options.LongTimeRequest, "type");
@@ -89,7 +89,7 @@ public class PostgresDapper
                 longTimeRequest,
                 FullMetricTypeLabel);
 
-            await using var connection = new NpgsqlConnection(BuildConnectionString());
+            await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -133,7 +133,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
-            await using var connection = new NpgsqlConnection(BuildConnectionString());
+            await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -178,7 +178,7 @@ public class PostgresDapper
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
 
-            await using var connection = new NpgsqlConnection(BuildConnectionString());
+            await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -231,7 +231,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
-            await using var connection = new NpgsqlConnection(BuildConnectionString());
+            await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -290,7 +290,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
-            await using var connection = new NpgsqlConnection(BuildConnectionString());
+            await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -335,7 +335,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
-            await using var connection = new NpgsqlConnection(BuildConnectionString());
+            await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -387,7 +387,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
-            await using var connection = new NpgsqlConnection(BuildConnectionString());
+            await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -448,7 +448,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
-            await using var connection = new NpgsqlConnection(BuildConnectionString());
+            await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -494,7 +494,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? Options.Timeout.Seconds;
-            await using var connection = new NpgsqlConnection(BuildConnectionString());
+            await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -594,65 +594,5 @@ public class PostgresDapper
     private void LoggOnNotice(object sender, NpgsqlNoticeEventArgs e)
     {
         _logger.Warn(e.Notice.MessageText);
-    }
-    
-    private string BuildConnectionString()
-    {
-        var options = Options;
-        var builder = new NpgsqlConnectionStringBuilder();
-
-        if (options.ConnectionString != null)
-        {
-            builder.ConnectionString = options.ConnectionString;
-            return builder.ToString();
-        }
-
-        if (options.Port != null)
-        {
-            builder.Port = options.Port.Value;
-        }
-
-        if (options.Server != null)
-        {
-            builder.Host = options.Server;
-        }
-        if (options.Database != null)
-        {
-            builder.Database = options.Database;
-        }
-        if (options.UserName != null)
-        {
-            builder.Username = options.UserName;
-        }
-        if (options.Password != null)
-        {
-            builder.Password = options.Password;
-        }
-        if (options.MinPoolSize != null)
-        {
-            builder.MinPoolSize = options.MinPoolSize.Value;
-        }
-        if (options.MaxPoolSize != null)
-        {
-            builder.MaxPoolSize = options.MaxPoolSize.Value;
-        }
-        if (options.ConnectTimeout != null)
-        {
-            builder.ConnectionLifetime = options.ConnectTimeout.Value;
-        }
-        if (options.KeepAlive != null)
-        {
-            builder.KeepAlive = options.KeepAlive.Value;
-        }
-
-        if (options.IdleConnectTimeout != null)
-        {
-            builder.ConnectionIdleLifetime = options.IdleConnectTimeout.Value;
-        }
-        
-
-        builder.TrustServerCertificate = options.TrustServerCertificate ?? true;
-
-        return builder.ToString();
     }
 }
