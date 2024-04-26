@@ -19,7 +19,6 @@ public class DataBaseOptions
     public int? MinPoolSize { get; set; }
     public int? MaxPoolSize { get; set; }
     public int? ConnectTimeout { get; set; }
-    public int? IdleConnectTimeout { get; set; }
     public int? ConnectRetryCount { get; set; }
     public int? ConnectRetryInterval { get; set; }
     public bool? TrustServerCertificate { get; set; }
