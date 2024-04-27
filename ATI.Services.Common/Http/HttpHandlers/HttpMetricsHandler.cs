@@ -13,7 +13,7 @@ namespace ATI.Services.Common.Http.HttpHandlers;
 
 public class HttpMetricsHandler<T> : HttpMetricsHandler where T : BaseServiceOptions
 {
-    public HttpMetricsHandler(MetricsFactory metricsFactory, IOptions<T> serviceOptions) 
+    public HttpMetricsHandler(MetricsFactory metricsFactory, IOptions<T> serviceOptions)
         : base(metricsFactory, serviceOptions.Value)
     {
     }
@@ -28,7 +28,7 @@ public class HttpMetricsHandler : DelegatingHandler
     {
         _metrics = metricsFactory.CreateHttpClientMetricsFactory(serviceOptions.ServiceName,
             serviceOptions.ServiceName, serviceOptions.LongRequestTime);
-        
+
         Logger.WarnWithObject("HttpMetricsHandler constructor", new { serviceOptions.ServiceName });
     }
 
@@ -40,14 +40,7 @@ public class HttpMetricsHandler : DelegatingHandler
         using (_metrics.CreateLoggingMetricsTimer(metricEntity,
                    $"{request.Method.Method}:{urlTemplate}"))
         {
-            try
-            {
-                return await base.SendAsync(request, ct);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            return await base.SendAsync(request, ct);
         }
     }
 }

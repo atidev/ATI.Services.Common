@@ -17,7 +17,8 @@ public static class HttpResponseMessageExtensions
     [PublicAPI]
     public static async Task<OperationResult<TResponse>> ParseHttpResponseAsync<TResponse>(this HttpResponseMessage responseMessage, JsonSerializerOptions serializerOptions)
     {
-        if (!responseMessage.IsSuccessStatusCode) return new OperationResult<TResponse>(OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
+        if (!responseMessage.IsSuccessStatusCode) 
+            return new OperationResult<TResponse>(OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
 
         try
         {
@@ -41,7 +42,8 @@ public static class HttpResponseMessageExtensions
     [PublicAPI]
     public static async Task<OperationResult<byte[]>> GetByteArrayFromHttpResponseAsync(this HttpResponseMessage responseMessage)
     {
-        if (!responseMessage.IsSuccessStatusCode) return new OperationResult<byte[]>(OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
+        if (!responseMessage.IsSuccessStatusCode) 
+            return new OperationResult<byte[]>(OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
 
         try
         {

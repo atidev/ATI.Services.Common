@@ -25,6 +25,7 @@ public static class HttpClientExtensions
     };
 
 
+    [PublicAPI]
     public static void SetBaseFields(
         this HttpClient httpClient,
         string serviceAsClientName,
@@ -64,7 +65,6 @@ public static class HttpClientExtensions
             using var requestMessage = CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity, urlTemplate, headers, retryPolicySettings);
 
             using var responseMessage = await httpClient.SendAsync(requestMessage);
-            
             return await responseMessage.ParseHttpResponseAsync<TResponse>(serializerOptions ?? SnakeCaseSerializerOptions);
         }
         catch (Exception ex)

@@ -47,7 +47,9 @@ public class HttpProxyFieldsHandler : DelegatingHandler
         string acceptLanguage;
         if (serviceOptions.AddCultureToRequest
             && (acceptLanguage = FlowContext<RequestMetaData>.Current.AcceptLanguage) != null)
+        {
             request.Headers.Add("Accept-Language", acceptLanguage);
+        }
 
         return await base.SendAsync(request, ct);
     }

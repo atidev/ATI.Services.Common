@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using ATI.Services.Common.Options;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
@@ -29,7 +28,6 @@ public static class ServiceCollectionHttpClientExtensions
 
         services.AddHttpClient(settings.ServiceName, httpClient =>
             {
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 if (settings.AdditionalHeaders is { Count: > 0 })
                 {
                     foreach (var header in settings.AdditionalHeaders)

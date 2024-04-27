@@ -33,23 +33,27 @@ public class HttpLoggingHandler : DelegatingHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
     {
-        const string LogMessageTemplate =
-            "Сервис:{0} в ответ на запрос [HTTP {1} {2}] вернул ответ с статус кодом {3}.";
+        const string logMessage = "Unsuccess status code from service";
 
         try
         {
             var responseMessage = await base.SendAsync(request, ct);
             if (responseMessage.IsSuccessStatusCode)
                 return responseMessage;
-
-            var logMessage = string.Format(LogMessageTemplate, _serviceOptions.ServiceName, request.Method,
-                responseMessage.RequestMessage.RequestUri, responseMessage.StatusCode);
+            
             var responseContent = await responseMessage.Content.ReadAsStringAsync(ct);
 
             var logLevel = responseMessage.StatusCode == HttpStatusCode.InternalServerError
                 ? _serviceOptions.LogLevelOverride(LogLevel.Error)
                 : _serviceOptions.LogLevelOverride(LogLevel.Warn);
-            _logger.LogWithObject(logLevel, ex: null, logMessage, logObjects: responseContent);
+            _logger.LogWithObject(logLevel, ex: null, logMessage, logObjects: new
+            {
+                _serviceOptions.ServiceName,
+                request.Method,
+                responseMessage.RequestMessage.RequestUri,
+                responseMessage.StatusCode,
+                Content = responseContent
+            });
 
             return responseMessage;
         }
@@ -66,7 +70,7 @@ public class HttpLoggingHandler : DelegatingHandler
                     FullUri = request.RequestUri
                 });
 
-            // return 500 to not provoke HttpClientExtensions methods catch block - otherwise we will get duplicate error logs
+            // return 500 instead of exception to not provoke HttpClientExtensions methods catch block - otherwise we will get duplicate error logs
             return new HttpResponseMessage(HttpStatusCode.InternalServerError);
         }
     }
