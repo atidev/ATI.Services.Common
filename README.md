@@ -170,20 +170,20 @@ app.UseMetrics(); //Добавляем мидлвару
 
 Если вы хотите написать адаптер для похода в чужой сервис, нужно:
 1. Завести класс `XServiceOptions`, отнаследовать его от `BaseServiceOptions`
-2. Завести в `appsettings.json` секцию `XServiceOptions`, описать/переопределить все необходимые параметры. Указать `UseHttpClientFactory: "true"`
+2. Завести в `appsettings.json` секцию `XServiceOptions`, описать/переопределить все необходимые параметры
 3. Зарегистрируйте его в `startup.cs` - `services.ConfigureByName<XServiceOptions>`
-4. Добавьте в `startup.cs` `services.AddCustomHttpClient<XServiceOptions>`. Это добавит в `HttpClientFactory` HttpClient под именем настройки `ServiceName`
+4. Добавьте в `startup.cs` `services.AddCustomHttpClient<XAdapter, XServiceOptions>`
 5. Напишите свой адаптер, пример использования:
 ```csharp
 public class FirmsAdapter
 {
         private readonly FirmServiceOptions _options;
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly HttpClient _httpClient;
 
-        public FirmsAdapter(IOptions<FirmServiceOptions> options, IHttpClientFactory httpClientFactory)
+        public FirmsAdapter(IOptions<FirmServiceOptions> options, HttpClient httpClient)
         {
             _options = options.Value;
-            _httpClientFactory = httpClientFactory;
+            _httpClient = httpClient;
         }
 
         public async Task<OperationResult<FirmInfoForSettings>> GetFirmInfoAsync(int userId)
@@ -192,20 +192,22 @@ public class FirmsAdapter
         
             var url = string.Format(urlTemplate, userId);
 
-            var httpClient = _httpClientFactory.CreateClient(_serviceOptions.ServiceName);
-
-            return await httpClient.SendAsync<List<FirmInfoForSettings>>(HttpMethod.Get, url, MetricEntities.FirmService,
+            return await _httpClient.SendAsync<List<FirmInfoForSettings>>(HttpMethod.Get, url, MetricEntities.FirmService,
                 urlTemplate: urlTemplate);
         }
 }
 ```
 
-`services.AddCustomHttpClient<XServiceOptions>()` делает следующее:
-1. Добавляет `AdditionalHeaders` из `XServiceOptions` в каждый запрос
+`services.AddCustomHttpClient<>()` делает следующее:
+1. Добавляет `AdditionalHeaders` из `TServiceOptions` в каждый запрос
 2. Добавляет `HttpLoggingHandler`, который логирует Exception/не 200 ответ от стороннего сервиса
-3. Добавляет `HttpProxyFieldsHandler`, который проксирует поля `HeadersToProxy` из `XServiceOptions` в каждом запросе (вытаскивает их из `IHttpContextAccessor`)
+3. Добавляет `HttpProxyFieldsHandler`, который проксирует поля `HeadersToProxy` из `TServiceOptions` в каждом запросе (вытаскивает их из `IHttpContextAccessor`)
 4. Добавляет `Retry+CircuitBreaker+Timeout Policies (Handlers)`, параметры переопределения лежат в `BaseServiceOptions.cs`
 5. Добавляет `HttpMetricsHandler`, который фиксирует время выполнения каждого запроса (каждого ретрая, если включена политика ретраев)
+
+Есть 2 generic перегрузки:
+1. `services.AddCustomHttpClient<TAdapter, TServiceOptions>()` Добавляет `TypedHttpClient` в класс `TAdapter` - https://learn.microsoft.com/en-us/dotnet/core/extensions/httpclient-factory#typed-clients
+2. `services.AddCustomHttpClient<TServiceOptions>()` Добавляет `NamedHttpClient` (по параметру `TServiceOptions.ServiceName`) - https://learn.microsoft.com/en-us/dotnet/core/extensions/httpclient-factory#named-clients
 
 #### RetryPolicies
 ```csharp
@@ -245,7 +247,7 @@ public class FirmsAdapter
 }
 ```
 Если вы вызовете `AddCustomHttpClient<>`, по умолчанию будут включены все Policies. Если вы хотите выключить RetryPolicy - поставьте значение 0 у параметра `RetryCount`, CB Policy - `CircuitBreakerExceptionsCount`.
-Также можно переопределить политики выполнения конкретного запроса. Для этого в `HttpClient.SendAsync` нужно передать настройку `retryPolicySettings`. NOTE - если передать не NULL, тогда проверки на `HttpMethodsToRetry` не будет (но на `RetryCount` - останется)
+Также можно переопределить политики выполнения конкретного запроса. Для этого в `HttpClient.SendAsync` нужно передать настройку `retryPolicySettings`. NOTE - если передать не NULL, тогда проверки на `TServiceOptions.HttpMethodsToRetry` не будет (так как считаем, что `retryPolicySettings` имеет бОльший вес; но проверка на `RetryCount` - останется)
 
 ---
 ### Local Cache

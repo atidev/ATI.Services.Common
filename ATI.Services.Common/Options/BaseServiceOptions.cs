@@ -65,4 +65,11 @@ public class BaseServiceOptions
     /// If not set - retry only GET methods
     /// </summary>
     public List<string> HttpMethodsToRetry { get; set; }
+
+    /// <summary>
+    /// Lifetime of the connection
+    /// Must be not infinite if you use HttpClient in static Typed Client 
+    /// https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines
+    /// </summary>
+    public TimeSpan PooledConnectionLifetime { get; set; } = TimeSpan.FromMinutes(15);
 }
