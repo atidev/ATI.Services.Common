@@ -177,12 +177,10 @@ app.UseMetrics(); //Добавляем мидлвару
 ```csharp
 public class FirmsAdapter
 {
-        private readonly FirmServiceOptions _options;
         private readonly HttpClient _httpClient;
 
-        public FirmsAdapter(IOptions<FirmServiceOptions> options, HttpClient httpClient)
+        public FirmsAdapter(HttpClient httpClient)
         {
-            _options = options.Value;
             _httpClient = httpClient;
         }
 
