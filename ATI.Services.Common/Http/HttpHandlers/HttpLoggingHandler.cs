@@ -43,7 +43,8 @@ public class HttpLoggingHandler : DelegatingHandler
             
             var responseContent = await responseMessage.Content.ReadAsStringAsync(ct);
 
-            var logLevel = responseMessage.StatusCode == HttpStatusCode.InternalServerError
+            // log every 5XX status code as error
+            var logLevel = responseMessage.StatusCode >= HttpStatusCode.InternalServerError
                 ? _serviceOptions.LogLevelOverride(LogLevel.Error)
                 : _serviceOptions.LogLevelOverride(LogLevel.Warn);
             _logger.LogWithObject(logLevel, ex: null, logMessage, logObjects: new
