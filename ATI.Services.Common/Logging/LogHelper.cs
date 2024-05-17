@@ -13,11 +13,11 @@ namespace ATI.Services.Common.Logging
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     public class LogHelper
     {
-        public static void ConfigureNLogFromAppSettings()
+        public static LogFactory ConfigureNLogFromAppSettings()
         {
             var nLogOptions = ConfigurationManager.ConfigurationRoot.GetSection("NLogOptions").Get<NLogOptions>();
             var nLogConfigurator = new NLogConfigurator(nLogOptions);
-            nLogConfigurator.ConfigureNLog();
+            return nLogConfigurator.ConfigureNLog();
         }
         
         public static void ConfigureNlog(IWebHostEnvironment env)
