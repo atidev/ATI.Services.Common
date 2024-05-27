@@ -15,7 +15,7 @@ namespace ATI.Services.Common.Logging
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     public class LogHelper
     {
-        public static LogFactory ConfigureNLogFromAppSettings(IConfigurationBuilder builder = null)
+        public static LogFactory ConfigureNLogFromAppSettings()
         {
             var nLogOptions = ConfigurationManager.ConfigurationRoot.GetSection("NLogOptions").Get<NLogOptions>();
             var nLogConfigurator = new NLogConfigurator(nLogOptions);

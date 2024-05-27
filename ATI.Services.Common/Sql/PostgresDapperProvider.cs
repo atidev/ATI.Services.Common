@@ -31,7 +31,7 @@ public class PostgresDapperProvider
             {
                 //Если кто-то сменил change token IOptionsMonitor, и не сменил креды от бд, не нужно сбрасывать коннекшен пул
                 if (_configuredDataBases[kvDataBaseOptions.Key].Options.UserName == kvDataBaseOptions.Value.UserName 
-                    || _configuredDataBases[kvDataBaseOptions.Key].Options.Password == kvDataBaseOptions.Value.Password)
+                    && _configuredDataBases[kvDataBaseOptions.Key].Options.Password == kvDataBaseOptions.Value.Password)
                     continue;
                 
                 NpgsqlConnection.ClearPool(new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(_configuredDataBases[kvDataBaseOptions.Key].Options)));
