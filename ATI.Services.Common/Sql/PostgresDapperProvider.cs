@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using ATI.Services.Common.Metrics;
 using JetBrains.Annotations;
@@ -11,13 +12,13 @@ namespace ATI.Services.Common.Sql;
 public class PostgresDapperProvider
 {
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    private readonly Dictionary<string, PostgresDapper> _configuredDataBases = new();
+    private readonly ConcurrentDictionary<string, PostgresDapper> _configuredDataBases = new();
 
     public PostgresDapperProvider(IOptionsMonitor<DbManagerOptions> dbManagerOptions, MetricsFactory metricsFactory)
     {
         foreach (var kvDataBaseOptions in dbManagerOptions.CurrentValue.DataBaseOptions)
         {
-            _configuredDataBases.Add(kvDataBaseOptions.Key, new PostgresDapper(kvDataBaseOptions.Value, metricsFactory));
+            _configuredDataBases.TryAdd(kvDataBaseOptions.Key, new PostgresDapper(kvDataBaseOptions.Value, metricsFactory));
         }
         
         dbManagerOptions.OnChange(o => GetConfiguredDataBases(o.DataBaseOptions, metricsFactory));
@@ -30,16 +31,16 @@ public class PostgresDapperProvider
             if (_configuredDataBases.TryGetValue(kvDataBaseOptions.Key, out var config))
             {
                 //Если кто-то сменил change token IOptionsMonitor, и не сменил креды от бд, не нужно сбрасывать коннекшен пул
-                if (_configuredDataBases[kvDataBaseOptions.Key].Options.UserName == kvDataBaseOptions.Value.UserName 
-                    && _configuredDataBases[kvDataBaseOptions.Key].Options.Password == kvDataBaseOptions.Value.Password)
+                if (config.Options.UserName == kvDataBaseOptions.Value.UserName 
+                    && config.Options.Password == kvDataBaseOptions.Value.Password)
                     continue;
                 
                 NpgsqlConnection.ClearPool(new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(_configuredDataBases[kvDataBaseOptions.Key].Options)));
-                _configuredDataBases[kvDataBaseOptions.Key].Options = kvDataBaseOptions.Value;
+                config.Options = kvDataBaseOptions.Value;
                 
             }
             else
-                _configuredDataBases.Add(kvDataBaseOptions.Key, new PostgresDapper(kvDataBaseOptions.Value, metricsFactory));
+                _configuredDataBases.TryAdd(kvDataBaseOptions.Key, new PostgresDapper(kvDataBaseOptions.Value, metricsFactory));
         }
     }
 
