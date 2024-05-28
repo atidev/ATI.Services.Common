@@ -6,7 +6,7 @@ using ATI.Services.Common.Metrics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace ATI.Services.Common.Variables;
+namespace ATI.Services.Common.Http;
 
 internal static class HttpContextHelper
 {

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using ATI.Services.Common.Serializers;
-using ATI.Services.Common.Serializers.SystemTextJsonSerialization;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -39,7 +39,7 @@ namespace ATI.Services.Common.Metrics.HttpWrapper
         public Dictionary<string, string> Headers { get; set; } = new();
         public List<string> HeadersToProxy { get; set; } = new();
         public bool PropagateActivity { get; set; }
-        
+
         public bool UseHttpClientFactory { get; set; }
 
         public Func<LogLevel, LogLevel> LogLevelOverride { get; set; } = level => level;
@@ -79,9 +79,11 @@ namespace ATI.Services.Common.Metrics.HttpWrapper
                 }
                 else
                 {
-                    var jsonSerializerSettings = new JsonSerializerOptions()
+                    var jsonSerializerSettings = new JsonSerializerOptions
                     {
-                        PropertyNamingPolicy = new SnakeCaseNamingPolicy()
+                        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseUpper,
+                        PropertyNameCaseInsensitive = true,
+                        Converters = { new JsonStringEnumConverter() }
                     };
                     Serializer.SetSerializeSettings(jsonSerializerSettings);
                 }
