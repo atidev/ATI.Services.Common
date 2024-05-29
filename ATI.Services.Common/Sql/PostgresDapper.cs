@@ -89,9 +89,11 @@ public class PostgresDapper
                 longTimeRequest,
                 FullMetricTypeLabel);
 
+            _logger.WarnWithObject($"Connection string for {actionName}", new { Options });
+            _logger.WarnWithObject($"Connection string for {actionName}", new { connectionString = ConnectionStringBuilder.BuildPostgresConnectionString(Options)});
             await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
-
-           _logger.WarnWithObject($"Connection string for {actionName}", new { connection.ConnectionString });
+            _logger.WarnWithObject($"Connection string for {actionName}", new { connection.ConnectionString });
+            
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
 
@@ -134,8 +136,10 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
+            
+            _logger.WarnWithObject($"Connection string for {functionName}", new { Options });
+            _logger.WarnWithObject($"Connection string for {functionName}", new { connectionString = ConnectionStringBuilder.BuildPostgresConnectionString(Options)});
             await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
-
             _logger.WarnWithObject($"Connection string for {functionName}", new { connection.ConnectionString });
             
             if (receiveNotice)
@@ -181,6 +185,8 @@ public class PostgresDapper
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
 
+            _logger.WarnWithObject($"Connection string for {functionName}", new { Options });
+            _logger.WarnWithObject($"Connection string for {functionName}", new { connectionString = ConnectionStringBuilder.BuildPostgresConnectionString(Options)});
             await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
             
             _logger.WarnWithObject($"Connection string for {functionName}", new { connection.ConnectionString });
@@ -236,8 +242,10 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
+            
+            _logger.WarnWithObject($"Connection string for {functionName}", new { Options });
+            _logger.WarnWithObject($"Connection string for {functionName}", new { connectionString = ConnectionStringBuilder.BuildPostgresConnectionString(Options) });
             await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
-
             _logger.WarnWithObject($"Connection string for {functionName}", new { connection.ConnectionString });
 
             if (receiveNotice)
@@ -297,8 +305,10 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
+            
+            _logger.WarnWithObject($"Connection string for {functionName}", new { Options });
+            _logger.WarnWithObject($"Connection string for {functionName}", new { connectionString = ConnectionStringBuilder.BuildPostgresConnectionString(Options)});
             await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
-
             _logger.WarnWithObject($"Connection string for {functionName}", new { connection.ConnectionString });
             
             if (receiveNotice)
@@ -344,6 +354,9 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
+            
+            _logger.WarnWithObject($"Connection string for {functionName}", new { Options });
+            _logger.WarnWithObject($"Connection string for {functionName}", new { connectionString = ConnectionStringBuilder.BuildPostgresConnectionString(Options)});
             await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
             _logger.WarnWithObject($"Connection string for {functionName}", new { connection.ConnectionString });
 
@@ -397,6 +410,9 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
+            
+            _logger.WarnWithObject($"Connection string for {functionName}", new { Options });
+            _logger.WarnWithObject($"Connection string for {functionName}", new { connectionString = ConnectionStringBuilder.BuildPostgresConnectionString(Options)});
             await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
             _logger.WarnWithObject($"Connection string for {functionName}", new { connection.ConnectionString });
 
@@ -459,6 +475,9 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
+            
+            _logger.WarnWithObject($"Connection string for {functionName}", new { Options });
+            _logger.WarnWithObject($"Connection string for {functionName}", new { connectionString = ConnectionStringBuilder.BuildPostgresConnectionString(Options)});
             await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
             _logger.WarnWithObject($"Connection string for {functionName}", new { connection.ConnectionString });
 
@@ -506,6 +525,9 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? Options.Timeout.Seconds;
+            
+            _logger.WarnWithObject($"Connection string for {queryName}", new { Options });
+            _logger.WarnWithObject($"Connection string for {queryName}", new { connectionString = ConnectionStringBuilder.BuildPostgresConnectionString(Options)});
             await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
             _logger.WarnWithObject($"Connection string for {queryName}", new { connection.ConnectionString });
 
