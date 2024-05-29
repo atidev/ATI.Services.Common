@@ -91,6 +91,7 @@ public class PostgresDapper
 
             await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
+           _logger.WarnWithObject($"Connection string for {actionName}", new { connection.ConnectionString });
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
 
@@ -135,6 +136,8 @@ public class PostgresDapper
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
             await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
+            _logger.WarnWithObject($"Connection string for {functionName}", new { connection.ConnectionString });
+            
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
 
@@ -179,6 +182,8 @@ public class PostgresDapper
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
 
             await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
+            
+            _logger.WarnWithObject($"Connection string for {functionName}", new { connection.ConnectionString });
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -232,6 +237,8 @@ public class PostgresDapper
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
             await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
+
+            _logger.WarnWithObject($"Connection string for {functionName}", new { connection.ConnectionString });
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -292,6 +299,8 @@ public class PostgresDapper
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
             await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
+            _logger.WarnWithObject($"Connection string for {functionName}", new { connection.ConnectionString });
+            
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
 
@@ -336,6 +345,7 @@ public class PostgresDapper
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
             await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
+            _logger.WarnWithObject($"Connection string for {functionName}", new { connection.ConnectionString });
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -388,6 +398,7 @@ public class PostgresDapper
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
             await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
+            _logger.WarnWithObject($"Connection string for {functionName}", new { connection.ConnectionString });
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -449,6 +460,7 @@ public class PostgresDapper
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
             await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
+            _logger.WarnWithObject($"Connection string for {functionName}", new { connection.ConnectionString });
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -495,6 +507,7 @@ public class PostgresDapper
 
             var timeout = timeoutInSeconds ?? Options.Timeout.Seconds;
             await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
+            _logger.WarnWithObject($"Connection string for {queryName}", new { connection.ConnectionString });
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
