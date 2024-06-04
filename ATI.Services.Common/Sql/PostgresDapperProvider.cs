@@ -35,6 +35,7 @@ public class PostgresDapperProvider
                     && config.Options.Password == kvDataBaseOptions.Value.Password)
                     continue;
                 
+                // Удаляем старые коннекты при смене коннекшн стринга, так как у постгрес имеется лимит на количество открытых соединений
                 NpgsqlConnection.ClearPool(new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(_configuredDataBases[kvDataBaseOptions.Key].Options)));
                 config.Options = kvDataBaseOptions.Value;
                 
