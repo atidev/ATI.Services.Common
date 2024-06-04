@@ -21,30 +21,8 @@ public class PostgresDapperProvider
             _configuredDataBases.TryAdd(kvDataBaseOptions.Key, new PostgresDapper(kvDataBaseOptions.Value, metricsFactory));
         }
         
-        dbManagerOptions.OnChange(o => GetConfiguredDataBases(o.DataBaseOptions, metricsFactory));
+        dbManagerOptions.OnChange(o => ReloadDatabases(o.DataBaseOptions, metricsFactory));
     }
-
-    private void GetConfiguredDataBases(Dictionary<string, DataBaseOptions> dataBaseOptions, MetricsFactory metricsFactory)
-    {
-        foreach (var kvDataBaseOptions in dataBaseOptions)
-        {
-            if (_configuredDataBases.TryGetValue(kvDataBaseOptions.Key, out var config))
-            {
-                //Если кто-то сменил change token IOptionsMonitor, и не сменил креды от бд, не нужно сбрасывать коннекшен пул
-                if (config.Options.UserName == kvDataBaseOptions.Value.UserName 
-                    && config.Options.Password == kvDataBaseOptions.Value.Password)
-                    continue;
-                
-                // Удаляем старые коннекты при смене коннекшн стринга, так как у постгрес имеется лимит на количество открытых соединений
-                NpgsqlConnection.ClearPool(new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(_configuredDataBases[kvDataBaseOptions.Key].Options)));
-                config.Options = kvDataBaseOptions.Value;
-                
-            }
-            else
-                _configuredDataBases.TryAdd(kvDataBaseOptions.Key, new PostgresDapper(kvDataBaseOptions.Value, metricsFactory));
-        }
-    }
-
     
     public PostgresDapper GetDb(string dbName)
     {
@@ -54,5 +32,26 @@ public class PostgresDapperProvider
 
         _logger.Error($"No {dbName} database was configured");
         return null;
+    }
+
+    private void ReloadDatabases(Dictionary<string, DataBaseOptions> newDataBaseOptions, MetricsFactory metricsFactory)
+    {
+        foreach (var (dbName, newDbOptions) in newDataBaseOptions)
+        {
+            if (_configuredDataBases.TryGetValue(dbName, out var oldDbOptions))
+            {
+                //Если кто-то сменил change token IOptionsMonitor, и не сменил креды от бд, не нужно сбрасывать коннекшен пул
+                if (oldDbOptions.Options.UserName == newDbOptions.UserName 
+                    && oldDbOptions.Options.Password == newDbOptions.Password)
+                    continue;
+                
+                // Удаляем старые коннекты при смене коннекшн стринга, так как у постгрес имеется лимит на количество открытых соединений
+                NpgsqlConnection.ClearPool(new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(oldDbOptions.Options)));
+                oldDbOptions.Options = newDbOptions;
+                
+            }
+            else
+                _configuredDataBases.TryAdd(dbName, new PostgresDapper(newDbOptions, metricsFactory));
+        }
     }
 }
