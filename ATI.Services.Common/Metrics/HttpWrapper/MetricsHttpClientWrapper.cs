@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Http;
+using ATI.Services.Common.Http.Extensions;
 using ATI.Services.Common.Logging;
 using ATI.Services.Common.Variables;
 using JetBrains.Annotations;
@@ -19,6 +20,7 @@ namespace ATI.Services.Common.Metrics.HttpWrapper;
 /// Он внутри себя инкапсулирует ConsulServiceAddress и MetricsFactory
 /// </summary>
 [PublicAPI]
+[Obsolete("Use HttpClientFactory instead")]
 public class MetricsHttpClientWrapper : IDisposable
 {
     private readonly ILogger _logger;

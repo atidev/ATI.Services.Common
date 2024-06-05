@@ -14,7 +14,7 @@ using Polly.Extensions.Http;
 using Polly.Registry;
 using Polly.Timeout;
 
-namespace ATI.Services.Common.Http;
+namespace ATI.Services.Common.Http.Extensions;
 
 /// <summary>
 /// https://habr.com/ru/companies/dododev/articles/503376/
@@ -34,11 +34,28 @@ public static class HttpClientBuilderPolicyExtensions
         ILogger logger)
     {
         var methodsToRetry = serviceOptions.HttpMethodsToRetry ?? new List<string> { HttpMethod.Get.Method };
-        
+
         return clientBuilder
             .AddPolicyHandler((_, message) =>
             {
-                if (!methodsToRetry.Contains(message.Method.Method, StringComparer.OrdinalIgnoreCase))
+                var medianFirstRetryDelay = serviceOptions.MedianFirstRetryDelay;
+                var retryCount = serviceOptions.RetryCount;
+                var checkHttpMethod = true;
+
+                var retryPolicySettings = message.Options.GetRetryPolicy();
+                if (retryPolicySettings != null)
+                {
+                    if (retryPolicySettings.MedianFirstRetryDelay != null)
+                        medianFirstRetryDelay = retryPolicySettings.MedianFirstRetryDelay.Value;
+
+                    if (retryPolicySettings.RetryCount != null)
+                        retryCount = retryPolicySettings.RetryCount.Value;
+
+                    // If retrySettings set via HttpClient.SendAsync method - ignore http method check
+                    checkHttpMethod = false;
+                }
+
+                if (retryCount == 0 || checkHttpMethod && !methodsToRetry.Contains(message.Method.Method, StringComparer.OrdinalIgnoreCase))
                 {
                     return Policy.NoOpAsync<HttpResponseMessage>();
                 }
@@ -47,12 +64,12 @@ public static class HttpClientBuilderPolicyExtensions
                     .HandleTransientHttpError()
                     .Or<TimeoutRejectedException>()
                     .OrResult(r => r.StatusCode == (HttpStatusCode) 429) // Too Many Requests
-                    .WaitAndRetryAsync(RetryPolicyDelay(serviceOptions.MedianFirstRetryDelay, serviceOptions.RetryCount),
+                    .WaitAndRetryAsync(RetryPolicyDelay(medianFirstRetryDelay, retryCount),
                         (response, sleepDuration, retryCount, _) =>
                         {
                             logger.ErrorWithObject(response?.Exception, "Error while WaitAndRetry",  new
                             {
-                                serviceOptions.ConsulName,
+                                serviceOptions.ServiceName,
                                 message.RequestUri,
                                 message.Method,
                                 response?.Result?.StatusCode,
@@ -71,8 +88,23 @@ public static class HttpClientBuilderPolicyExtensions
         var registry = new PolicyRegistry();
         return clientBuilder.AddPolicyHandler(message =>
         {
-            var policyKey = message.RequestUri.Host;
-            var policy = registry.GetOrAdd(policyKey, BuildCircuitBreakerPolicy(message, serviceOptions, logger));
+            var circuitBreakerExceptionsCount = serviceOptions.CircuitBreakerExceptionsCount;
+            var circuitBreakerDuration = serviceOptions.CircuitBreakerDuration;
+
+            var retryPolicySettings = message.Options.GetRetryPolicy();
+            if (retryPolicySettings != null)
+            {
+                if (retryPolicySettings.CircuitBreakerExceptionsCount != null)
+                    circuitBreakerExceptionsCount = retryPolicySettings.CircuitBreakerExceptionsCount.Value;
+                if (retryPolicySettings.CircuitBreakerDuration != null)
+                    circuitBreakerDuration = retryPolicySettings.CircuitBreakerDuration.Value;
+            }
+
+            if (circuitBreakerExceptionsCount == 0)
+                return Policy.NoOpAsync<HttpResponseMessage>();
+
+            var policyKey = $"{message.RequestUri.Host}:{message.RequestUri.Port}";
+            var policy = registry.GetOrAdd(policyKey, BuildCircuitBreakerPolicy(message, serviceOptions, circuitBreakerExceptionsCount, circuitBreakerDuration, logger));
             return policy;
         });
     }
@@ -81,13 +113,20 @@ public static class HttpClientBuilderPolicyExtensions
         this IHttpClientBuilder httpClientBuilder,
         TimeSpan timeout)
     {
-        return httpClientBuilder.AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(timeout));
+        return httpClientBuilder.AddPolicyHandler((_, message) =>
+        {
+            var policyTimeout = message.Options.GetRetryPolicy()?.TimeOut ?? timeout;
+
+            return Policy.TimeoutAsync<HttpResponseMessage>(policyTimeout);
+        });
     }
 
 
     private static AsyncCircuitBreakerPolicy<HttpResponseMessage> BuildCircuitBreakerPolicy(
         HttpRequestMessage message,
         BaseServiceOptions serviceOptions,
+        int circuitBreakerExceptionsCount,
+        TimeSpan circuitBreakerDuration,
         ILogger logger)
     {
         return HttpPolicyExtensions
@@ -95,13 +134,13 @@ public static class HttpClientBuilderPolicyExtensions
             .Or<TimeoutRejectedException>()
             .OrResult(r => r.StatusCode == (HttpStatusCode) 429) // Too Many Requests
             .CircuitBreakerAsync(
-                serviceOptions.CircuitBreakerExceptionsCount,
-                serviceOptions.CircuitBreakerDuration,
+                circuitBreakerExceptionsCount,
+                circuitBreakerDuration,
                 (response, circuitState, timeSpan, _) =>
                 {
                     logger.ErrorWithObject(null, "CB onBreak", new
                     {
-                        serviceOptions.ConsulName,
+                        serviceOptions.ServiceName,
                         message.RequestUri,
                         message.Method,
                         response?.Result?.StatusCode,
@@ -113,7 +152,7 @@ public static class HttpClientBuilderPolicyExtensions
                 {
                     logger.ErrorWithObject(null, "CB onReset", new
                     {
-                        serviceOptions.ConsulName,
+                        serviceOptions.ServiceName,
                         message.RequestUri,
                         message.Method,
                         context
@@ -123,7 +162,7 @@ public static class HttpClientBuilderPolicyExtensions
                 {
                     logger.ErrorWithObject(null, "CB onHalfOpen", new
                     {
-                        serviceOptions.ConsulName,
+                        serviceOptions.ServiceName,
                         message.RequestUri,
                         message.Method,
                     });
