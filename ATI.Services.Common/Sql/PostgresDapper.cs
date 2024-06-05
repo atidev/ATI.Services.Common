@@ -17,7 +17,8 @@ namespace ATI.Services.Common.Sql;
 [PublicAPI]
 public class PostgresDapper
 {
-    private readonly DataBaseOptions _options;
+    public DataBaseOptions Options { get; set; }
+
     private readonly MetricsInstance _metrics;
     private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
     private const string ReadMetricTypeLabel = "read";
@@ -28,10 +29,10 @@ public class PostgresDapper
     private const string FunctionQuery = "SELECT * FROM";
     private const string ProcedureQuery = "CALL";
 
-    public PostgresDapper(DataBaseOptions options, MetricsFactory metricsFactory)
+    public  PostgresDapper(DataBaseOptions options, MetricsFactory metricsFactory)
     {
-        _options = options;
-        _metrics = metricsFactory.CreateSqlMetricsFactory(nameof(PostgresDapper), _options.LongTimeRequest, "type");
+        Options = options;
+        _metrics = metricsFactory.CreateSqlMetricsFactory(nameof(PostgresDapper), Options.LongTimeRequest, "type");
     }
 
     public async Task<OperationResult> ExecuteFunctionAsync(
@@ -88,7 +89,7 @@ public class PostgresDapper
                 longTimeRequest,
                 FullMetricTypeLabel);
 
-            await using var connection = new NpgsqlConnection(_options.ConnectionString);
+            await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -132,7 +133,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
-            await using var connection = new NpgsqlConnection(_options.ConnectionString);
+            await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -177,7 +178,7 @@ public class PostgresDapper
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
 
-            await using var connection = new NpgsqlConnection(_options.ConnectionString);
+            await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -230,7 +231,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
-            await using var connection = new NpgsqlConnection(_options.ConnectionString);
+            await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -289,7 +290,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
-            await using var connection = new NpgsqlConnection(_options.ConnectionString);
+            await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -334,7 +335,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
-            await using var connection = new NpgsqlConnection(_options.ConnectionString);
+            await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -386,7 +387,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
-            await using var connection = new NpgsqlConnection(_options.ConnectionString);
+            await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -447,7 +448,7 @@ public class PostgresDapper
                 FullMetricTypeLabel);
 
             var timeout = timeoutInSeconds ?? GetTimeOut(functionName);
-            await using var connection = new NpgsqlConnection(_options.ConnectionString);
+            await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -492,8 +493,8 @@ public class PostgresDapper
                 longTimeRequest,
                 FullMetricTypeLabel);
 
-            var timeout = timeoutInSeconds ?? _options.Timeout.Seconds;
-            await using var connection = new NpgsqlConnection(_options.ConnectionString);
+            var timeout = timeoutInSeconds ?? Options.Timeout.Seconds;
+            await using var connection = new NpgsqlConnection(ConnectionStringBuilder.BuildPostgresConnectionString(Options));
 
             if (receiveNotice)
                 connection.Notice += LoggOnNotice;
@@ -538,9 +539,9 @@ public class PostgresDapper
 
     private int GetTimeOut(string procedureName)
     {
-        return _options.TimeoutDictionary.TryGetValue(procedureName, out var tempTimeout)
+        return Options.TimeoutDictionary.TryGetValue(procedureName, out var tempTimeout)
             ? tempTimeout
-            : _options.Timeout.Seconds;
+            : Options.Timeout.Seconds;
     }
 
     private void LogWithParameters(Exception e, string procedureName, string metricEntity, DynamicParameters parameters)

@@ -48,7 +48,7 @@ namespace ATI.Services.Common.Logging
                         $"${{aspnet-request:header={loggedHeader}}}")));
         }
 
-        public void ConfigureNLog()
+        public LogFactory ConfigureNLog()
         {
             try
             {
@@ -67,11 +67,12 @@ namespace ATI.Services.Common.Logging
 
                 ApplyRules(configuration, _options.Rules);
 
-                NLogBuilder.ConfigureNLog(configuration);
+                return NLogBuilder.ConfigureNLog(configuration);
             }
             catch (Exception exception)
             {
                 LogManager.GetCurrentClassLogger().Error(exception);
+                throw;
             }
         }
 
