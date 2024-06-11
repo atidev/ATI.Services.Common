@@ -152,6 +152,34 @@ public static class HttpClientExtensions
             return new OperationResult<byte[]>(ex);
         }
     }
+    
+    [PublicAPI]
+    public static async Task<OperationResult<string>> GetStringAsync<TRequest>(this HttpClient httpClient,
+        HttpMethod httpMethod,
+        string url,
+        TRequest request,
+        string metricEntity,
+        string urlTemplate = null,
+        Dictionary<string, string> headers = null,
+        JsonSerializerOptions serializerOptions = null,
+        RetryPolicySettings retryPolicySettings = null)
+    {
+        try
+        {
+            using var requestMessage = CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity, urlTemplate, headers, retryPolicySettings);
+            
+            var serializeOptions = serializerOptions ?? SnakeCaseSerializerOptions;
+            requestMessage.SetContent(request, serializeOptions);
+
+            using var responseMessage = await httpClient.SendAsync(requestMessage);
+            return await responseMessage.GetStringFromHttpResponseAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.ErrorWithObject(ex, new { httpMethod, url, headers });
+            return new OperationResult<string>(ex);
+        }
+    }
 
     [PublicAPI]
     public static HttpRequestMessage CreateHttpRequestMessageAndSetBaseFields(
