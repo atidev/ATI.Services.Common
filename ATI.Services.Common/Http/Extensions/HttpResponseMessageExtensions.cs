@@ -64,9 +64,9 @@ public static class HttpResponseMessageExtensions
     }
     
     [PublicAPI]
-    public static async Task<OperationResult<string>> GetStringFromHttpResponseAsync(this HttpResponseMessage responseMessage)
+    public static async Task<OperationResult<string>> GetStringFromHttpResponseAsync(this HttpResponseMessage responseMessage, bool withErrorResponse = false)
     {
-        if (!responseMessage.IsSuccessStatusCode) 
+        if (!responseMessage.IsSuccessStatusCode && !withErrorResponse) 
             return new OperationResult<string>(OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
 
         try

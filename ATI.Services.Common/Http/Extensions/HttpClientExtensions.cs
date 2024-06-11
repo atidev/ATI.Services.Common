@@ -162,7 +162,8 @@ public static class HttpClientExtensions
         string urlTemplate = null,
         Dictionary<string, string> headers = null,
         JsonSerializerOptions serializerOptions = null,
-        RetryPolicySettings retryPolicySettings = null)
+        RetryPolicySettings retryPolicySettings = null,
+        bool withErrorResponse = false)
     {
         try
         {
@@ -172,7 +173,7 @@ public static class HttpClientExtensions
             requestMessage.SetContent(request, serializeOptions);
 
             using var responseMessage = await httpClient.SendAsync(requestMessage);
-            return await responseMessage.GetStringFromHttpResponseAsync();
+            return await responseMessage.GetStringFromHttpResponseAsync(withErrorResponse);
         }
         catch (Exception ex)
         {
