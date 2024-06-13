@@ -180,6 +180,30 @@ public static class HttpClientExtensions
             return new OperationResult<string>(ex);
         }
     }
+    
+    [PublicAPI]
+    public static async Task<OperationResult<string>> GetStringAsync(this HttpClient httpClient,
+        HttpMethod httpMethod,
+        string url,
+        string metricEntity,
+        string urlTemplate = null,
+        Dictionary<string, string> headers = null,
+        JsonSerializerOptions serializerOptions = null,
+        RetryPolicySettings retryPolicySettings = null)
+    {
+        try
+        {
+            using var requestMessage = CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity, urlTemplate, headers, retryPolicySettings);
+
+            using var responseMessage = await httpClient.SendAsync(requestMessage);
+            return await responseMessage.GetStringFromHttpResponseAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.ErrorWithObject(ex, new { httpMethod, url, headers });
+            return new OperationResult<string>(ex);
+        }
+    }
 
     [PublicAPI]
     public static HttpRequestMessage CreateHttpRequestMessageAndSetBaseFields(
