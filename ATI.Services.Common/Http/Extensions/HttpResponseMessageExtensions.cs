@@ -62,4 +62,25 @@ public static class HttpResponseMessageExtensions
             return new OperationResult<byte[]>(ex);
         }
     }
+    
+    [PublicAPI]
+    public static async Task<OperationResult<string>> GetStringFromHttpResponseAsync(this HttpResponseMessage responseMessage)
+    {
+        try
+        {
+            var result = await responseMessage.Content.ReadAsStringAsync();
+            return new OperationResult<string>(result, OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
+        }
+        catch (Exception ex)
+        {
+            Logger.ErrorWithObject(ex, "Unsuccessfull response parsing", new
+            {
+                Method = responseMessage.RequestMessage.Method,
+                Content = await responseMessage.Content.ReadAsStringAsync(),
+                Headers = responseMessage.RequestMessage.Headers,
+                FullUri = responseMessage.RequestMessage.RequestUri
+            });
+            return new OperationResult<string>(ex);
+        }
+    }
 }
