@@ -2,14 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ATI.Services.Common.Logging;
 using ATI.Services.Common.Metrics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using NLog;
 
 namespace ATI.Services.Common.Http;
 
 internal static class HttpContextHelper
 {
+    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    
     public static string[] MetricsHeadersValues(HttpContext? httpContext) => GetHeadersValues(httpContext, MetricsLabelsAndHeaders.UserHeaders);
     public static Dictionary<string, string> HeadersAndValuesToProxy(HttpContext? httpContext,IReadOnlyCollection<string>? headersToProxy) => GetHeadersAndValues(httpContext, headersToProxy);
     
@@ -24,8 +28,9 @@ internal static class HttpContextHelper
             var headersValues = headersNames.Select(label => GetHeaderValue(httpContext, label)).ToArray();
             return headersValues;
         }
-        catch (ObjectDisposedException) // when thing happen outside http ctx e.g eventbus event handler
+        catch (ObjectDisposedException ex) // when thing happen outside http ctx e.g eventbus event handler
         {
+            Logger.ErrorWithObject(ex, headersNames);
             return Array.Empty<string>();
         }
     }

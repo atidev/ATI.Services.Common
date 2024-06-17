@@ -87,7 +87,7 @@ public class MetricsTimer : IDisposable
         }
         catch (Exception ex)
         {
-            Logger.ErrorWithObject(ex, new { _summary?.LabelNames, _summaryLabels, _logSource });
+            Logger.ErrorWithObject(ex, new { _summary?.LabelNames, _summaryLabels, _logSource, MetricsLabelsAndHeaders.UserHeaders });
         }
     }
 
