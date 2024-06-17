@@ -83,10 +83,10 @@ namespace ATI.Services.Common.Behaviors
             Exception = operationResult.Exception;
         }
 
-        public OperationResult(Exception exception)
+        public OperationResult(Exception exception, string message = null)
         {
             ActionStatus = ActionStatus.InternalServerError;
-            Errors.Add(new OperationError(ActionStatus, exception.Message));
+            Errors.Add(new OperationError(ActionStatus, message ?? exception.Message));
             Exception = exception;
         }
         
@@ -240,7 +240,7 @@ namespace ATI.Services.Common.Behaviors
         {
         }
 
-        public OperationResult(Exception exception) : base(exception)
+        public OperationResult(Exception exception, string message = null) : base(exception)
         { }
     }
 }
