@@ -23,7 +23,7 @@ public static class LoggerExtension
         logger.LogWithObject(LogLevel.Error, ex, logObjects: logObjects);
     }
 
-    public static void ErrorWithObject(this ILogger logger, params object[] logObjects)
+    public static void ErrorWithObject(this ILogger logger, string message, params object[] logObjects)
     {
         logger.LogWithObject(LogLevel.Error, logObjects: logObjects);
     }
