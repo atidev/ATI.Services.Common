@@ -25,7 +25,7 @@ public static class LoggerExtension
 
     public static void ErrorWithObject(this ILogger logger, string message, params object[] logObjects)
     {
-        logger.LogWithObject(LogLevel.Error, logObjects: logObjects);
+        logger.LogWithObject(LogLevel.Error, message: message, logObjects: logObjects);
     }
 
     public static void WarnWithObject(this ILogger logger, string message, params object[] logObjects)
