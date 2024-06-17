@@ -57,31 +57,38 @@ public class MetricsTimer : IDisposable
 
     public void Dispose()
     {
-        if (_summary == null)
+        try
         {
-            return;
-        }
+            if (_summary == null)
+            {
+                return;
+            }
 
-        if (_summaryLabels == null)
+            if (_summaryLabels == null)
+            {
+                _summary.Observe(_stopwatch.ElapsedMilliseconds);
+            }
+            else
+            {
+                _summary.Labels(_summaryLabels).Observe(_stopwatch.ElapsedMilliseconds);
+            }
+
+            _stopwatch.Stop();
+
+            if (_longRequestTime == null
+                || !(_stopwatch.Elapsed > _longRequestTime)
+                || _context == null
+                || _logSource == null)
+            {
+                return;
+            }
+
+            Logger.LogWithObject(LogLevel.Warn, null, "Long request WARN.", GetContext());
+        }
+        catch (Exception ex)
         {
-            _summary.Observe(_stopwatch.ElapsedMilliseconds);
+            Logger.ErrorWithObject(ex, new { _summary?.LabelNames, _summaryLabels, _logSource });
         }
-        else
-        {
-            _summary.Labels(_summaryLabels).Observe(_stopwatch.ElapsedMilliseconds);
-        }
-
-        _stopwatch.Stop();
-
-        if (_longRequestTime == null
-            || !(_stopwatch.Elapsed > _longRequestTime)
-            || _context == null
-            || _logSource == null)
-        {
-            return;
-        }
-
-        Logger.LogWithObject(LogLevel.Warn, null, "Long request WARN.", GetContext());
     }
 
     private Dictionary<object, object> GetContext()
