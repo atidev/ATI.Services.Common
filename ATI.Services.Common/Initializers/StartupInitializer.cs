@@ -35,13 +35,37 @@ namespace ATI.Services.Common.Initializers
 
             foreach (var initializerInfo in initializers.OrderBy(i => i.Order))
             {
-                if (_serviceProvider.GetService(initializerInfo.InitializerType) is IInitializer initializer)
+                if (_serviceProvider.GetService(initializerInfo.InitializerType) is not IInitializer initializer)
+                    continue;
+
+                Console.WriteLine(initializer.InitStartConsoleMessage());
+                
+                var initTimeoutAttribute =
+                    initializer.GetType().GetCustomAttributes(typeof(InitializeTimeoutAttribute), false)
+                               .FirstOrDefault() as InitializeTimeoutAttribute;
+                
+                var initTask = initializer.InitializeAsync();
+                var initTimeout = initTimeoutAttribute?.InitTimeout ?? TimeSpan.FromSeconds(30);
+                var required = initTimeoutAttribute?.Required ?? false;
+                    
+                await Task.WhenAny(initTask, Task.Delay(initTimeout));
+                if (!initTask.IsCompleted) 
                 {
-                    Console.WriteLine(initializer.InitStartConsoleMessage());
-                    await initializer.InitializeAsync();
-                    Console.WriteLine(initializer.InitEndConsoleMessage());
-                    _logger.Trace($"{initializer.GetType()} initialized");
+                    if (required)
+                    {
+                        var message = $"Required initializer {initializer.GetType().Name} didn't complete in {initTimeout}";
+                        _logger.Error(message);
+                        throw new Exception(message);
+                    }
+
+                    var timeoutMessage = $"Initializer {initializer.GetType().Name} didn't complete in {initTimeout}, continue in background.";
+                    Console.WriteLine(timeoutMessage);
+                    _logger.Warn(timeoutMessage);
+                    continue;
                 }
+
+                Console.WriteLine(initializer.InitEndConsoleMessage());
+                _logger.Trace($"{initializer.GetType()} initialized");
             }
         }
     }
