@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using ATI.Services.Common.Initializers.Interfaces;
-using JetBrains.Annotations;
 using NLog;
 
 namespace ATI.Services.Common.Initializers;
@@ -11,7 +10,6 @@ public class StartupInitializer(IServiceProvider serviceProvider)
 {
     private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
-    [UsedImplicitly]
     public async Task InitializeAsync()
     {
         var initializers =
