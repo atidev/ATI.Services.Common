@@ -6,6 +6,7 @@ using ATI.Services.Common.Variables;
 /// <summary>
 /// Интерфейс который маркирует объект, как требующий инициализации на старте приложения
 /// используется классом <see cref="StartupInitializer"/>
+/// <para>Для управления временем и поведением инициацлизации используйте <see cref="InitializeTimeoutAttribute"/></para>
 /// для задания порядка инициализации используйте аттрибут <see cref="InitializeOrderAttribute"/>
 /// Имеющийся порядок на данный момент:
 /// ATI.Services.Authorization.AuthorizationInitializer - InitializeOrder.First

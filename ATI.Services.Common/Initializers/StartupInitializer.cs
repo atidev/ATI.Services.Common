@@ -72,7 +72,7 @@ public class StartupInitializer(IServiceProvider serviceProvider)
                                  Policy.Handle<Exception>().WaitAndRetryAsync(
                                      initTimeoutAttribute.Retry,
                                      i => TimeSpan.FromMilliseconds(Math.Min(200 * i, 2000)),
-                                     (exception, i) => _logger.Warn(exception, $"Retry number:{i} for initializer {initializerName}")));
+                                     (exception, _, i, _) => _logger.Warn(exception, $"Retry number:{i} for initializer {initializerName}")));
                 
             var policyResult = await initPolicy.ExecuteAndCaptureAsync(init);
             if(policyResult.Outcome is OutcomeType.Successful)
