@@ -1,10 +1,9 @@
 using System;
 
-namespace ATI.Services.Common.Initializers
+namespace ATI.Services.Common.Initializers;
+
+[AttributeUsage(AttributeTargets.Class)]
+public class InitializeOrderAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Class)]
-    public class InitializeOrderAttribute : Attribute
-    {
-        public InitializeOrder Order { get; set; }
-    }
+    public InitializeOrder Order { get; set; }
 }
