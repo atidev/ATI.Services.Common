@@ -2,8 +2,10 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using ATI.Services.Common.Initializers.Interfaces;
+using ATI.Services.Common.Logging;
 using JetBrains.Annotations;
 using NLog;
+using Polly;
 
 namespace ATI.Services.Common.Initializers;
 
@@ -35,39 +37,60 @@ public class StartupInitializer(IServiceProvider serviceProvider)
                 continue;
 
             Console.WriteLine(initializer.InitStartConsoleMessage());
-                
-            var initTimeoutAttribute =
-                initializer.GetType().GetCustomAttributes(typeof(InitializeTimeoutAttribute), false)
-                           .FirstOrDefault() as InitializeTimeoutAttribute;
+            var initializerName = initializer.GetType().Name;
 
-                
-                
-            var initTask = initializer.InitializeAsync();
-            if (initTimeoutAttribute is not null)
+            if (initializer.GetType().GetCustomAttributes(typeof(InitializeTimeoutAttribute), false).FirstOrDefault()
+                is not InitializeTimeoutAttribute initTimeoutAttribute)
             {
-                var initTimeout = TimeSpan.FromSeconds(initTimeoutAttribute.InitTimeoutSec);
-                await Task.WhenAny(initTask, Task.Delay(initTimeout));
-                if (!initTask.IsCompleted)
+                try
                 {
-                    if (initTimeoutAttribute.Required)
-                    {
-                        var message = $"Required initializer {initializer.GetType().Name} didn't complete in {initTimeout}";
-                        _logger.Error(message);
-                        throw new Exception(message);
-                    }
-                    var timeoutMessage = $"Initializer {initializer.GetType().Name} didn't complete in {initTimeout}, continue in background.";
-                    Console.WriteLine(timeoutMessage);
-                    _logger.Warn(timeoutMessage);
-                    continue;
+                    await initializer.InitializeAsync();
+                }
+                catch (Exception e)
+                {
+                    _logger.ErrorWithObject(e, $"Exception during initializer {initializerName}");
                 }
             }
             else
             {
-                await initTask;
+                await InitWithPolicy(initTimeoutAttribute, initializerName, () => initializer.InitializeAsync());
+                continue;
             }
-                
+
             Console.WriteLine(initializer.InitEndConsoleMessage());
-            _logger.Trace($"{initializer.GetType()} initialized");
+            _logger.Trace($"{initializerName} initialized");
+        }
+
+        return;
+
+        async Task InitWithPolicy(InitializeTimeoutAttribute initTimeoutAttribute,
+                                  string initializerName,
+                                  Func<Task> init)
+        {
+            var initPolicy =
+                Policy.WrapAsync(Policy.TimeoutAsync(TimeSpan.FromSeconds(initTimeoutAttribute.InitTimeoutSec)),
+                                 Policy.Handle<Exception>().WaitAndRetryAsync(
+                                     initTimeoutAttribute.Retry,
+                                     i => TimeSpan.FromMilliseconds(Math.Min(200 * i, 2000)),
+                                     (exception, i) => _logger.Warn(exception, $"Retry number:{i} for initializer {initializerName}")));
+                
+            var policyResult = await initPolicy.ExecuteAndCaptureAsync(init);
+            if(policyResult.Outcome is OutcomeType.Successful)
+                return;
+                
+            if (initTimeoutAttribute.Required)
+            {
+                var message = $"Required initializer {initializerName} failed with {policyResult.FinalException?.Message}, application will not start.";
+                Console.WriteLine(message);
+                _logger.Error(policyResult.FinalException, message);
+                throw policyResult.FinalException!;
+            }
+            else
+            {
+                var message = $"Required initializer {initializerName} failed with {policyResult.FinalException?.Message}, continue in background.";
+                Console.WriteLine(message);
+                _logger.Warn(message); 
+            }
         }
     }
 }
