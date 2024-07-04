@@ -40,7 +40,11 @@ public class StartupInitializer(IServiceProvider serviceProvider)
             var initializerName = initializer.GetType().Name;
 
             if (initializer.GetType().GetCustomAttributes(typeof(InitializeTimeoutAttribute), false).FirstOrDefault()
-                is not InitializeTimeoutAttribute initTimeoutAttribute)
+                is InitializeTimeoutAttribute initTimeoutAttribute)
+            {
+                await InitWithPolicy(initTimeoutAttribute, initializerName, () => initializer.InitializeAsync());
+            }
+            else
             {
                 try
                 {
@@ -50,11 +54,6 @@ public class StartupInitializer(IServiceProvider serviceProvider)
                 {
                     _logger.ErrorWithObject(e, $"Exception during initializer {initializerName}");
                 }
-            }
-            else
-            {
-                await InitWithPolicy(initTimeoutAttribute, initializerName, () => initializer.InitializeAsync());
-                continue;
             }
 
             Console.WriteLine(initializer.InitEndConsoleMessage());
