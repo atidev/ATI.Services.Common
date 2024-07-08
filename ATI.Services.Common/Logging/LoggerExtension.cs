@@ -12,8 +12,7 @@ namespace ATI.Services.Common.Logging;
 [PublicAPI]
 public static class LoggerExtension
 {
-    public static void ErrorWithObject(this ILogger logger, Exception ex, string message,
-        params object[] logObjects)
+    public static void ErrorWithObject(this ILogger logger, Exception ex, string message, params object[] logObjects)
     {
         logger.LogWithObject(LogLevel.Error, ex, message, logObjects: logObjects);
     }
@@ -23,6 +22,12 @@ public static class LoggerExtension
         logger.LogWithObject(LogLevel.Error, ex, logObjects: logObjects);
     }
 
+    public static void ErrorWithObject(this ILogger logger, string message, params object[] logObjects)
+    {
+        logger.LogWithObject(LogLevel.Error, message: message, logObjects: logObjects);
+    }
+    
+    [Obsolete("Use ErrorWithObject(this ILogger logger, string message, params object[] logObjects) instead")]
     public static void ErrorWithObject(this ILogger logger, params object[] logObjects)
     {
         logger.LogWithObject(LogLevel.Error, logObjects: logObjects);
