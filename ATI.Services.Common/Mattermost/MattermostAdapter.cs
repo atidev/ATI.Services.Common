@@ -6,6 +6,7 @@ using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Http.Extensions;
 using ATI.Services.Common.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using NLog;
 
 namespace ATI.Services.Common.Mattermost;
@@ -15,6 +16,19 @@ public class MattermostAdapter
     private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
     private readonly MattermostOptions _mattermostOptions;
     private readonly HttpClient _httpClient;
+    
+    private readonly JsonSerializerSettings _jsonSerializerSettings = new JsonSerializerSettings
+    {
+        ContractResolver = new DefaultContractResolver
+        {
+            NamingStrategy = new SnakeCaseNamingStrategy
+            {
+                ProcessDictionaryKeys = true,
+                OverrideSpecifiedNames = true
+            }
+        },
+        NullValueHandling = NullValueHandling.Include
+    };
     
     public MattermostAdapter(
         IHttpClientFactory httpClientFactory,
@@ -38,7 +52,7 @@ public class MattermostAdapter
             return await _httpClient.SendAsync<string>(
                 HttpMethod.Post,
                 url,
-                new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"),
+                new StringContent(JsonConvert.SerializeObject(payload, _jsonSerializerSettings),Encoding.UTF8, "application/json"),
                 "Mattermost");
         }
         catch (Exception e)
