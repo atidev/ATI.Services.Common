@@ -9,7 +9,7 @@ namespace ATI.Services.Common.Mattermost;
 public class MattermostProvider
 {
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    private readonly Dictionary<string, MattermostAdapter> _configuredMattermostAdapter;
+    private readonly Dictionary<string, MattermostAdapter> _configuredMattermostAdapter = new ();
 
     public MattermostProvider(
         IOptions<MattermostProviderOptions> mattermostProviderOptions,
