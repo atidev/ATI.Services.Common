@@ -49,11 +49,22 @@ public class MattermostAdapter
                 IconEmoji = _mattermostOptions.IconEmoji,
                 Username = _mattermostOptions.UserName
             };
-            return await _httpClient.SendAsync<string>(
-                HttpMethod.Post,
-                url,
-                new StringContent(JsonConvert.SerializeObject(payload, _jsonSerializerSettings),Encoding.UTF8, "application/json"),
-                "Mattermost");
+            // We do it, because mattermost api return text format instead of json
+            var httpContent = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = new StringContent(JsonConvert.SerializeObject(payload, _jsonSerializerSettings),Encoding.UTF8, "application/json"),
+                RequestUri = new Uri(url)
+            };
+
+            var httpResponse = await _httpClient.SendAsync(httpContent);
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                _logger.ErrorWithObject(null, "Mattermost return error status code", new { request = httpContent, response = httpResponse });
+                return new OperationResult(ActionStatus.InternalServerError);
+            }
+
+            return OperationResult.Ok;
         }
         catch (Exception e)
         {
