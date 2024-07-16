@@ -26,7 +26,8 @@ public class HttpMetricsHandler : DelegatingHandler
 
     protected HttpMetricsHandler(MetricsFactory metricsFactory, BaseServiceOptions serviceOptions)
     {
-        _metrics = metricsFactory.CreateHttpClientMetricsFactory(serviceOptions.ServiceName, serviceOptions.ServiceName, serviceOptions.LongRequestTime);
+        _metrics = metricsFactory.CreateHttpClientMetricsFactory(serviceOptions.ServiceName,
+            serviceOptions.ServiceName, serviceOptions.LongRequestTime);
 
         Logger.WarnWithObject("HttpMetricsHandler constructor", new { serviceOptions.ServiceName });
     }
