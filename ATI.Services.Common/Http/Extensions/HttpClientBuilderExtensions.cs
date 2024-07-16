@@ -13,8 +13,7 @@ public static class HttpClientBuilderExtensions
     {
         httpClientBuilder.Services.AddTransient<HttpProxyFieldsHandler<TServiceOptions>>();
 
-        return httpClientBuilder
-            .AddHttpMessageHandler<HttpProxyFieldsHandler<TServiceOptions>>();
+        return httpClientBuilder.AddHttpMessageHandler<HttpProxyFieldsHandler<TServiceOptions>>();
     }
     
     public static IHttpClientBuilder WithLogging<TServiceOptions>(this IHttpClientBuilder httpClientBuilder)
@@ -22,8 +21,7 @@ public static class HttpClientBuilderExtensions
     {
         httpClientBuilder.Services.AddTransient<HttpLoggingHandler<TServiceOptions>>();
 
-        return httpClientBuilder
-            .AddHttpMessageHandler<HttpLoggingHandler<TServiceOptions>>();
+        return httpClientBuilder.AddHttpMessageHandler<HttpLoggingHandler<TServiceOptions>>();
     }
     
     public static IHttpClientBuilder WithMetrics<TServiceOptions>(this IHttpClientBuilder httpClientBuilder)

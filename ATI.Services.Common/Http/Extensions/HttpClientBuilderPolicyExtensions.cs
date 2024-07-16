@@ -31,7 +31,8 @@ public static class HttpClientBuilderPolicyExtensions
     public static IHttpClientBuilder AddRetryPolicy(
         this IHttpClientBuilder clientBuilder,
         BaseServiceOptions serviceOptions,
-        ILogger logger)
+        ILogger logger
+    )
     {
         var methodsToRetry = serviceOptions.HttpMethodsToRetry ?? new List<string> { HttpMethod.Get.Method };
 

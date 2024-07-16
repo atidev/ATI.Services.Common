@@ -33,6 +33,7 @@ internal static class HttpRequestOptionsExtensions
     {
         options.Set(RetryPolicyOptionsKey, settings);
     }
+
     public static RetryPolicySettings GetRetryPolicy(this HttpRequestOptions options)
     {
         options.TryGetValue(RetryPolicyOptionsKey, out var retryPolicy);
