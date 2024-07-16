@@ -30,7 +30,8 @@ public static class HttpClientExtensions
         this HttpClient httpClient,
         string serviceAsClientName,
         string serviceAsClientHeaderName,
-        Dictionary<string, string> additionalHeaders)
+        Dictionary<string, string> additionalHeaders
+    )
     {
         httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         if (!string.IsNullOrEmpty(serviceAsClientName) &&
@@ -51,14 +52,16 @@ public static class HttpClientExtensions
     }
 
     [PublicAPI]
-    public static async Task<OperationResult<TResponse>> SendAsync<TResponse>(this HttpClient httpClient,
+    public static async Task<OperationResult<TResponse>> SendAsync<TResponse>(
+        this HttpClient httpClient,
         HttpMethod httpMethod,
         string url,
         string metricEntity,
         string urlTemplate = null,
         Dictionary<string, string> headers = null,
         JsonSerializerOptions serializerOptions = null,
-        RetryPolicySettings retryPolicySettings = null)
+        RetryPolicySettings retryPolicySettings = null
+    )
     {
         try
         {
@@ -75,7 +78,8 @@ public static class HttpClientExtensions
     }
 
     [PublicAPI]
-    public static async Task<OperationResult<TResponse>> SendAsync<TRequest, TResponse>(this HttpClient httpClient,
+    public static async Task<OperationResult<TResponse>> SendAsync<TRequest, TResponse>(
+        this HttpClient httpClient,
         HttpMethod httpMethod,
         string url,
         TRequest request,
@@ -83,7 +87,8 @@ public static class HttpClientExtensions
         string urlTemplate = null,
         Dictionary<string, string> headers = null,
         JsonSerializerOptions serializerOptions = null,
-        RetryPolicySettings retryPolicySettings = null)
+        RetryPolicySettings retryPolicySettings = null
+    )
     {
         try
         {
@@ -103,7 +108,8 @@ public static class HttpClientExtensions
     }
 
     [PublicAPI]
-    public static async Task<OperationResult<TResponse>> SendAsync<TResponse>(this HttpClient httpClient,
+    public static async Task<OperationResult<TResponse>> SendAsync<TResponse>(
+        this HttpClient httpClient,
         HttpMethod httpMethod,
         string url,
         HttpContent content,
@@ -111,7 +117,8 @@ public static class HttpClientExtensions
         string urlTemplate = null,
         Dictionary<string, string> headers = null,
         JsonSerializerOptions serializerOptions = null,
-        RetryPolicySettings retryPolicySettings = null)
+        RetryPolicySettings retryPolicySettings = null
+    )
     {
         try
         {
@@ -129,7 +136,8 @@ public static class HttpClientExtensions
     }
 
     [PublicAPI]
-    public static async Task<OperationResult<byte[]>> GetByteArrayAsync(this HttpClient httpClient,
+    public static async Task<OperationResult<byte[]>> GetByteArrayAsync(
+        this HttpClient httpClient,
         HttpMethod httpMethod,
         string url,
         HttpContent content,
@@ -154,7 +162,8 @@ public static class HttpClientExtensions
     }
     
     [PublicAPI]
-    public static async Task<OperationResult<string>> GetStringAsync<TRequest>(this HttpClient httpClient,
+    public static async Task<OperationResult<string>> GetStringAsync<TRequest>(
+        this HttpClient httpClient,
         HttpMethod httpMethod,
         string url,
         TRequest request,
@@ -162,7 +171,8 @@ public static class HttpClientExtensions
         string urlTemplate = null,
         Dictionary<string, string> headers = null,
         JsonSerializerOptions serializerOptions = null,
-        RetryPolicySettings retryPolicySettings = null)
+        RetryPolicySettings retryPolicySettings = null
+    )
     {
         try
         {
@@ -182,14 +192,15 @@ public static class HttpClientExtensions
     }
     
     [PublicAPI]
-    public static async Task<OperationResult<string>> GetStringAsync(this HttpClient httpClient,
+    public static async Task<OperationResult<string>> GetStringAsync(
+        this HttpClient httpClient,
         HttpMethod httpMethod,
         string url,
         string metricEntity,
         string urlTemplate = null,
         Dictionary<string, string> headers = null,
-        JsonSerializerOptions serializerOptions = null,
-        RetryPolicySettings retryPolicySettings = null)
+        RetryPolicySettings retryPolicySettings = null
+    )
     {
         try
         {
@@ -212,7 +223,8 @@ public static class HttpClientExtensions
         string metricEntity,
         string urlTemplate,
         Dictionary<string, string> headers,
-        RetryPolicySettings retryPolicySettings)
+        RetryPolicySettings retryPolicySettings
+    )
     {
         var requestMessage = new HttpRequestMessage(httpMethod, url);
 

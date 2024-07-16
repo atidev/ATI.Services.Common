@@ -39,7 +39,9 @@ public static class HttpClientExtensionsForNewtonsoft
         Dictionary<string, string> headers = null,
         JsonSerializer serializer = null,
         RetryPolicySettings retryPolicySettings = null,
-        ILogger logger = null)
+        ILogger logger = null,
+        bool checkResponseStatusCode = true
+    )
     {
         try
         {
@@ -51,7 +53,7 @@ public static class HttpClientExtensionsForNewtonsoft
 
             using var responseMessage = await httpClient.SendAsync(requestMessage);
 
-            if (!responseMessage.IsSuccessStatusCode)
+            if (checkResponseStatusCode && !responseMessage.IsSuccessStatusCode)
                 return new OperationResult<TResponse>(responseMessage.StatusCode);
 
             using var stream = await responseMessage.Content.ReadAsStreamAsync();
@@ -80,7 +82,8 @@ public static class HttpClientExtensionsForNewtonsoft
         Dictionary<string, string> headers = null,
         JsonSerializer serializer = null,
         RetryPolicySettings retryPolicySettings = null,
-        ILogger logger = null
+        ILogger logger = null,
+        bool checkResponseStatusCode = true
     )
     {
         try
@@ -96,7 +99,7 @@ public static class HttpClientExtensionsForNewtonsoft
 
             using var responseMessage = await httpClient.SendAsync(requestMessage);
 
-            if (!responseMessage.IsSuccessStatusCode)
+            if (checkResponseStatusCode && !responseMessage.IsSuccessStatusCode)
                 return new OperationResult<TResponse>(responseMessage.StatusCode);
 
             using var stream = await responseMessage.Content.ReadAsStreamAsync();
@@ -111,6 +114,43 @@ public static class HttpClientExtensionsForNewtonsoft
             logger.ErrorWithObject(ex, new { httpMethod, url, request, headers });
 
             return new OperationResult<TResponse>(ex);
+        }
+    }
+
+    [PublicAPI]
+    public static async Task<OperationResult<string>> SendAsync<TRequest>(
+        this HttpClient httpClient,
+        HttpMethod httpMethod,
+        string url,
+        TRequest request,
+        string metricEntity,
+        string urlTemplate = null,
+        Dictionary<string, string> headers = null,
+        JsonSerializer serializer = null,
+        RetryPolicySettings retryPolicySettings = null,
+        ILogger logger = null
+    )
+    {
+        try
+        {
+            logger ??= Logger;
+            serializer ??= SnakeCaseSerializer;
+
+            using var requestMessage =
+                HttpClientExtensions.CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity, urlTemplate, headers, retryPolicySettings);
+
+            var content = request != null ? serializer.Serialize(request) : string.Empty;
+            requestMessage.Content = new StringContent(content, Encoding.UTF8, "application/json");
+
+            using var responseMessage = await httpClient.SendAsync(requestMessage);
+
+            return await responseMessage.GetStringFromHttpResponseAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.ErrorWithObject(ex, new { httpMethod, url, request, headers });
+
+            return new OperationResult<string>(ex);
         }
     }
 }
