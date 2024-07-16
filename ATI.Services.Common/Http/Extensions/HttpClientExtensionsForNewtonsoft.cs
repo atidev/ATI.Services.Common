@@ -37,7 +37,7 @@ public static class HttpClientExtensionsForNewtonsoft
         string metricEntity,
         string urlTemplate = null,
         Dictionary<string, string> headers = null,
-        JsonSerializer? serializer = null,
+        JsonSerializer serializer = null,
         RetryPolicySettings retryPolicySettings = null,
         ILogger logger = null)
     {
@@ -78,7 +78,7 @@ public static class HttpClientExtensionsForNewtonsoft
         string metricEntity,
         string urlTemplate = null,
         Dictionary<string, string> headers = null,
-        JsonSerializer? serializer = null,
+        JsonSerializer serializer = null,
         RetryPolicySettings retryPolicySettings = null,
         ILogger logger = null
     )
