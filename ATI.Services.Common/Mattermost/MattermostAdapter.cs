@@ -1,30 +1,32 @@
+#nullable enable
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
-using ATI.Services.Common.Http.Extensions;
 using ATI.Services.Common.Logging;
-using ATI.Services.Common.Metrics.HttpWrapper;
-using ATI.Services.Common.Serializers;
+using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using NLog;
 
 namespace ATI.Services.Common.Mattermost;
 
+/// <summary>
+/// Адаптер для интеграции с Time
+/// </summary>
+[PublicAPI]
 public class MattermostAdapter(
     IHttpClientFactory httpClientFactory,
     MattermostOptions mattermostOptions)
 {
     private const string MattermostPostMessageUrl = "/api/v1/posts";
+    private const string DefaultIconEmoji = ":upside_down_face:";
+    private const string DefaultBotName = "Nameless Bot";
     public const string HttpClientName = nameof(MattermostAdapter);
-
-    private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
-
-    private readonly JsonSerializerSettings _jsonSerializerSettings = new()
+    
+    private static readonly JsonSerializerSettings JsonSerializerSettings = new()
     {
         ContractResolver = new DefaultContractResolver
         {
@@ -37,8 +39,17 @@ public class MattermostAdapter(
         NullValueHandling = NullValueHandling.Include
     };
 
+    private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
+
+    /// <summary>
+    /// Отправляет сообщение используя webhook
+    /// </summary>
+    /// <param name="text">Текст сообщения (поддерживает markdown)</param>
     public async Task<OperationResult> SendAlertAsync(string text)
     {
+        if (mattermostOptions.WebHook is null)
+            return new(ActionStatus.LogicalError, "Please setup WebHook in MattermostOptions");
+
         try
         {
             using var httpClient = httpClientFactory.CreateClient(HttpClientName);
@@ -46,14 +57,15 @@ public class MattermostAdapter(
             var payload = new MattermostWebHookRequestBody
             {
                 Text = text,
-                IconEmoji = mattermostOptions.IconEmoji,
-                Username = mattermostOptions.UserName
+                IconEmoji = mattermostOptions.IconEmoji ?? DefaultIconEmoji,
+                Username = mattermostOptions.UserName ?? DefaultBotName
             };
+
             // We do it, because mattermost api return text format instead of json
             using var httpContent = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
-                Content = new StringContent(JsonConvert.SerializeObject(payload, _jsonSerializerSettings),
+                Content = new StringContent(JsonConvert.SerializeObject(payload, JsonSerializerSettings),
                     Encoding.UTF8, "application/json"),
                 RequestUri = new Uri(url)
             };
@@ -74,6 +86,11 @@ public class MattermostAdapter(
         }
     }
 
+    /// <summary>
+    /// Отправить сообщение в канал используя интеграцию через бота 
+    /// </summary>
+    /// <param name="message">Текст сообщения (поддерживает markdown)</param>
+    /// <param name="channelId">Id канала</param>
     public async Task<OperationResult<PostMessageResponse>> SendMessageAsync(string message, string channelId)
     {
         var payload = new MattermostNotificationPayload
@@ -84,13 +101,23 @@ public class MattermostAdapter(
         return await SendBotMessageAsync(payload);
     }
 
-    public async Task<OperationResult<PostMessageResponse>> SendThreadMessageAsync(string message, string channelId,
-        string messageId)
+    /// <summary>
+    /// Отправить сообщение в тред
+    /// </summary>
+    /// <param name="message">Текст сообщения</param>
+    /// <param name="channelId">Id канала</param>
+    /// <param name="rootId">Id корневого сообщения (первого сообщения в треде)</param>
+    /// <returns></returns>
+    public async Task<OperationResult<PostMessageResponse>> SendThreadMessageAsync(
+        string message,
+        string channelId,
+        string rootId
+    )
     {
         var payload = new MattermostNotificationPayload
         {
             ChannelId = channelId,
-            RootId = messageId,
+            RootId = rootId,
             Message = message,
         };
         return await SendBotMessageAsync(payload);
@@ -106,7 +133,7 @@ public class MattermostAdapter(
             using var httpContent = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
-                Content = new StringContent(JsonConvert.SerializeObject(payload, _jsonSerializerSettings),
+                Content = new StringContent(JsonConvert.SerializeObject(payload, JsonSerializerSettings),
                     Encoding.UTF8, "application/json"),
                 RequestUri = new Uri(url),
                 Headers =
@@ -116,18 +143,20 @@ public class MattermostAdapter(
             };
 
             using var httpResponse = await httpClient.SendAsync(httpContent);
+
             if (!httpResponse.IsSuccessStatusCode)
             {
-                const string errMsg = "Mattermost return error status code";
                 var responseErr = await httpResponse.Content.ReadAsStringAsync();
-                _logger.ErrorWithObject(null, errMsg, new { request = httpContent, response = responseErr });
+                _logger.ErrorWithObject(null, "Mattermost return error status code", new { request = httpContent, response = responseErr });
                 return new(ActionStatus.ExternalServerError, responseErr);
             }
 
             var ans = await httpResponse.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<PostMessageResponse>(ans, _jsonSerializerSettings);
+            var result = JsonConvert.DeserializeObject<PostMessageResponse>(ans, JsonSerializerSettings);
 
-            return new(result);
+            return result is not null 
+                ? new(result) 
+                : new (ActionStatus.LogicalError, $"Не удалось десериализовать ответ. Тело: {ans}");
         }
         catch (Exception e)
         {

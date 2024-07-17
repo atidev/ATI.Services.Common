@@ -1,10 +1,15 @@
-using Newtonsoft.Json;
+#nullable enable
+using JetBrains.Annotations;
 
 namespace ATI.Services.Common.Mattermost;
 
+/// <summary>
+/// Ответ на попытку создания сообщения
+/// </summary>
+[PublicAPI]
 public class PostMessageResponse
 {
-    public string Id { get; set; }
-    public string ChannelId { get; set; }
-    public string Message { get; set; }
+    public required string Id { get; init; }
+    public required string ChannelId { get; init; }
+    public required string Message { get; init; }
 }

@@ -1,8 +1,15 @@
+#nullable enable
+using JetBrains.Annotations;
+
 namespace ATI.Services.Common.Mattermost;
 
+/// <summary>
+/// Модель отправки сообщения через webhook
+/// </summary>
+[PublicAPI]
 public class MattermostWebHookRequestBody
 {
-    public string Text { get; set; }
-    public string Username { get; set; }
-    public string IconEmoji { get; set; }
+    public required string Text { get; init; }
+    public required string Username { get; init; }
+    public required string IconEmoji { get; init; }
 }

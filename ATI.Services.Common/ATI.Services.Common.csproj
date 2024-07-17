@@ -8,6 +8,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>atisu.services.common</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <WarningsAsErrors>Nullable</WarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup>
     <NoWarn>1701;1702;CS1591;CS1571;CS1573;CS1574</NoWarn>
