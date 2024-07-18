@@ -24,6 +24,7 @@ public static class MetricsExtensions
         
         services.AddHttpContextAccessor();
         services.AddSingleton<IMetricsFactory, MetricsFactory>();
+        services.AddSingleton<MetricsFactory>();
             
         InitializeExceptionsMetrics();
 
