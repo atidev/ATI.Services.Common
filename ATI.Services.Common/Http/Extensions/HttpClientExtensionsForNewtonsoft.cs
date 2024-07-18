@@ -29,6 +29,8 @@ public static class HttpClientExtensionsForNewtonsoft
         }
     };
 
+    #region Базовые методы
+
     [PublicAPI]
     public static async Task<OperationResult<TResponse>> SendAsync<TResponse>(
         this HttpClient httpClient,
@@ -153,4 +155,144 @@ public static class HttpClientExtensionsForNewtonsoft
             return new OperationResult<string>(ex);
         }
     }
+
+    #endregion
+
+    #region Производные методы
+
+    [PublicAPI]
+    public static Task<OperationResult<TResponse>> GetAsync<TResponse>(
+        this HttpClient httpClient,
+        string url,
+        string metricEntity,
+        string? urlTemplate = null,
+        Dictionary<string, string>? headers = null,
+        JsonSerializer? serializer = null,
+        RetryPolicySettings? retryPolicySettings = null
+    )
+      => SendAsync<TResponse>(
+            httpClient,
+            HttpMethod.Get,
+            url,
+            metricEntity,
+            urlTemplate,
+            headers,
+            serializer,
+            retryPolicySettings
+         );
+
+    [PublicAPI]
+    public static Task<OperationResult<string>> PostAsync<TRequest>(
+        this HttpClient httpClient,
+        string url,
+        TRequest request,
+        string metricEntity,
+        string? urlTemplate = null,
+        Dictionary<string, string>? headers = null,
+        JsonSerializer? serializer = null,
+        RetryPolicySettings? retryPolicySettings = null
+    )
+      => SendAsync(
+            httpClient,
+            HttpMethod.Post,
+            url,
+            request,
+            metricEntity,
+            urlTemplate,
+            headers,
+            serializer,
+            retryPolicySettings
+         );
+
+    [PublicAPI]
+    public static Task<OperationResult<TResponse>> PostAsync<TRequest, TResponse>
+    (
+        this HttpClient httpClient,
+        string url,
+        TRequest request,
+        string metricEntity,
+        string? urlTemplate = null,
+        Dictionary<string, string>? headers = null,
+        JsonSerializer? serializer = null,
+        RetryPolicySettings? retryPolicySettings = null
+    )
+      => SendAsync<TRequest, TResponse>(
+            httpClient,
+            HttpMethod.Post,
+            url,
+            request,
+            metricEntity,
+            urlTemplate,
+            headers,
+            serializer,
+            retryPolicySettings
+         );
+    
+    [PublicAPI]
+    public static Task<OperationResult<TResponse>> DeleteAsync<TRequest, TResponse>
+    (
+        this HttpClient httpClient,
+        string url,
+        TRequest request,
+        string metricEntity,
+        string? urlTemplate = null,
+        Dictionary<string, string>? headers = null,
+        JsonSerializer? serializer = null,
+        RetryPolicySettings? retryPolicySettings = null
+    )
+      => SendAsync<TRequest, TResponse>(
+            httpClient,
+            HttpMethod.Delete,
+            url,
+            request,
+            metricEntity,
+            urlTemplate,
+            headers,
+            serializer,
+            retryPolicySettings
+         );
+
+    [PublicAPI]
+    public static Task<OperationResult<string>> DeleteAsync
+    (
+        this HttpClient httpClient,
+        string url,
+        string metricEntity,
+        string? urlTemplate = null,
+        Dictionary<string, string>? headers = null,
+        RetryPolicySettings? retryPolicySettings = null
+    )
+      => HttpClientExtensions.GetStringAsync(
+            httpClient,
+            HttpMethod.Delete,
+            url,
+            metricEntity,
+            urlTemplate,
+            headers,
+            retryPolicySettings
+         );
+
+    [PublicAPI]
+    public static Task<OperationResult<TResponse>> DeleteAsync<TResponse>
+    (
+        this HttpClient httpClient,
+        string url,
+        string metricEntity,
+        string? urlTemplate = null,
+        Dictionary<string, string>? headers = null,
+        JsonSerializer? serializer = null,
+        RetryPolicySettings? retryPolicySettings = null
+    )
+      => SendAsync<TResponse>(
+            httpClient,
+            HttpMethod.Delete,
+            url,
+            metricEntity,
+            urlTemplate,
+            headers,
+            serializer,
+            retryPolicySettings
+         );
+
+    #endregion
 }
