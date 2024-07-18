@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ATI.Services.Common.Extensions;
+using ATI.Services.Common.Metrics.Interfaces;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -22,7 +23,7 @@ public static class MetricsExtensions
         services.ConfigureByName<MetricsOptions>(); ;
         
         services.AddHttpContextAccessor();
-        services.AddSingleton<MetricsFactory>();
+        services.AddSingleton<IMetricsFactory, MetricsFactory>();
             
         InitializeExceptionsMetrics();
 
