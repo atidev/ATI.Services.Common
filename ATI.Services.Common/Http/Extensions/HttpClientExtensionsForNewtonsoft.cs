@@ -165,10 +165,10 @@ public static class HttpClientExtensionsForNewtonsoft
         this HttpClient httpClient,
         string url,
         string metricEntity,
-        string? urlTemplate = null,
-        Dictionary<string, string>? headers = null,
-        JsonSerializer? serializer = null,
-        RetryPolicySettings? retryPolicySettings = null
+        string urlTemplate = null,
+        Dictionary<string, string> headers = null,
+        JsonSerializer serializer = null,
+        RetryPolicySettings retryPolicySettings = null
     )
       => SendAsync<TResponse>(
             httpClient,
@@ -187,10 +187,10 @@ public static class HttpClientExtensionsForNewtonsoft
         string url,
         TRequest request,
         string metricEntity,
-        string? urlTemplate = null,
-        Dictionary<string, string>? headers = null,
-        JsonSerializer? serializer = null,
-        RetryPolicySettings? retryPolicySettings = null
+        string urlTemplate = null,
+        Dictionary<string, string> headers = null,
+        JsonSerializer serializer = null,
+        RetryPolicySettings retryPolicySettings = null
     )
       => SendAsync(
             httpClient,
@@ -211,10 +211,10 @@ public static class HttpClientExtensionsForNewtonsoft
         string url,
         TRequest request,
         string metricEntity,
-        string? urlTemplate = null,
-        Dictionary<string, string>? headers = null,
-        JsonSerializer? serializer = null,
-        RetryPolicySettings? retryPolicySettings = null
+        string urlTemplate = null,
+        Dictionary<string, string> headers = null,
+        JsonSerializer serializer = null,
+        RetryPolicySettings retryPolicySettings = null
     )
       => SendAsync<TRequest, TResponse>(
             httpClient,
@@ -235,10 +235,10 @@ public static class HttpClientExtensionsForNewtonsoft
         string url,
         TRequest request,
         string metricEntity,
-        string? urlTemplate = null,
-        Dictionary<string, string>? headers = null,
-        JsonSerializer? serializer = null,
-        RetryPolicySettings? retryPolicySettings = null
+        string urlTemplate = null,
+        Dictionary<string, string> headers = null,
+        JsonSerializer serializer = null,
+        RetryPolicySettings retryPolicySettings = null
     )
       => SendAsync<TRequest, TResponse>(
             httpClient,
@@ -258,9 +258,9 @@ public static class HttpClientExtensionsForNewtonsoft
         this HttpClient httpClient,
         string url,
         string metricEntity,
-        string? urlTemplate = null,
-        Dictionary<string, string>? headers = null,
-        RetryPolicySettings? retryPolicySettings = null
+        string urlTemplate = null,
+        Dictionary<string, string> headers = null,
+        RetryPolicySettings retryPolicySettings = null
     )
       => HttpClientExtensions.GetStringAsync(
             httpClient,
@@ -278,15 +278,62 @@ public static class HttpClientExtensionsForNewtonsoft
         this HttpClient httpClient,
         string url,
         string metricEntity,
-        string? urlTemplate = null,
-        Dictionary<string, string>? headers = null,
-        JsonSerializer? serializer = null,
-        RetryPolicySettings? retryPolicySettings = null
+        string urlTemplate = null,
+        Dictionary<string, string> headers = null,
+        JsonSerializer serializer = null,
+        RetryPolicySettings retryPolicySettings = null
     )
       => SendAsync<TResponse>(
             httpClient,
             HttpMethod.Delete,
             url,
+            metricEntity,
+            urlTemplate,
+            headers,
+            serializer,
+            retryPolicySettings
+         );
+
+    [PublicAPI]
+    public static Task<OperationResult<string>> PutAsync<TRequest>(
+        this HttpClient httpClient,
+        string url,
+        TRequest request,
+        string metricEntity,
+        string urlTemplate = null,
+        Dictionary<string, string> headers = null,
+        JsonSerializer serializer = null,
+        RetryPolicySettings retryPolicySettings = null
+    )
+      => SendAsync(
+            httpClient,
+            HttpMethod.Put,
+            url,
+            request,
+            metricEntity,
+            urlTemplate,
+            headers,
+            serializer,
+            retryPolicySettings
+         );
+
+    [PublicAPI]
+    public static Task<OperationResult<TResponse>> PutAsync<TRequest, TResponse>
+    (
+        this HttpClient httpClient,
+        string url,
+        TRequest request,
+        string metricEntity,
+        string urlTemplate = null,
+        Dictionary<string, string> headers = null,
+        JsonSerializer serializer = null,
+        RetryPolicySettings retryPolicySettings = null
+    )
+      => SendAsync<TRequest, TResponse>(
+            httpClient,
+            HttpMethod.Put,
+            url,
+            request,
             metricEntity,
             urlTemplate,
             headers,
