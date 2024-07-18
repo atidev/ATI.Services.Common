@@ -21,7 +21,7 @@ public class MattermostAdapter(
     IHttpClientFactory httpClientFactory,
     MattermostOptions mattermostOptions)
 {
-    private const string MattermostPostMessageUrl = "/api/v1/posts";
+    private const string MattermostPostMessageUrl = "/api/v4/posts";
     private const string DefaultIconEmoji = ":upside_down_face:";
     private const string DefaultBotName = "Nameless Bot";
     public const string HttpClientName = nameof(MattermostAdapter);
