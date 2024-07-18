@@ -1,12 +1,13 @@
 using System;
 using ATI.Services.Common.Logging;
+using ATI.Services.Common.Metrics.Interfaces;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
 namespace ATI.Services.Common.Metrics;
 
-public class MetricsFactory
+public class MetricsFactory : IMetricsFactory
 {
     public const string Prefix = "common_metric";
     private static TimeSpan _defaultLongRequestTime = TimeSpan.FromSeconds(1);
