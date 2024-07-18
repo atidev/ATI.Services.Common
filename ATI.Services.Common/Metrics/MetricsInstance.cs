@@ -2,13 +2,14 @@ using System;
 using System.Runtime.CompilerServices;
 using ATI.Services.Common.Http;
 using ATI.Services.Common.Logging;
+using ATI.Services.Common.Metrics.Interfaces;
 using ATI.Services.Common.Variables;
 using Microsoft.AspNetCore.Http;
 using Prometheus;
 
 namespace ATI.Services.Common.Metrics;
 
-public class MetricsInstance
+public class MetricsInstance : IMetricsInstance
 {
     private readonly string _className;
     private readonly string _externalHttpServiceName;
