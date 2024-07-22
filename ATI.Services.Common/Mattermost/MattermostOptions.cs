@@ -23,4 +23,9 @@ public class MattermostOptions
     /// Bearer Access Token для интеграции через бота
     /// </summary>
     public string? BotAccessToken { get; init; }
+    
+    /// <summary>
+    /// Канал для отправки уведомлений
+    /// </summary>
+    public string? AlarmChannel { get; init; }
 }

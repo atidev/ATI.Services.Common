@@ -14,7 +14,7 @@ using NLog;
 namespace ATI.Services.Common.Mattermost;
 
 /// <summary>
-/// Адаптер для интеграции с Time
+/// Адаптер для интеграции с Mattermost
 /// </summary>
 [PublicAPI]
 public class MattermostAdapter(
