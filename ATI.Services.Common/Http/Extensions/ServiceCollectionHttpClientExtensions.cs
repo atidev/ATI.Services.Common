@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Diagnostics;
 using System.Net.Http;
@@ -21,14 +22,14 @@ public static class ServiceCollectionHttpClientExtensions
     /// <param name="services"></param>
     /// <typeparam name="TServiceOptions"></typeparam>
     /// <returns></returns>s
-    public static IServiceCollection AddCustomHttpClient<TServiceOptions>(this IServiceCollection services, Action<HttpClient> additionalActions = null)
+    public static IServiceCollection AddCustomHttpClient<TServiceOptions>(this IServiceCollection services, Action<HttpClient>? additionalActions = null)
         where TServiceOptions : BaseServiceOptions
     {
         var (settings, logger) = GetInitialData<TServiceOptions>();
 
         services.AddHttpClient(settings.ServiceName, httpClient =>
             {
-                ConfigureHttpClient(httpClient, settings);
+                ConfigureHttpClientHeaders(httpClient, settings);
                 additionalActions?.Invoke(httpClient);
             })
             .AddDefaultHandlers(settings, logger);
@@ -45,7 +46,7 @@ public static class ServiceCollectionHttpClientExtensions
     /// <typeparam name="TAdapter">Type of the http adapter for typed HttpClient</typeparam>
     /// <typeparam name="TServiceOptions"></typeparam>
     /// <returns></returns>s
-    public static IServiceCollection AddCustomHttpClient<TAdapter, TServiceOptions>(this IServiceCollection services, Action<HttpClient> additionalActions = null)
+    public static IServiceCollection AddCustomHttpClient<TAdapter, TServiceOptions>(this IServiceCollection services, Action<HttpClient>? additionalActions = null)
         where TAdapter : class
         where TServiceOptions : BaseServiceOptions
     {
@@ -53,7 +54,7 @@ public static class ServiceCollectionHttpClientExtensions
 
         services.AddHttpClient<TAdapter>(httpClient =>
             {
-                ConfigureHttpClient(httpClient, settings);
+                ConfigureHttpClientHeaders(httpClient, settings);
                 additionalActions?.Invoke(httpClient);
             })
             .AddDefaultHandlers(settings, logger);
@@ -62,16 +63,20 @@ public static class ServiceCollectionHttpClientExtensions
     }
 
 
-    private static (TServiceOptions settings, ILogger logger) GetInitialData<TServiceOptions>()
+    private static (TServiceOptions settings, ILogger? logger) GetInitialData<TServiceOptions>()
         where TServiceOptions : BaseServiceOptions
     {
         var className = typeof(TServiceOptions).Name;
         var settings = ConfigurationManager.GetSection(className).Get<TServiceOptions>();
+        
+        if (settings is null)
+            throw new NullReferenceException($"Please configure {nameof(TServiceOptions)} options");
+        
         var logger = LogManager.GetLogger(settings.ServiceName);
         return (settings, logger);
     }
 
-    private static void ConfigureHttpClient(HttpClient httpClient, BaseServiceOptions settings)
+    private static void ConfigureHttpClientHeaders(HttpClient httpClient, BaseServiceOptions settings)
     {
         if (settings.AdditionalHeaders is { Count: > 0 })
         {
@@ -82,7 +87,7 @@ public static class ServiceCollectionHttpClientExtensions
         }
     }
 
-    private static IHttpClientBuilder AddDefaultHandlers<TServiceOptions>(this IHttpClientBuilder builder, TServiceOptions settings, ILogger logger)
+    private static IHttpClientBuilder AddDefaultHandlers<TServiceOptions>(this IHttpClientBuilder builder, TServiceOptions settings, ILogger? logger)
         where TServiceOptions : BaseServiceOptions
     {
         return builder
