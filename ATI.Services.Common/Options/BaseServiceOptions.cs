@@ -36,17 +36,27 @@ public class BaseServiceOptions
     /// Median for spreading queries over time
     /// </summary>
     public TimeSpan MedianFirstRetryDelay { get; set; } = TimeSpan.FromSeconds(1);
-
-    /// <summary>
-    /// Number of exceptions after which CB will be opened (will stop making requests)
-    /// Set 0 if you dont want to use CB
-    /// </summary>
-    public int CircuitBreakerExceptionsCount { get; set; } = 20;
     
     /// <summary>
     /// Time after which CB will be closed (will make requests)
     /// </summary>
     public TimeSpan CircuitBreakerDuration { get; set; } = TimeSpan.FromSeconds(2);
+
+    /// <summary>
+    /// Time window over which failure-success ratio calculated 
+    /// </summary>
+    public TimeSpan CircuitBreakerSamplingDuration { get; set; } = TimeSpan.FromSeconds(5);
+
+    /// <summary>
+    /// Failure-success ratio for circuit open
+    /// </summary>
+    public double CircuitBreakerFailureThreshold { get; set; } = 0.5;
+
+    /// <summary>
+    /// Minimal number of actions must occur for specified sampling duration that actions was significant for statistic
+    /// set 0 if don't want use CB
+    /// </summary>
+    public int CircuitBreakerMinimumThroughput { get; set; } = 10;
     
     public string Environment { get; set; }
     public TimeSpan? LongRequestTime { get; set; }
