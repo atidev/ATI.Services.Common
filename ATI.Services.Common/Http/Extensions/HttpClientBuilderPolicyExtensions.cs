@@ -161,6 +161,7 @@ public static class HttpClientBuilderPolicyExtensions
                     });
                     Gauge.WithLabels(serviceOptions.ServiceName,  host);
                     Gauge.Inc();
+                    Gauge.Publish();
                 },
                 context =>
                 {
@@ -173,6 +174,7 @@ public static class HttpClientBuilderPolicyExtensions
                     });
                     Gauge.WithLabels(serviceOptions.ServiceName, host);
                     Gauge.Dec();
+                    Gauge.Publish();
                 },
                 () =>
                 {
