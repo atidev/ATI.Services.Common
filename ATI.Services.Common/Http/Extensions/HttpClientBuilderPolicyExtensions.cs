@@ -30,13 +30,11 @@ public static class HttpClientBuilderPolicyExtensions
         medianFirstRetryDelay: medianFirstRetryDelay,
         retryCount: retryCount);
     
-    private static readonly Counter _counter = Prometheus.Metrics.CreateCounter($"{MetricsFactory.Prefix}_CircuitBreaker",
+    private static readonly Gauge _gauge = Prometheus.Metrics.CreateGauge($"{MetricsFactory.Prefix}_CircuitBreaker",
         string.Empty,
-        new CounterConfiguration
+        new GaugeConfiguration
         {
-            LabelNames = new[] { "status" }
-                .Concat(MetricsLabelsAndHeaders.UserLabels)
-                .ToArray()
+            LabelNames = ["serviceName"]
         });
 
     public static IHttpClientBuilder AddRetryPolicy(
@@ -159,7 +157,8 @@ public static class HttpClientBuilderPolicyExtensions
                         circuitState,
                         timeSpan
                     });
-                    _counter.Inc();
+                    _gauge.WithLabels(serviceOptions.ServiceName);
+                    _gauge.Inc();
                 },
                 context =>
                 {
@@ -170,7 +169,8 @@ public static class HttpClientBuilderPolicyExtensions
                         message.Method,
                         context
                     });
-                    _counter.Inc(-1);
+                    _gauge.WithLabels(serviceOptions.ServiceName);
+                    _gauge.Dec();
                 },
                 () =>
                 {
