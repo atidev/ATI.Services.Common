@@ -263,8 +263,7 @@ public static class HttpClientExtensionsForNewtonsoft
         Dictionary<string, string> headers = null,
         RetryPolicySettings retryPolicySettings = null
     )
-      => HttpClientExtensions.GetStringAsync(
-            httpClient,
+      => httpClient.GetStringAsync(            
             HttpMethod.Delete,
             url,
             metricEntity,
