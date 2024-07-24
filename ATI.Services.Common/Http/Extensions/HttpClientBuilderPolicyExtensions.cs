@@ -30,7 +30,7 @@ public static class HttpClientBuilderPolicyExtensions
         medianFirstRetryDelay: medianFirstRetryDelay,
         retryCount: retryCount);
     
-    private static readonly Gauge _gauge = Prometheus.Metrics.CreateGauge($"{MetricsFactory.Prefix}_CircuitBreaker",
+    private static readonly Gauge Gauge = Prometheus.Metrics.CreateGauge($"{MetricsFactory.Prefix}_CircuitBreaker",
         string.Empty,
         new GaugeConfiguration
         {
@@ -157,8 +157,8 @@ public static class HttpClientBuilderPolicyExtensions
                         circuitState,
                         timeSpan
                     });
-                    _gauge.WithLabels(serviceOptions.ServiceName);
-                    _gauge.Inc();
+                    Gauge.WithLabels(serviceOptions.ServiceName);
+                    Gauge.Inc();
                 },
                 context =>
                 {
@@ -169,8 +169,8 @@ public static class HttpClientBuilderPolicyExtensions
                         message.Method,
                         context
                     });
-                    _gauge.WithLabels(serviceOptions.ServiceName);
-                    _gauge.Dec();
+                    Gauge.WithLabels(serviceOptions.ServiceName);
+                    Gauge.Dec();
                 },
                 () =>
                 {
