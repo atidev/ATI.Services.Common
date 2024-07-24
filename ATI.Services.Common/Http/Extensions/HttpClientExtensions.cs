@@ -187,8 +187,7 @@ public static class HttpClientExtensions
         string url,
         string metricEntity,
         string urlTemplate = null,
-        Dictionary<string, string> headers = null,
-        JsonSerializerOptions serializerOptions = null,
+        Dictionary<string, string> headers = null,        
         RetryPolicySettings retryPolicySettings = null)
     {
         try
