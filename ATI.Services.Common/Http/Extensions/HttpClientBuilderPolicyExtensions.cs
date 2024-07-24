@@ -34,7 +34,7 @@ public static class HttpClientBuilderPolicyExtensions
         string.Empty,
         new GaugeConfiguration
         {
-            LabelNames = ["serviceName"]
+            LabelNames = ["serviceName", "host"]
         });
 
     public static IHttpClientBuilder AddRetryPolicy(
@@ -106,10 +106,11 @@ public static class HttpClientBuilderPolicyExtensions
             if (circuitBreakerMinimumThroughput == 0)
                 return Policy.NoOpAsync<HttpResponseMessage>();
 
-            var policyKey = $"{message.RequestUri.Host}:{message.RequestUri.Port}";
+            var host = message.RequestUri.Host;
+            var policyKey = $"{host}:{message.RequestUri.Port}";
             var policy = registry.GetOrAdd(policyKey,
                 BuildCircuitBreakerPolicy(message, serviceOptions, circuitBreakerDuration,
-                    circuitBreakerSamplingDuration, circuitBreakerFailureThreshold, circuitBreakerMinimumThroughput,
+                    circuitBreakerSamplingDuration, circuitBreakerFailureThreshold, circuitBreakerMinimumThroughput, host,
                     logger));
             return policy;
         });
@@ -135,6 +136,7 @@ public static class HttpClientBuilderPolicyExtensions
         TimeSpan circuitBreakerSamplingDuration,
         double circuitBreakerFailureThreshold,
         int circuitBreakerMinimumThroughput,
+        string host,
         ILogger logger)
     {
         return HttpPolicyExtensions
@@ -157,9 +159,8 @@ public static class HttpClientBuilderPolicyExtensions
                         circuitState,
                         timeSpan
                     });
-                    Gauge.WithLabels(serviceOptions.ServiceName);
+                    Gauge.WithLabels(serviceOptions.ServiceName,  host);
                     Gauge.Inc();
-                    Gauge.Publish();
                 },
                 context =>
                 {
@@ -170,9 +171,8 @@ public static class HttpClientBuilderPolicyExtensions
                         message.Method,
                         context
                     });
-                    Gauge.WithLabels(serviceOptions.ServiceName);
+                    Gauge.WithLabels(serviceOptions.ServiceName, host);
                     Gauge.Dec();
-                    Gauge.Publish();
                 },
                 () =>
                 {
