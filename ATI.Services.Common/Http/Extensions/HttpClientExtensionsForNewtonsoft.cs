@@ -15,6 +15,7 @@ using System.Text;
 
 namespace ATI.Services.Common.Http.Extensions.Newtonsoft;
 
+[Obsolete("Хотят оставить только System.Text.Json в этой библиотеке")]
 public static class HttpClientExtensionsForNewtonsoft
 {
     private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
