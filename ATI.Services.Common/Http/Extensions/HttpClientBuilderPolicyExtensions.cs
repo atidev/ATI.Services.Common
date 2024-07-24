@@ -106,11 +106,10 @@ public static class HttpClientBuilderPolicyExtensions
             if (circuitBreakerMinimumThroughput == 0)
                 return Policy.NoOpAsync<HttpResponseMessage>();
 
-            var host = message.RequestUri.Host;
-            var policyKey = $"{host}:{message.RequestUri.Port}";
+            var policyKey = $"{message.RequestUri.Host}:{message.RequestUri.Port}";
             var policy = registry.GetOrAdd(policyKey,
                 BuildCircuitBreakerPolicy(message, serviceOptions, circuitBreakerDuration,
-                    circuitBreakerSamplingDuration, circuitBreakerFailureThreshold, circuitBreakerMinimumThroughput, host,
+                    circuitBreakerSamplingDuration, circuitBreakerFailureThreshold, circuitBreakerMinimumThroughput,
                     logger));
             return policy;
         });
@@ -136,7 +135,6 @@ public static class HttpClientBuilderPolicyExtensions
         TimeSpan circuitBreakerSamplingDuration,
         double circuitBreakerFailureThreshold,
         int circuitBreakerMinimumThroughput,
-        string host,
         ILogger logger)
     {
         return HttpPolicyExtensions
@@ -159,9 +157,8 @@ public static class HttpClientBuilderPolicyExtensions
                         circuitState,
                         timeSpan
                     });
-                    Gauge.WithLabels(serviceOptions.ServiceName,  host);
+                    Gauge.WithLabels(serviceOptions.ServiceName, Environment.MachineName);
                     Gauge.Inc();
-                    Gauge.Publish();
                 },
                 context =>
                 {
@@ -172,9 +169,8 @@ public static class HttpClientBuilderPolicyExtensions
                         message.Method,
                         context
                     });
-                    Gauge.WithLabels(serviceOptions.ServiceName, host);
+                    Gauge.WithLabels(serviceOptions.ServiceName, Environment.MachineName);
                     Gauge.Dec();
-                    Gauge.Publish();
                 },
                 () =>
                 {
