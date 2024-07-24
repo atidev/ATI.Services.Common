@@ -22,7 +22,8 @@ public static class ServiceCollectionHttpClientExtensions
     /// <param name="services"></param>
     /// <typeparam name="TServiceOptions"></typeparam>
     /// <returns></returns>s
-    public static IServiceCollection AddCustomHttpClient<TServiceOptions>(this IServiceCollection services, Action<HttpClient>? additionalActions = null)
+    public static IServiceCollection AddCustomHttpClient<TServiceOptions>(this IServiceCollection services,
+        Action<HttpClient>? additionalActions = null)
         where TServiceOptions : BaseServiceOptions
     {
         var (settings, logger) = GetInitialData<TServiceOptions>();
@@ -46,7 +47,8 @@ public static class ServiceCollectionHttpClientExtensions
     /// <typeparam name="TAdapter">Type of the http adapter for typed HttpClient</typeparam>
     /// <typeparam name="TServiceOptions"></typeparam>
     /// <returns></returns>s
-    public static IServiceCollection AddCustomHttpClient<TAdapter, TServiceOptions>(this IServiceCollection services, Action<HttpClient>? additionalActions = null)
+    public static IServiceCollection AddCustomHttpClient<TAdapter, TServiceOptions>(this IServiceCollection services,
+        Action<HttpClient>? additionalActions = null)
         where TAdapter : class
         where TServiceOptions : BaseServiceOptions
     {
@@ -68,26 +70,26 @@ public static class ServiceCollectionHttpClientExtensions
     {
         var className = typeof(TServiceOptions).Name;
         var settings = ConfigurationManager.GetSection(className).Get<TServiceOptions>();
-        
+
         if (settings is null)
             throw new NullReferenceException($"Please configure {nameof(TServiceOptions)} options");
-        
+
         var logger = LogManager.GetLogger(settings.ServiceName);
         return (settings, logger);
     }
 
     private static void ConfigureHttpClientHeaders(HttpClient httpClient, BaseServiceOptions settings)
     {
-        if (settings.AdditionalHeaders is { Count: > 0 })
+        if (settings.AdditionalHeaders is { Count: <= 0 }) return;
+
+        foreach (var header in settings.AdditionalHeaders)
         {
-            foreach (var header in settings.AdditionalHeaders)
-            {
-                httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
-            }
+            httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
         }
     }
 
-    private static IHttpClientBuilder AddDefaultHandlers<TServiceOptions>(this IHttpClientBuilder builder, TServiceOptions settings, ILogger? logger)
+    private static IHttpClientBuilder AddDefaultHandlers<TServiceOptions>(this IHttpClientBuilder builder,
+        TServiceOptions settings, ILogger? logger)
         where TServiceOptions : BaseServiceOptions
     {
         return builder
