@@ -157,8 +157,7 @@ public static class HttpClientBuilderPolicyExtensions
                         circuitState,
                         timeSpan
                     });
-                    Gauge.WithLabels(serviceOptions.ServiceName, Environment.MachineName);
-                    Gauge.Set(1);
+                    Gauge.Labels(serviceOptions.ServiceName, Environment.MachineName).Set(1);
                 },
                 context =>
                 {
@@ -178,8 +177,7 @@ public static class HttpClientBuilderPolicyExtensions
                         message.RequestUri,
                         message.Method,
                     });
-                    Gauge.WithLabels(serviceOptions.ServiceName, Environment.MachineName);
-                    Gauge.Set(0);
+                    Gauge.Labels(serviceOptions.ServiceName, Environment.MachineName).Set(0);
                 });
     }
 }
