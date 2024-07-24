@@ -158,7 +158,7 @@ public static class HttpClientBuilderPolicyExtensions
                         timeSpan
                     });
                     Gauge.WithLabels(serviceOptions.ServiceName, Environment.MachineName);
-                    Gauge.Inc();
+                    Gauge.Set(1);
                 },
                 context =>
                 {
@@ -169,8 +169,6 @@ public static class HttpClientBuilderPolicyExtensions
                         message.Method,
                         context
                     });
-                    Gauge.WithLabels(serviceOptions.ServiceName, Environment.MachineName);
-                    Gauge.Dec();
                 },
                 () =>
                 {
@@ -180,6 +178,8 @@ public static class HttpClientBuilderPolicyExtensions
                         message.RequestUri,
                         message.Method,
                     });
+                    Gauge.WithLabels(serviceOptions.ServiceName, Environment.MachineName);
+                    Gauge.Set(0);
                 });
     }
 }
