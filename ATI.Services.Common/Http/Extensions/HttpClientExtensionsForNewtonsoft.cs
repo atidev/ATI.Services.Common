@@ -58,7 +58,7 @@ public static class HttpClientExtensionsForNewtonsoft
             if (checkResponseStatusCode && !responseMessage.IsSuccessStatusCode)
                 return new OperationResult<TResponse>(responseMessage.StatusCode);
 
-            using var stream = await responseMessage.Content.ReadAsStreamAsync();
+            await using var stream = await responseMessage.Content.ReadAsStreamAsync();
             using var reader = new StreamReader(stream);
             using var jsonReader = new JsonTextReader(reader);
             var response = serializer.Deserialize<TResponse>(jsonReader);
