@@ -29,13 +29,6 @@ public static class HttpClientBuilderPolicyExtensions
     private static readonly Func<TimeSpan, int, IEnumerable<TimeSpan>> RetryPolicyDelay =  (medianFirstRetryDelay, retryCount) => Backoff.DecorrelatedJitterBackoffV2(
         medianFirstRetryDelay: medianFirstRetryDelay,
         retryCount: retryCount);
-    
-    private static readonly Gauge Gauge = Prometheus.Metrics.CreateGauge($"{MetricsFactory.Prefix}_CircuitBreaker",
-        string.Empty,
-        new GaugeConfiguration
-        {
-            LabelNames = ["serviceName", "host"]
-        });
 
     public static IHttpClientBuilder AddRetryPolicy(
         this IHttpClientBuilder clientBuilder,
@@ -102,8 +95,7 @@ public static class HttpClientBuilderPolicyExtensions
             var circuitBreakerFailureThreshold = serviceOptions.CircuitBreakerFailureThreshold;
             var circuitBreakerMinimumThroughput = serviceOptions.CircuitBreakerMinimumThroughput;
             
-            //подумать какое значение поставить в 0, чтобы не использовать CB
-            if (circuitBreakerMinimumThroughput == 0)
+            if (!serviceOptions.CircuitBreakerEnabled)
                 return Policy.NoOpAsync<HttpResponseMessage>();
 
             var policyKey = $"{message.RequestUri.Host}:{message.RequestUri.Port}";
@@ -157,7 +149,6 @@ public static class HttpClientBuilderPolicyExtensions
                         circuitState,
                         timeSpan
                     });
-                    Gauge.Labels(serviceOptions.ServiceName, Environment.MachineName).Set(1);
                 },
                 context =>
                 {
@@ -177,7 +168,6 @@ public static class HttpClientBuilderPolicyExtensions
                         message.RequestUri,
                         message.Method,
                     });
-                    Gauge.Labels(serviceOptions.ServiceName, Environment.MachineName).Set(0);
                 });
     }
 }

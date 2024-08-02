@@ -36,6 +36,11 @@ public class BaseServiceOptions
     /// Median for spreading queries over time
     /// </summary>
     public TimeSpan MedianFirstRetryDelay { get; set; } = TimeSpan.FromSeconds(1);
+
+    /// <summary>
+    /// Enable/disable CB (enabled by default)
+    /// </summary>
+    public bool CircuitBreakerEnabled = true;
     
     /// <summary>
     /// Time after which CB will be closed (will make requests)
