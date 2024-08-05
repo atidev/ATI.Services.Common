@@ -258,7 +258,6 @@ public class FirmsAdapter
     
     /// <summary>
     /// Minimal number of actions must occur for specified sampling duration that actions was significant for statistic
-    /// set 0 if don't want use CB
     /// </summary>
     public int CircuitBreakerMinimumThroughput { get; set; } = 10;
 ```
