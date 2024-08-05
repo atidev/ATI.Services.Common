@@ -262,7 +262,7 @@ public class FirmsAdapter
     public int CircuitBreakerMinimumThroughput { get; set; } = 10;
 ```
 
-Если вы вызовете `AddCustomHttpClient<>`, по умолчанию будут включены все Policies. Если вы хотите выключить RetryPolicy - поставьте значение 0 у параметра `RetryCount`, CB Policy - `CircuitBreakerExceptionsCount`.
+Если вы вызовете `AddCustomHttpClient<>`, по умолчанию будут включены все Policies. Если вы хотите выключить RetryPolicy - поставьте значение 0 у параметра `RetryCount`, CB Policy - `CircuitBreakerEnabled` : false.
 Также можно переопределить политики выполнения конкретного запроса. Для этого в `HttpClient.SendAsync` нужно передать настройку `retryPolicySettings`. NOTE - если передать не NULL, тогда проверки на `TServiceOptions.HttpMethodsToRetry` не будет (так как считаем, что `retryPolicySettings` имеет бОльший вес; но проверка на `RetryCount` - останется)
 
 ---
