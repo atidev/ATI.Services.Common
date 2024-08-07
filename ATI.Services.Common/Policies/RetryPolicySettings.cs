@@ -16,14 +16,4 @@ public class RetryPolicySettings
     /// Median for spreading queries over time
     /// </summary>
     public TimeSpan? MedianFirstRetryDelay { get; set; }
-
-    /// <summary>
-    /// Number of exceptions after which CB will be opened (will stop making requests)
-    /// </summary>
-    public int? CircuitBreakerExceptionsCount { get; set; }
-    
-    /// <summary>
-    /// Time after which CB will be closed (will make requests)
-    /// </summary>
-    public TimeSpan? CircuitBreakerDuration { get; set; }
 }
