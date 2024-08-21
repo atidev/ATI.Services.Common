@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using ATI.Services.Common.Http;
-using ATI.Services.Common.Variables;
 using Microsoft.AspNetCore.Http;
 using Prometheus;
 

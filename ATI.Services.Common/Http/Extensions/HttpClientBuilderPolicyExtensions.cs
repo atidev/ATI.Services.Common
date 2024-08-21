@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using ATI.Services.Common.Logging;
-using ATI.Services.Common.Metrics;
 using ATI.Services.Common.Options;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
@@ -14,7 +13,6 @@ using Polly.Contrib.WaitAndRetry;
 using Polly.Extensions.Http;
 using Polly.Registry;
 using Polly.Timeout;
-using Prometheus;
 
 namespace ATI.Services.Common.Http.Extensions;
 

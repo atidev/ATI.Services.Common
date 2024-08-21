@@ -1,10 +1,12 @@
 using System;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace ATI.Services.Common.Xss.Attribute;
 
+[PublicAPI]
 [AttributeUsage(AttributeTargets.Method)]
 public class XssInputValidationFilterAttribute : System.Attribute, IAsyncResourceFilter
 {

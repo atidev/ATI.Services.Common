@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using ATI.Services.Common.Serializers;
 using ATI.Services.Common.Serializers.SystemTextJsonSerialization;
 using JetBrains.Annotations;
 using NLog;
-using static ATI.Services.Common.Serializers.SystemTextJsonSerialization.SystemTextJsonSerializerBase;
 
 namespace ATI.Services.Common.Logging;
 
