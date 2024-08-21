@@ -9,7 +9,6 @@
     <PackageId>atisu.services.common</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <WarningsAsErrors>Nullable</WarningsAsErrors>
-    <Version>1.0.1</Version>
   </PropertyGroup>
   <PropertyGroup>
     <NoWarn>1701;1702;CS1591;CS1571;CS1573;CS1574</NoWarn>
