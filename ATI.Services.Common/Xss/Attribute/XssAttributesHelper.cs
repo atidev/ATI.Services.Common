@@ -29,6 +29,7 @@ static class XssAttributesHelper
                 {
                     context.Result = CommonBehavior.GetActionResult(ActionStatus.BadRequest,
                         false, "XSS injection detected from property attribute.");
+                    return;
                 }
             }
         }

@@ -13,11 +13,6 @@ public static class XssExtensions
         return builder.UseMiddleware<XssMiddleware>();
     }
 
-    public static IMvcBuilder AddXssValidationAttribute(this IServiceCollection services)
-    {
-        return services.AddControllers(options => { options.Filters.Add(typeof(XssFieldValidationFilterAttribute)); });
-    }
-
     public static IApplicationBuilder UseXssStrictValidation(this IApplicationBuilder builder)
     {
         return builder.UseMiddleware<XssStrictMiddleware>();
@@ -29,5 +24,11 @@ public static class XssExtensions
         {
             options.Filters.Add(typeof(XssFieldStrictValidationFilterAttribute));
         });
+    }
+
+    public static IMvcBuilder AddXssValidationAttribute(this IServiceCollection services)
+    {
+        return services.AddControllers(
+            options => { options.Filters.Add(typeof(XssFieldValidationFilterAttribute)); });
     }
 }
