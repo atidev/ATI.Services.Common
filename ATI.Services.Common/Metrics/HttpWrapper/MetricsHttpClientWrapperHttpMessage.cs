@@ -7,7 +7,6 @@ using ATI.Services.Common.Context;
 using ATI.Services.Common.Extensions;
 using ATI.Services.Common.Http;
 using ATI.Services.Common.Localization;
-using ATI.Services.Common.Variables;
 using Microsoft.AspNetCore.Http;
 
 namespace ATI.Services.Common.Metrics.HttpWrapper;

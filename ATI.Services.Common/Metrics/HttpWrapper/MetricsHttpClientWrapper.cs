@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
-using ATI.Services.Common.Http;
 using ATI.Services.Common.Http.Extensions;
 using ATI.Services.Common.Logging;
 using ATI.Services.Common.Variables;
