@@ -80,7 +80,7 @@ public static class ServiceCollectionHttpClientExtensions
 
     private static void ConfigureHttpClientHeaders(HttpClient httpClient, BaseServiceOptions settings)
     {
-        if (settings.AdditionalHeaders is { Count: <= 0 }) return;
+        if (settings.AdditionalHeaders is null || settings.AdditionalHeaders.Count == 0) return;
 
         foreach (var header in settings.AdditionalHeaders)
         {
