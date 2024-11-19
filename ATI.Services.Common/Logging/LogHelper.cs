@@ -27,11 +27,11 @@ namespace ATI.Services.Common.Logging
             try
             {
                 var configPath = $"nlog.{env.EnvironmentName}.config";
-                NLogBuilder.ConfigureNLog(configPath);
+                LogManager.Setup().LoadConfigurationFromFile(configPath);
             }
             catch (Exception exception)
             {
-                NLogBuilder.ConfigureNLog("nlog.config");
+                LogManager.Setup().LoadConfigurationFromFile("nlog.config");
                 LogManager.GetCurrentClassLogger().Error(exception);
             }
         }
@@ -42,7 +42,7 @@ namespace ATI.Services.Common.Logging
 
             loggingConfiguration.Variables.Add("JsonLayout", new SimpleLayout(ConfigurationManager.LoggerSettings("JsonLayout")));
 
-            NLogBuilder.ConfigureNLog(loggingConfiguration);
+            LogManager.Setup().LoadConfiguration(loggingConfiguration);
         }
 
         public static ILogger GetMicrosoftLogger(string categoryName)
