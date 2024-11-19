@@ -18,21 +18,21 @@ public static class HttpResponseMessageExtensions
     public static async Task<OperationResult<TResponse>> ParseHttpResponseAsync<TResponse>(this HttpResponseMessage responseMessage, JsonSerializerOptions serializerOptions)
     {
         if (!responseMessage.IsSuccessStatusCode) 
-            return new OperationResult<TResponse>(OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
+            return responseMessage.StatusCode.ToOperationResult<TResponse>();
 
         try
         {
             var result = await responseMessage.Content.ReadFromJsonAsync<TResponse>(serializerOptions);
-            return new OperationResult<TResponse>(result, OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
+            return responseMessage.StatusCode.ToOperationResult(result);
         }
         catch (Exception ex)
         {
             Logger.ErrorWithObject(ex, "Unsuccessfull response parsing", new
             {
-                Method = responseMessage.RequestMessage.Method,
+                responseMessage.RequestMessage?.Method,
                 Content = await responseMessage.Content.ReadAsStringAsync(),
-                Headers = responseMessage.RequestMessage.Headers,
-                FullUri = responseMessage.RequestMessage.RequestUri,
+                responseMessage.RequestMessage?.Headers,
+                FullUri = responseMessage.RequestMessage?.RequestUri,
                 TResponseClassName = typeof(TResponse).Name
             });
             return new OperationResult<TResponse>(ex);
@@ -43,21 +43,21 @@ public static class HttpResponseMessageExtensions
     public static async Task<OperationResult<byte[]>> GetByteArrayFromHttpResponseAsync(this HttpResponseMessage responseMessage)
     {
         if (!responseMessage.IsSuccessStatusCode) 
-            return new OperationResult<byte[]>(OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
+            return responseMessage.StatusCode.ToOperationResult<byte[]>();
 
         try
         {
             var result = await responseMessage.Content.ReadAsByteArrayAsync();
-            return new OperationResult<byte[]>(result, OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
+            return responseMessage.StatusCode.ToOperationResult(result);
         }
         catch (Exception ex)
         {
             Logger.ErrorWithObject(ex, "Unsuccessfull response parsing", new
             {
-                Method = responseMessage.RequestMessage.Method,
+                responseMessage.RequestMessage?.Method,
                 Content = await responseMessage.Content.ReadAsStringAsync(),
-                Headers = responseMessage.RequestMessage.Headers,
-                FullUri = responseMessage.RequestMessage.RequestUri
+                responseMessage.RequestMessage?.Headers,
+                FullUri = responseMessage.RequestMessage?.RequestUri
             });
             return new OperationResult<byte[]>(ex);
         }
@@ -69,16 +69,16 @@ public static class HttpResponseMessageExtensions
         try
         {
             var result = await responseMessage.Content.ReadAsStringAsync();
-            return new OperationResult<string>(result, OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
+            return responseMessage.StatusCode.ToOperationResult(result);
         }
         catch (Exception ex)
         {
             Logger.ErrorWithObject(ex, "Unsuccessfull response parsing", new
             {
-                Method = responseMessage.RequestMessage.Method,
+                responseMessage.RequestMessage?.Method,
                 Content = await responseMessage.Content.ReadAsStringAsync(),
-                Headers = responseMessage.RequestMessage.Headers,
-                FullUri = responseMessage.RequestMessage.RequestUri
+                responseMessage.RequestMessage?.Headers,
+                FullUri = responseMessage.RequestMessage?.RequestUri
             });
             return new OperationResult<string>(ex);
         }
