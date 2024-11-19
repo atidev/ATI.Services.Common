@@ -52,7 +52,6 @@ public static class ConnectionStringBuilder
             builder.KeepAlive = options.KeepAlive.Value;
         }
 
-        builder.TrustServerCertificate = options.TrustServerCertificate ?? true;
         return builder.ToString();
     }
 }

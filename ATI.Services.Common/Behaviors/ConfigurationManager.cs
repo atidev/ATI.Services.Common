@@ -1,5 +1,7 @@
-﻿using JetBrains.Annotations;
+﻿using System;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
+#nullable enable
 
 namespace ATI.Services.Common.Behaviors;
 

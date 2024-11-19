@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
+#nullable enable
 
 namespace ATI.Services.Common.Behaviors;
 

@@ -1,25 +1,24 @@
-﻿using System.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+#nullable enable
 
 namespace ATI.Services.Common.Behaviors.OperationBuilder;
 
-public class ConvertibleActionBuilder<TIn, TRes> : BaseFunctionBuilder<TIn>
+public class GenericActionBuilder<T> : BaseFunctionBuilder<T>
 {
-    private Func<TIn?, TRes?> ConvertFunc { get; }
-    protected internal Func<TRes?, bool>? NotFoundConditionAfterDataConvert { get; set; }
-    protected internal bool NullNotFoundConditionAfterDataConvert { get; set; }
-    protected internal Dictionary<ActionStatus, Func<TRes?, IActionResult>>? ActionResultRewrite { get; set; }
+    protected internal Dictionary<ActionStatus, Func<T?, IActionResult>>? ActionResultRewrite { get; set; }
 
-    public ConvertibleActionBuilder(Task<OperationResult<TIn>> functionTask, Func<TIn?, TRes> convertFunc)
+    public GenericActionBuilder(Task<OperationResult<T>> functionTask)
     {
         FunctionTask = functionTask;
-        ConvertFunc = convertFunc;
     }
-    public ConvertibleActionBuilder(OperationResult<TIn> functionResult, Func<TIn?, TRes> convertFunc)
+    public GenericActionBuilder(OperationResult<T> functionResult)
     {
         FunctionResult = functionResult;
-        ConvertFunc = convertFunc;
     }
 
     public async Task<IActionResult> ExecuteAsync(JsonSerializerSettings? jsonSettings = null)
@@ -34,31 +33,30 @@ public class ConvertibleActionBuilder<TIn, TRes> : BaseFunctionBuilder<TIn>
         return ExecutePrivateAsync(operationResult, jsonSettings);
     }
 
-    private IActionResult ExecutePrivateAsync(OperationResult<TIn> operationResult, JsonSerializerSettings? jsonSettings = null)
+    private IActionResult ExecutePrivateAsync(OperationResult<T> operationResult, JsonSerializerSettings? jsonSettings = null)
     {
         try
         {
             if (ActionResultRewrite != null)
             {
-                Func<TRes?, IActionResult>? resultFunc;
+                if (ActionResultRewrite.TryGetValue(operationResult.ActionStatus, out var resultFunc))
+                {
+                    return resultFunc(operationResult.Value);
+                }
                 if (NullNotFoundCondition && operationResult.Value == null)
                 {
                     if (ActionResultRewrite.TryGetValue(ActionStatus.NotFound, out resultFunc))
                     {
-                        return resultFunc(default!);
+                        return resultFunc(default);
                     }
                 }
+
                 if (NotFoundCondition != null && NotFoundCondition(operationResult.Value))
                 {
                     if (ActionResultRewrite.TryGetValue(ActionStatus.NotFound, out resultFunc))
                     {
-                        return resultFunc(default!);
+                        return resultFunc(operationResult.Value);
                     }
-                }
-
-                if (ActionResultRewrite.TryGetValue(operationResult.ActionStatus, out resultFunc))
-                {
-                    return resultFunc(ConvertFunc(operationResult.Value));
                 }
             }
 
@@ -74,22 +72,13 @@ public class ConvertibleActionBuilder<TIn, TRes> : BaseFunctionBuilder<TIn>
                 return result;
             }
 
-            if (operationResult.ActionStatus == ActionStatus.NotFound ||
-                NullNotFoundCondition && operationResult.Value == null ||
+            if (operationResult.ActionStatus == ActionStatus.NotFound || NullNotFoundCondition && operationResult.Value == null ||
                 NotFoundCondition != null && NotFoundCondition(operationResult.Value))
             {
-                return CommonBehavior.GetActionResult<TRes>(ActionStatus.NotFound, IsInternal,
+                return CommonBehavior.GetActionResult<T>(ActionStatus.NotFound, IsInternal,
                     customStatusFunc: GetCustomStatus);
             }
-
-            var convertedData = ConvertFunc(operationResult.Value);
-
-            if (NullNotFoundConditionAfterDataConvert && convertedData == null
-                || NotFoundConditionAfterDataConvert != null && NotFoundConditionAfterDataConvert(convertedData))
-            {
-                return CommonBehavior.GetActionResult<TRes>(ActionStatus.NotFound, IsInternal,
-                    customStatusFunc: GetCustomStatus);
-            }
+            var convertedData = operationResult.Value;
 
             if (ShouldSerializePrivateProperties.HasValue)
             {
@@ -98,7 +87,6 @@ public class ConvertibleActionBuilder<TIn, TRes> : BaseFunctionBuilder<TIn>
             }
 
             return new JsonResult(convertedData, jsonSettings ?? CommonBehavior.JsonSerializerSettings) { StatusCode = (int)HttpStatusCode.OK };
-
         }
         catch (Exception e)
         {

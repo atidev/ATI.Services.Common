@@ -1,4 +1,5 @@
 ﻿namespace ATI.Services.Common.Behaviors;
+#nullable enable
 
 public class ErrorResponse
 {

@@ -21,5 +21,10 @@ public class DataBaseOptions
     public int? ConnectTimeout { get; set; }
     public int? ConnectRetryCount { get; set; }
     public int? ConnectRetryInterval { get; set; }
+
+    /// <summary>
+    /// Доверять сертификату сервер
+    /// </summary>
+    /// <remarks>Ничего не делает для npgsql</remarks>
     public bool? TrustServerCertificate { get; set; }
 }

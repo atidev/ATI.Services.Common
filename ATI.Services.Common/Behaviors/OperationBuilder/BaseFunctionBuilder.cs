@@ -1,4 +1,8 @@
-﻿namespace ATI.Services.Common.Behaviors.OperationBuilder;
+﻿using System;
+using System.Threading.Tasks;
+
+namespace ATI.Services.Common.Behaviors.OperationBuilder;
+#nullable enable
 
 public abstract class BaseFunctionBuilder<T> : BaseActionBuilder
 {

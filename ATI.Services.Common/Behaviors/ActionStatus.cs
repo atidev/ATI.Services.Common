@@ -1,4 +1,5 @@
 ﻿namespace ATI.Services.Common.Behaviors;
+#nullable enable
 
 /// <summary>
 /// Специфический статус действия с объектом. В случае успешного действия, ActionStatus = None.
