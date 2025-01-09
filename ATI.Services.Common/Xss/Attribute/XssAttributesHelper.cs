@@ -16,6 +16,9 @@ static class XssAttributesHelper
         foreach (var actionArgumentPair in actionArguments)
         {
             var model = actionArgumentPair.Value;
+            if(model == null) 
+                continue;
+            
             var modelType = model.GetType();
             var properties = modelType.GetProperties()
                 .Where(x => x.IsDefined(typeof(XssValidateAttribute), true));
