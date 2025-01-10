@@ -46,6 +46,7 @@ public static class ServiceCollectionHttpClientExtensions
     /// <param name="services"></param>
     /// <typeparam name="TAdapter">Type of the http adapter for typed HttpClient</typeparam>
     /// <typeparam name="TServiceOptions"></typeparam>
+    /// <typeparam name="TIAdapter"></typeparam>
     /// <returns></returns>s
     public static IServiceCollection AddCustomHttpClient<TAdapter, TServiceOptions>(this IServiceCollection services,
         Action<HttpClient>? additionalActions = null)
@@ -55,6 +56,34 @@ public static class ServiceCollectionHttpClientExtensions
         var (settings, logger) = GetInitialData<TServiceOptions>();
 
         services.AddHttpClient<TAdapter>(httpClient =>
+            {
+                ConfigureHttpClientHeaders(httpClient, settings);
+                additionalActions?.Invoke(httpClient);
+            })
+            .AddDefaultHandlers(settings, logger);
+
+        return services;
+    }
+    
+    /// <summary>
+    /// Add typed HttpClient to HttpClientFactory with retry/cb/timeout policy, logging, metrics
+    /// Use it for external requests, like requests to integrators when your client has interface
+    /// https://learn.microsoft.com/en-us/dotnet/core/extensions/httpclient-factory#typed-clients
+    /// </summary>
+    /// <param name="services"></param>
+    /// <typeparam name="TAdapter">Type of the http adapter for typed HttpClient</typeparam>
+    /// <typeparam name="TServiceOptions"></typeparam>
+    /// <typeparam name="TIAdapter"></typeparam>
+    /// <returns></returns>s
+    public static IServiceCollection AddCustomHttpClient<TIAdapter, TAdapter, TServiceOptions>(this IServiceCollection services,
+        Action<HttpClient>? additionalActions = null)
+        where TAdapter : class, TIAdapter
+        where TIAdapter : class
+        where TServiceOptions : BaseServiceOptions
+    {
+        var (settings, logger) = GetInitialData<TServiceOptions>();
+
+        services.AddHttpClient<TIAdapter, TAdapter>(httpClient =>
             {
                 ConfigureHttpClientHeaders(httpClient, settings);
                 additionalActions?.Invoke(httpClient);
