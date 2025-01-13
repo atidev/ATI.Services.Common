@@ -73,17 +73,17 @@ public static class ServiceCollectionHttpClientExtensions
     /// <param name="services"></param>
     /// <typeparam name="TAdapter">Type of the http adapter for typed HttpClient</typeparam>
     /// <typeparam name="TServiceOptions"></typeparam>
-    /// <typeparam name="TIAdapter"></typeparam>
+    /// <typeparam name="TAdapterInterface"></typeparam>
     /// <returns></returns>s
-    public static IServiceCollection AddCustomHttpClient<TIAdapter, TAdapter, TServiceOptions>(this IServiceCollection services,
+    public static IServiceCollection AddCustomHttpClient<TAdapterInterface, TAdapter, TServiceOptions>(this IServiceCollection services,
         Action<HttpClient>? additionalActions = null)
-        where TAdapter : class, TIAdapter
-        where TIAdapter : class
+        where TAdapter : class, TAdapterInterface
+        where TAdapterInterface : class
         where TServiceOptions : BaseServiceOptions
     {
         var (settings, logger) = GetInitialData<TServiceOptions>();
 
-        services.AddHttpClient<TIAdapter, TAdapter>(httpClient =>
+        services.AddHttpClient<TAdapterInterface, TAdapter>(httpClient =>
             {
                 ConfigureHttpClientHeaders(httpClient, settings);
                 additionalActions?.Invoke(httpClient);
