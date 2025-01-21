@@ -16,7 +16,7 @@ public class OperationResult
     /// Возвращает или задает флаг, указывающий, успешно ли была выполнена операция.
     /// </summary>
     public bool Success => ActionStatus == ActionStatus.Ok;
-    public IList<OperationError> Errors { get; }
+    public IReadOnlyCollection<OperationError> Errors { get; }
     public IReadOnlyDictionary<string, object> Details { get; }
     public Exception? Exception { get; protected set; }
 
