@@ -30,7 +30,7 @@ public class OperationError
     public OperationError(ActionStatus status, string errorMessage, bool isInternal = true)
     {
         ActionStatus = status;
-        Error = "unknown_reason";
+        Error = null;
         ErrorMessage = errorMessage;
         IsInternal = isInternal;
     }
