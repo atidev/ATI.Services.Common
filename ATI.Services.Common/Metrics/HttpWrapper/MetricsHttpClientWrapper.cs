@@ -386,7 +386,7 @@ public class MetricsHttpClientWrapper : IDisposable
                                       });
             }
 
-            return new(result, OperationResult.GetActionStatusByHttpStatusCode(result.StatusCode));
+            return result.StatusCode.ToOperationResult(result);
         }
         catch (Exception e)
         {
@@ -413,7 +413,7 @@ public class MetricsHttpClientWrapper : IDisposable
             {
                 await using var stream = await responseMessage.Content.ReadAsStreamAsync();
                 var result = await Config.Serializer.DeserializeAsync<TResult>(stream);
-                return new OperationResult<TResult>(result, OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
+                return responseMessage.StatusCode.ToOperationResult(result);
             }
 
             var logMessage = string.Format(LogMessageTemplate, Config.ServiceName, clientWrapperHttpMessage.Method,
@@ -425,7 +425,7 @@ public class MetricsHttpClientWrapper : IDisposable
                                : _logLevelOverride(LogLevel.Warn);
             _logger.LogWithObject(logLevel, ex: null, logMessage, logObjects: responseContent);
 
-            return new OperationResult<TResult>(OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
+            return responseMessage.StatusCode.ToOperationResult<TResult>();
         }
         catch (TaskCanceledException e) when (e.InnerException is TimeoutException)
         {
@@ -456,7 +456,7 @@ public class MetricsHttpClientWrapper : IDisposable
             var responseContent = await responseMessage.Content.ReadAsStringAsync();
 
             if (responseMessage.IsSuccessStatusCode)
-                return new OperationResult<string>(responseContent, OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
+                return responseMessage.StatusCode.ToOperationResult(responseContent);
 
             var logMessage = string.Format(LogMessageTemplate, Config.ServiceName, clientWrapperHttpMessage.Method,
                                            clientWrapperHttpMessage.FullUri, responseMessage.StatusCode);
@@ -466,8 +466,7 @@ public class MetricsHttpClientWrapper : IDisposable
                                : _logLevelOverride(LogLevel.Warn);
             _logger.LogWithObject(logLevel, ex: null, logMessage, logObjects: responseContent);
 
-            return new OperationResult<string>(responseContent,
-                                               OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
+            return responseMessage.StatusCode.ToOperationResult(responseContent);
         }
         catch (TaskCanceledException e) when (e.InnerException is TimeoutException)
         {
