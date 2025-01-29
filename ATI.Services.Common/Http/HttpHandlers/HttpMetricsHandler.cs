@@ -1,4 +1,3 @@
-using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,8 +25,7 @@ public class HttpMetricsHandler : DelegatingHandler
 
     protected HttpMetricsHandler(MetricsFactory metricsFactory, BaseServiceOptions serviceOptions)
     {
-        _metrics = metricsFactory.CreateHttpClientMetricsFactory(serviceOptions.ServiceName,
-            serviceOptions.ServiceName, serviceOptions.LongRequestTime);
+        _metrics = metricsFactory.CreateHttpClientMetricsFactory(serviceOptions.ServiceName, serviceOptions.ServiceName, serviceOptions.LongRequestTime);
 
         Logger.WarnWithObject("HttpMetricsHandler constructor", new { serviceOptions.ServiceName });
     }
@@ -37,8 +35,7 @@ public class HttpMetricsHandler : DelegatingHandler
         var metricEntity = request.Options.GetMetricEntity();
         var urlTemplate = request.Options.GetUrlTemplate() ?? request.RequestUri?.PathAndQuery;
 
-        using (_metrics.CreateLoggingMetricsTimer(metricEntity,
-                   $"{request.Method.Method}:{urlTemplate}"))
+        using (_metrics.CreateLoggingMetricsTimer(metricEntity, $"{request.Method.Method}:{urlTemplate}"))
         {
             return await base.SendAsync(request, ct);
         }

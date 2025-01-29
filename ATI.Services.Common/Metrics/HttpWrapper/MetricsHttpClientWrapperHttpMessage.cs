@@ -1,19 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using ATI.Services.Common.Context;
 using ATI.Services.Common.Extensions;
 using ATI.Services.Common.Http;
 using ATI.Services.Common.Localization;
-using ATI.Services.Common.Variables;
 using Microsoft.AspNetCore.Http;
 
 namespace ATI.Services.Common.Metrics.HttpWrapper;
 
 internal class MetricsHttpClientWrapperHttpMessage
 {
-    private readonly string ContentTypeHeaderName = "Content-Type";
+    private const string ContentTypeHeaderName = "Content-Type";
 
     public MetricsHttpClientWrapperHttpMessage(HttpMethod method, Uri fullUri, Dictionary<string, string> headers)
     {
@@ -50,7 +50,7 @@ internal class MetricsHttpClientWrapperHttpMessage
         var msg = new HttpRequestMessage(Method, FullUri);
 
         if (config.HeadersToProxy.Count != 0)
-            Headers.AddRange(HttpContextHelper.HeadersAndValuesToProxy(httpContextAccessor?.HttpContext, config.HeadersToProxy));
+            Headers.AddRange(HttpContextHelper.HeadersAndValuesToProxy(httpContextAccessor?.HttpContext, config.HeadersToProxy).ToDictionary());
 
         foreach (var header in Headers)
             msg.Headers.TryAddWithoutValidation(header.Key, header.Value);

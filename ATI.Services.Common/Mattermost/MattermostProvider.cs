@@ -1,15 +1,18 @@
+#nullable enable
 using System.Collections.Generic;
 using System.Net.Http;
-using ATI.Services.Common.Logging;
+using System.Runtime.InteropServices;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using NLog;
 
 namespace ATI.Services.Common.Mattermost;
 
+[PublicAPI]
 public class MattermostProvider
 {
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    private readonly Dictionary<string, MattermostAdapter> _configuredMattermostAdapter = new ();
+    private readonly Dictionary<string, MattermostAdapter> _configuredMattermostAdapter = [];
 
     public MattermostProvider(
         IOptions<MattermostProviderOptions> mattermostProviderOptions,
@@ -21,13 +24,13 @@ public class MattermostProvider
         }
     }
 
-    public MattermostAdapter GetMattermostAdapter(string mattermostChannel)
+    public MattermostAdapter? GetMattermostAdapter(string mattermostChannel)
     {
-        var isMattermostAdapterConfigured = _configuredMattermostAdapter.TryGetValue(mattermostChannel, out var mattermostAdapter);
-        if (isMattermostAdapterConfigured)
-            return mattermostAdapter;
-        
-        _logger.ErrorWithObject(null, "Mattermost adapter was not configured");
-        return null;
+        var mattermostAdapter = CollectionsMarshal.GetValueRefOrNullRef(_configuredMattermostAdapter, mattermostChannel);
+
+        if (mattermostAdapter is null)
+            _logger.Error("Mattermost adapter was not configured");
+
+        return mattermostAdapter;
     }
 }

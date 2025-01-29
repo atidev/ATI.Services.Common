@@ -88,23 +88,19 @@ public static class HttpClientBuilderPolicyExtensions
         var registry = new PolicyRegistry();
         return clientBuilder.AddPolicyHandler(message =>
         {
-            var circuitBreakerExceptionsCount = serviceOptions.CircuitBreakerExceptionsCount;
+            var circuitBreakerSamplingDuration = serviceOptions.CircuitBreakerSamplingDuration;
             var circuitBreakerDuration = serviceOptions.CircuitBreakerDuration;
-
-            var retryPolicySettings = message.Options.GetRetryPolicy();
-            if (retryPolicySettings != null)
-            {
-                if (retryPolicySettings.CircuitBreakerExceptionsCount != null)
-                    circuitBreakerExceptionsCount = retryPolicySettings.CircuitBreakerExceptionsCount.Value;
-                if (retryPolicySettings.CircuitBreakerDuration != null)
-                    circuitBreakerDuration = retryPolicySettings.CircuitBreakerDuration.Value;
-            }
-
-            if (circuitBreakerExceptionsCount == 0)
+            var circuitBreakerFailureThreshold = serviceOptions.CircuitBreakerFailureThreshold;
+            var circuitBreakerMinimumThroughput = serviceOptions.CircuitBreakerMinimumThroughput;
+            
+            if (!serviceOptions.CircuitBreakerEnabled)
                 return Policy.NoOpAsync<HttpResponseMessage>();
 
             var policyKey = $"{message.RequestUri.Host}:{message.RequestUri.Port}";
-            var policy = registry.GetOrAdd(policyKey, BuildCircuitBreakerPolicy(message, serviceOptions, circuitBreakerExceptionsCount, circuitBreakerDuration, logger));
+            var policy = registry.GetOrAdd(policyKey,
+                BuildCircuitBreakerPolicy(message, serviceOptions, circuitBreakerDuration,
+                    circuitBreakerSamplingDuration, circuitBreakerFailureThreshold, circuitBreakerMinimumThroughput,
+                    logger));
             return policy;
         });
     }
@@ -125,17 +121,21 @@ public static class HttpClientBuilderPolicyExtensions
     private static AsyncCircuitBreakerPolicy<HttpResponseMessage> BuildCircuitBreakerPolicy(
         HttpRequestMessage message,
         BaseServiceOptions serviceOptions,
-        int circuitBreakerExceptionsCount,
         TimeSpan circuitBreakerDuration,
+        TimeSpan circuitBreakerSamplingDuration,
+        double circuitBreakerFailureThreshold,
+        int circuitBreakerMinimumThroughput,
         ILogger logger)
     {
         return HttpPolicyExtensions
             .HandleTransientHttpError()
             .Or<TimeoutRejectedException>()
             .OrResult(r => r.StatusCode == (HttpStatusCode) 429) // Too Many Requests
-            .CircuitBreakerAsync(
-                circuitBreakerExceptionsCount,
-                circuitBreakerDuration,
+            .AdvancedCircuitBreakerAsync(
+                failureThreshold: circuitBreakerFailureThreshold,
+                samplingDuration: circuitBreakerSamplingDuration,
+                minimumThroughput: circuitBreakerMinimumThroughput,
+                durationOfBreak: circuitBreakerDuration,
                 (response, circuitState, timeSpan, _) =>
                 {
                     logger.ErrorWithObject(null, "CB onBreak", new

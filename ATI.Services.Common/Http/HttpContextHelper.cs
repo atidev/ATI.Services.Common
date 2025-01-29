@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using ATI.Services.Common.Logging;
 using ATI.Services.Common.Metrics;
@@ -15,7 +16,7 @@ internal static class HttpContextHelper
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     
     public static string[] MetricsHeadersValues(HttpContext? httpContext) => GetHeadersValues(httpContext, MetricsLabelsAndHeaders.UserHeaders);
-    public static Dictionary<string, string> HeadersAndValuesToProxy(HttpContext? httpContext,IReadOnlyCollection<string>? headersToProxy) => GetHeadersAndValues(httpContext, headersToProxy);
+    public static IReadOnlyDictionary<string, string> HeadersAndValuesToProxy(HttpContext? httpContext, IReadOnlyCollection<string>? headersToProxy) => GetHeadersAndValues(httpContext, headersToProxy);
     
 
     private static string[] GetHeadersValues(HttpContext? httpContext, IReadOnlyCollection<string>? headersNames)
@@ -23,7 +24,7 @@ internal static class HttpContextHelper
         try
         {
             if (headersNames is null || headersNames.Count == 0)
-                return Array.Empty<string>();
+                return [];
 
             var headersValues = headersNames.Select(label => GetHeaderValue(httpContext, label)).ToArray();
             return headersValues;
@@ -31,7 +32,7 @@ internal static class HttpContextHelper
         catch (ObjectDisposedException ex) // when thing happen outside http ctx e.g eventbus event handler
         {
             Logger.ErrorWithObject(ex, headersNames);
-            return Array.Empty<string>();
+            return [];
         }
     }
 
@@ -41,15 +42,15 @@ internal static class HttpContextHelper
             return "This service";
 
         if (context.Request.Headers.TryGetValue(headerName, out var headerValues) && !StringValues.IsNullOrEmpty(headerValues))
-            return headerValues[0];
+            return headerValues[0]!;
 
         return "Empty";
     }
 
-    private static Dictionary<string, string> GetHeadersAndValues(HttpContext? httpContext, IReadOnlyCollection<string>? headersNames)
+    private static IReadOnlyDictionary<string, string> GetHeadersAndValues(HttpContext? httpContext, IReadOnlyCollection<string>? headersNames)
     {
         if (headersNames is null || headersNames.Count == 0 || httpContext is null)
-            return new Dictionary<string, string>();
+            return ReadOnlyDictionary<string, string>.Empty;
 
         return headersNames
             .Select(header => httpContext.Request.Headers.TryGetValue(header, out var headerValues)
@@ -60,8 +61,8 @@ internal static class HttpContextHelper
                     Value = headerValues[0]
                 }
                 : null)
-            .Where(headerAndValue => headerAndValue != null)
+            .Where(headerAndValue => headerAndValue is not null)
             .ToDictionary(headerAndValue => headerAndValue!.Header,
-                headerAndValue => headerAndValue!.Value);
+                headerAndValue => headerAndValue!.Value)!;
     }
 }
