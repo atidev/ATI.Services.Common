@@ -13,7 +13,7 @@ public static class RedisExtensions
     public static void AddRedis(this IServiceCollection services)
     {
         services.ConfigureByName<CacheManagerOptions>();
-        services.AddSingleton<IRedisProvider>();
+        services.AddSingleton<IRedisProvider, RedisProvider>();
         services.AddTransient<RedisInitializer>();
         
         services.AddSerializers();
