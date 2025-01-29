@@ -7,6 +7,7 @@ using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
 using JetBrains.Annotations;
 using NLog;
+using Polly.Timeout;
 
 namespace ATI.Services.Common.Http.Extensions;
 
@@ -70,6 +71,10 @@ public static class HttpResponseMessageExtensions
         {
             var result = await responseMessage.Content.ReadAsStringAsync();
             return new OperationResult<string>(result, OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
+        }
+        catch (TimeoutRejectedException tre)
+        {
+            return new OperationResult<string>(ActionStatus.Timeout);
         }
         catch (Exception ex)
         {
