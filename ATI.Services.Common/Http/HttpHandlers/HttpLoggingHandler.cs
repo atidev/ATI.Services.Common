@@ -8,6 +8,7 @@ using ATI.Services.Common.Logging;
 using ATI.Services.Common.Options;
 using Microsoft.Extensions.Options;
 using NLog;
+using Polly.Timeout;
 
 namespace ATI.Services.Common.Http.HttpHandlers;
 
@@ -40,7 +41,7 @@ public class HttpLoggingHandler : DelegatingHandler
             var responseMessage = await base.SendAsync(request, ct);
             if (responseMessage.IsSuccessStatusCode)
                 return responseMessage;
-            
+
             var responseContent = await responseMessage.Content.ReadAsStringAsync(ct);
 
             // log every 5XX status code as error
@@ -57,6 +58,10 @@ public class HttpLoggingHandler : DelegatingHandler
             });
 
             return responseMessage;
+        }
+        catch (TimeoutRejectedException ex)
+        {
+            return new HttpResponseMessage(HttpStatusCode.RequestTimeout);
         }
         catch (Exception ex)
         {
