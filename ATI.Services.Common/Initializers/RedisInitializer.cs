@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using ATI.Services.Common.Caching.Redis;
+using ATI.Services.Common.Caching.Redis.Abstractions;
 using ATI.Services.Common.Initializers.Interfaces;
 using JetBrains.Annotations;
 
@@ -10,9 +11,9 @@ namespace ATI.Services.Common.Initializers
     public class RedisInitializer : IInitializer
     {
         private static bool _initialized;
-        private readonly RedisProvider _redisProvider;
+        private readonly IRedisProvider _redisProvider;
 
-        public RedisInitializer(RedisProvider redisProvider)
+        public RedisInitializer(IRedisProvider redisProvider)
         {
             _redisProvider = redisProvider;
         } 
