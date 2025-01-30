@@ -61,6 +61,18 @@ public class HttpLoggingHandler : DelegatingHandler
         }
         catch (TimeoutRejectedException ex)
         {
+            _logger.LogWithObject(_serviceOptions.LogLevelOverride(LogLevel.Error),
+                ex,
+                message: "Timeout exception on HttpLoggingHandler",
+                logObjects: new
+                {
+                    MetricEntity = request.Options.GetMetricEntity(),
+                    Method = request.Method,
+                    Content = await request.Content.ReadAsStringAsync(ct),
+                    Headers = request.Headers,
+                    FullUri = request.RequestUri
+                });
+            
             return new HttpResponseMessage(HttpStatusCode.RequestTimeout);
         }
         catch (Exception ex)

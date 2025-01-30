@@ -72,10 +72,6 @@ public static class HttpResponseMessageExtensions
             var result = await responseMessage.Content.ReadAsStringAsync();
             return new OperationResult<string>(result, OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
         }
-        catch (TimeoutRejectedException tre)
-        {
-            return new OperationResult<string>(ActionStatus.Timeout);
-        }
         catch (Exception ex)
         {
             Logger.ErrorWithObject(ex, "Unsuccessfull response parsing", new

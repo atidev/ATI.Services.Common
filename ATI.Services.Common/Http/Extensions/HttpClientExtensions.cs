@@ -176,10 +176,6 @@ public static class HttpClientExtensions
             using var responseMessage = await httpClient.SendAsync(requestMessage);
             return await responseMessage.GetStringFromHttpResponseAsync();
         }
-        catch (TimeoutRejectedException tre)
-        {
-            return new OperationResult<string>(ActionStatus.Timeout);
-        }
         catch (Exception ex)
         {
             Logger.ErrorWithObject(ex, new { httpMethod, url, headers });
