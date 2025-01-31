@@ -10,6 +10,7 @@ using ATI.Services.Common.Logging;
 using ATI.Services.Common.Policies;
 using JetBrains.Annotations;
 using NLog;
+using Polly.Timeout;
 
 namespace ATI.Services.Common.Http.Extensions;
 
@@ -166,8 +167,9 @@ public static class HttpClientExtensions
     {
         try
         {
-            using var requestMessage = CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity, urlTemplate, headers, retryPolicySettings);
-            
+            using var requestMessage = CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity,
+                urlTemplate, headers, retryPolicySettings);
+
             var serializeOptions = serializerOptions ?? SnakeCaseSerializerOptions;
             requestMessage.SetContent(request, serializeOptions);
 

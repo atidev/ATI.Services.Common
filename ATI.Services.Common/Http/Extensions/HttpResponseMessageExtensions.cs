@@ -7,6 +7,7 @@ using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
 using JetBrains.Annotations;
 using NLog;
+using Polly.Timeout;
 
 namespace ATI.Services.Common.Http.Extensions;
 
