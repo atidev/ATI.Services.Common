@@ -7,7 +7,7 @@ namespace ATI.Services.Common.Extensions;
 [PublicAPI]
 public static class HttpContextExtensions
 {
-    public static bool NeedTransliterationByAcceptLanguage(this HttpContext context)
+    public static bool IsNeedTransliterationByAcceptLanguage(this HttpContext context)
     {
         var parsedCultures = context.Request.GetTypedHeaders().AcceptLanguage;
         var enCulture = parsedCultures.FirstOrDefault(c => c.Value == "en");
