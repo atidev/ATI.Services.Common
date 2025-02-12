@@ -19,6 +19,6 @@ public static class HttpContextExtensions
         if (ruCulture is null || ruCulture.Quality < enCulture.Quality)
             return true;
 
-        return false;
+        return enCulture is not null && (ruCulture is null || ruCulture.Quality < enCulture.Quality);
     }
 }
