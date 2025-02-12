@@ -12,12 +12,6 @@ public static class HttpContextExtensions
         var parsedCultures = context.Request.GetTypedHeaders().AcceptLanguage;
         var enCulture = parsedCultures.FirstOrDefault(c => c.Value == "en");
         var ruCulture = parsedCultures.FirstOrDefault(c => c.Value == "ru");
-        
-        if (enCulture is null)
-            return false;
-            
-        if (ruCulture is null || ruCulture.Quality < enCulture.Quality)
-            return true;
 
         return enCulture is not null && (ruCulture is null || ruCulture.Quality < enCulture.Quality);
     }
