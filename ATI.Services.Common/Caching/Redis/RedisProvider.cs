@@ -11,9 +11,9 @@ using NLog;
 
 namespace ATI.Services.Common.Caching.Redis;
 
-public class RedisProvider
+public class RedisProvider : IRedisProvider
 {
-    private readonly Dictionary<string, RedisCache> _redisCaches = new();
+    private readonly Dictionary<string, IRedisCache> _redisCaches = new();
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
     public RedisProvider(IOptions<CacheManagerOptions> cacheManagerOptions, SerializerProvider serializerProvider, MetricsFactory metricsFactory)
@@ -40,7 +40,7 @@ public class RedisProvider
     }
 
     [PublicAPI]
-    public RedisCache GetCache(string cacheName)
+    public IRedisCache GetCache(string cacheName)
     {
         var isDbConfigured = _redisCaches.TryGetValue(cacheName, out var cache);
         if (isDbConfigured)
@@ -53,7 +53,7 @@ public class RedisProvider
     }
 
     [PublicAPI]
-    public List<RedisCache> GetAllCaches() => _redisCaches.Values.ToList();
+    public List<IRedisCache> GetAllCaches() => _redisCaches.Values.ToList();
 
     public async Task InitAsync()
     {

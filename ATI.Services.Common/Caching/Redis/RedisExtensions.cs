@@ -1,3 +1,4 @@
+using ATI.Services.Common.Caching.Redis.Abstractions;
 using ATI.Services.Common.Extensions;
 using ATI.Services.Common.Initializers;
 using ATI.Services.Common.Serializers;
@@ -12,7 +13,7 @@ public static class RedisExtensions
     public static void AddRedis(this IServiceCollection services)
     {
         services.ConfigureByName<CacheManagerOptions>();
-        services.AddSingleton<RedisProvider>();
+        services.AddSingleton<IRedisProvider, RedisProvider>();
         services.AddTransient<RedisInitializer>();
         
         services.AddSerializers();

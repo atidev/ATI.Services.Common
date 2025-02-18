@@ -22,7 +22,7 @@ using StackExchange.Redis;
 namespace ATI.Services.Common.Caching.Redis;
 
 [PublicAPI]
-public class RedisCache : BaseRedisCache
+public class RedisCache : BaseRedisCache, IRedisCache
 {
     private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
     private IDatabase _redisDb;
