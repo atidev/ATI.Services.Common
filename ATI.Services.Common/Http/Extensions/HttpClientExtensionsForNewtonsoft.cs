@@ -57,14 +57,14 @@ public static class HttpClientExtensionsForNewtonsoft
             using var responseMessage = await httpClient.SendAsync(requestMessage);
 
             if (checkResponseStatusCode && !responseMessage.IsSuccessStatusCode)
-                return new OperationResult<TResponse>(responseMessage.StatusCode);
+                return responseMessage.StatusCode.ToOperationResult<TResponse>();
 
             await using var stream = await responseMessage.Content.ReadAsStreamAsync();
             using var reader = new StreamReader(stream);
-            using var jsonReader = new JsonTextReader(reader);
+            await using var jsonReader = new JsonTextReader(reader);
             var response = serializer.Deserialize<TResponse>(jsonReader);
 
-            return new OperationResult<TResponse>(response, OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
+            return responseMessage.StatusCode.ToOperationResult(response);
         }
         catch (Exception ex)
         {
@@ -103,14 +103,14 @@ public static class HttpClientExtensionsForNewtonsoft
             using var responseMessage = await httpClient.SendAsync(requestMessage);
 
             if (checkResponseStatusCode && !responseMessage.IsSuccessStatusCode)
-                return new OperationResult<TResponse>(responseMessage.StatusCode);
+                return responseMessage.StatusCode.ToOperationResult<TResponse>();
 
             await using var stream = await responseMessage.Content.ReadAsStreamAsync();
             using var reader = new StreamReader(stream);
-            using var jsonReader = new JsonTextReader(reader);
+            await using var jsonReader = new JsonTextReader(reader);
             var response = serializer.Deserialize<TResponse>(jsonReader);
 
-            return new OperationResult<TResponse>(response, OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
+            return responseMessage.StatusCode.ToOperationResult(response);
         }
         catch (Exception ex)
         {
