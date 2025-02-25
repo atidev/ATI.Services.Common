@@ -2,6 +2,7 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
@@ -16,14 +17,17 @@ public static class HttpResponseMessageExtensions
     private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
     
     [PublicAPI]
-    public static async Task<OperationResult<TResponse>> ParseHttpResponseAsync<TResponse>(this HttpResponseMessage responseMessage, JsonSerializerOptions serializerOptions)
+    public static async Task<OperationResult<TResponse>> ParseHttpResponseAsync<TResponse>(
+        this HttpResponseMessage responseMessage, 
+        JsonSerializerOptions serializerOptions,
+        CancellationToken cancellationToken = default)
     {
         if (!responseMessage.IsSuccessStatusCode) 
             return new OperationResult<TResponse>(OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
 
         try
         {
-            var result = await responseMessage.Content.ReadFromJsonAsync<TResponse>(serializerOptions);
+            var result = await responseMessage.Content.ReadFromJsonAsync<TResponse>(serializerOptions, cancellationToken: cancellationToken);
             return new OperationResult<TResponse>(result, OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
         }
         catch (Exception ex)
@@ -31,7 +35,7 @@ public static class HttpResponseMessageExtensions
             Logger.ErrorWithObject(ex, "Unsuccessfull response parsing", new
             {
                 Method = responseMessage.RequestMessage.Method,
-                Content = await responseMessage.Content.ReadAsStringAsync(),
+                Content = await responseMessage.Content.ReadAsStringAsync(cancellationToken),
                 Headers = responseMessage.RequestMessage.Headers,
                 FullUri = responseMessage.RequestMessage.RequestUri,
                 TResponseClassName = typeof(TResponse).Name
@@ -41,14 +45,16 @@ public static class HttpResponseMessageExtensions
     }
     
     [PublicAPI]
-    public static async Task<OperationResult<byte[]>> GetByteArrayFromHttpResponseAsync(this HttpResponseMessage responseMessage)
+    public static async Task<OperationResult<byte[]>> GetByteArrayFromHttpResponseAsync(
+        this HttpResponseMessage responseMessage,
+        CancellationToken cancellationToken = default)
     {
         if (!responseMessage.IsSuccessStatusCode) 
             return new OperationResult<byte[]>(OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
 
         try
         {
-            var result = await responseMessage.Content.ReadAsByteArrayAsync();
+            var result = await responseMessage.Content.ReadAsByteArrayAsync(cancellationToken);
             return new OperationResult<byte[]>(result, OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
         }
         catch (Exception ex)
@@ -56,7 +62,7 @@ public static class HttpResponseMessageExtensions
             Logger.ErrorWithObject(ex, "Unsuccessfull response parsing", new
             {
                 Method = responseMessage.RequestMessage.Method,
-                Content = await responseMessage.Content.ReadAsStringAsync(),
+                Content = await responseMessage.Content.ReadAsStringAsync(cancellationToken),
                 Headers = responseMessage.RequestMessage.Headers,
                 FullUri = responseMessage.RequestMessage.RequestUri
             });
@@ -65,11 +71,13 @@ public static class HttpResponseMessageExtensions
     }
     
     [PublicAPI]
-    public static async Task<OperationResult<string>> GetStringFromHttpResponseAsync(this HttpResponseMessage responseMessage)
+    public static async Task<OperationResult<string>> GetStringFromHttpResponseAsync(
+        this HttpResponseMessage responseMessage,
+        CancellationToken cancellationToken = default)
     {
         try
         {
-            var result = await responseMessage.Content.ReadAsStringAsync();
+            var result = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
             return new OperationResult<string>(result, OperationResult.GetActionStatusByHttpStatusCode(responseMessage.StatusCode));
         }
         catch (Exception ex)
@@ -77,7 +85,7 @@ public static class HttpResponseMessageExtensions
             Logger.ErrorWithObject(ex, "Unsuccessfull response parsing", new
             {
                 Method = responseMessage.RequestMessage.Method,
-                Content = await responseMessage.Content.ReadAsStringAsync(),
+                Content = await responseMessage.Content.ReadAsStringAsync(cancellationToken),
                 Headers = responseMessage.RequestMessage.Headers,
                 FullUri = responseMessage.RequestMessage.RequestUri
             });
