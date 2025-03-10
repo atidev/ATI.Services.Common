@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
@@ -59,14 +60,15 @@ public static class HttpClientExtensions
         string urlTemplate = null,
         Dictionary<string, string> headers = null,
         JsonSerializerOptions serializerOptions = null,
-        RetryPolicySettings retryPolicySettings = null)
+        RetryPolicySettings retryPolicySettings = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
             using var requestMessage = CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity, urlTemplate, headers, retryPolicySettings);
 
-            using var responseMessage = await httpClient.SendAsync(requestMessage);
-            return await responseMessage.ParseHttpResponseAsync<TResponse>(serializerOptions ?? SnakeCaseSerializerOptions);
+            using var responseMessage = await httpClient.SendAsync(requestMessage, cancellationToken);
+            return await responseMessage.ParseHttpResponseAsync<TResponse>(serializerOptions ?? SnakeCaseSerializerOptions, cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {
@@ -84,7 +86,8 @@ public static class HttpClientExtensions
         string urlTemplate = null,
         Dictionary<string, string> headers = null,
         JsonSerializerOptions serializerOptions = null,
-        RetryPolicySettings retryPolicySettings = null)
+        RetryPolicySettings retryPolicySettings = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -93,8 +96,8 @@ public static class HttpClientExtensions
             var serializeOptions = serializerOptions ?? SnakeCaseSerializerOptions;
             requestMessage.SetContent(request, serializeOptions);
 
-            using var responseMessage = await httpClient.SendAsync(requestMessage);
-            return await responseMessage.ParseHttpResponseAsync<TResponse>(serializeOptions);
+            using var responseMessage = await httpClient.SendAsync(requestMessage, cancellationToken);
+            return await responseMessage.ParseHttpResponseAsync<TResponse>(serializeOptions, cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {
@@ -112,15 +115,16 @@ public static class HttpClientExtensions
         string urlTemplate = null,
         Dictionary<string, string> headers = null,
         JsonSerializerOptions serializerOptions = null,
-        RetryPolicySettings retryPolicySettings = null)
+        RetryPolicySettings retryPolicySettings = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
             using var requestMessage = CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity, urlTemplate, headers, retryPolicySettings);
             requestMessage.Content = content;
 
-            using var responseMessage = await httpClient.SendAsync(requestMessage);
-            return await responseMessage.ParseHttpResponseAsync<TResponse>(serializerOptions ?? SnakeCaseSerializerOptions);
+            using var responseMessage = await httpClient.SendAsync(requestMessage, cancellationToken);
+            return await responseMessage.ParseHttpResponseAsync<TResponse>(serializerOptions ?? SnakeCaseSerializerOptions, cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {
@@ -137,15 +141,16 @@ public static class HttpClientExtensions
         string metricEntity,
         string urlTemplate = null,
         Dictionary<string, string> headers = null,
-        RetryPolicySettings retryPolicySettings = null)
+        RetryPolicySettings retryPolicySettings = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
             using var requestMessage = CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity, urlTemplate, headers, retryPolicySettings);
             requestMessage.Content = content;
 
-            using var responseMessage = await httpClient.SendAsync(requestMessage);
-            return await responseMessage.GetByteArrayFromHttpResponseAsync();
+            using var responseMessage = await httpClient.SendAsync(requestMessage, cancellationToken);
+            return await responseMessage.GetByteArrayFromHttpResponseAsync(cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {
@@ -163,7 +168,8 @@ public static class HttpClientExtensions
         string urlTemplate = null,
         Dictionary<string, string> headers = null,
         JsonSerializerOptions serializerOptions = null,
-        RetryPolicySettings retryPolicySettings = null)
+        RetryPolicySettings retryPolicySettings = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -173,8 +179,8 @@ public static class HttpClientExtensions
             var serializeOptions = serializerOptions ?? SnakeCaseSerializerOptions;
             requestMessage.SetContent(request, serializeOptions);
 
-            using var responseMessage = await httpClient.SendAsync(requestMessage);
-            return await responseMessage.GetStringFromHttpResponseAsync();
+            using var responseMessage = await httpClient.SendAsync(requestMessage, cancellationToken);
+            return await responseMessage.GetStringFromHttpResponseAsync(cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {
@@ -190,14 +196,15 @@ public static class HttpClientExtensions
         string metricEntity,
         string urlTemplate = null,
         Dictionary<string, string> headers = null,        
-        RetryPolicySettings retryPolicySettings = null)
+        RetryPolicySettings retryPolicySettings = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
             using var requestMessage = CreateHttpRequestMessageAndSetBaseFields(httpMethod, url, metricEntity, urlTemplate, headers, retryPolicySettings);
 
-            using var responseMessage = await httpClient.SendAsync(requestMessage);
-            return await responseMessage.GetStringFromHttpResponseAsync();
+            using var responseMessage = await httpClient.SendAsync(requestMessage, cancellationToken);
+            return await responseMessage.GetStringFromHttpResponseAsync(cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
@@ -38,7 +39,8 @@ namespace ATI.Services.Common.Sql
             DynamicParameters parameters,
             string metricEntity,
             TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
+            int? timeoutInSeconds = null,
+            CancellationToken cancellationToken = default)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -53,10 +55,12 @@ namespace ATI.Services.Common.Sql
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
-                                procedureName,
-                                parameters,
-                                commandType: CommandType.StoredProcedure,
-                                commandTimeout: timeout);
+                                new CommandDefinition(
+                                    procedureName, 
+                                    parameters,
+                                    commandType: CommandType.StoredProcedure, 
+                                    commandTimeout: timeout,
+                                    cancellationToken: cancellationToken));
                         }
 
                         List<T> result;
@@ -86,7 +90,8 @@ namespace ATI.Services.Common.Sql
             DynamicParameters parameters,
             string metricEntity,
             TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
+            int? timeoutInSeconds = null,
+            CancellationToken cancellationToken = default)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -102,10 +107,12 @@ namespace ATI.Services.Common.Sql
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
-                                procedureName,
-                                parameters,
-                                commandType: CommandType.StoredProcedure,
-                                commandTimeout: timeout);
+                                new CommandDefinition(
+                                    procedureName, 
+                                    parameters,
+                                    commandType: CommandType.StoredProcedure, 
+                                    commandTimeout: timeout,
+                                    cancellationToken: cancellationToken));
                         }
 
                         var returnValue = parameters.Get<int>(ReturnValueFieldName);
@@ -143,7 +150,8 @@ namespace ATI.Services.Common.Sql
             DynamicParameters parameters,
             string metricEntity,
             TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
+            int? timeoutInSeconds = null,
+            CancellationToken cancellationToken = default)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -158,10 +166,12 @@ namespace ATI.Services.Common.Sql
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
-                                procedureName,
-                                parameters,
-                                commandType: CommandType.StoredProcedure,
-                                commandTimeout: timeout);
+                                new CommandDefinition(
+                                    procedureName, 
+                                    parameters,
+                                    commandType: CommandType.StoredProcedure, 
+                                    commandTimeout: timeout,
+                                    cancellationToken: cancellationToken));
                         }
 
                         List<dynamic> result;
@@ -191,7 +201,8 @@ namespace ATI.Services.Common.Sql
             DynamicParameters parameters,
             string metricEntity,
             TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
+            int? timeoutInSeconds = null,
+            CancellationToken cancellationToken = default)
         {
             try
             {
@@ -206,10 +217,12 @@ namespace ATI.Services.Common.Sql
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             await connection.ExecuteAsync(
-                                procedureName,
-                                parameters,
-                                commandType: CommandType.StoredProcedure,
-                                commandTimeout: timeout);
+                                new CommandDefinition(
+                                    procedureName, 
+                                    parameters,
+                                    commandType: CommandType.StoredProcedure, 
+                                    commandTimeout: timeout,
+                                    cancellationToken: cancellationToken));
                         }
 
                         return new OperationResult((ActionStatus)parameters.Get<int>(ReturnValueFieldName));
@@ -228,7 +241,8 @@ namespace ATI.Services.Common.Sql
             DynamicParameters parameters,
             string metricEntity,
             TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
+            int? timeoutInSeconds = null,
+            CancellationToken cancellationToken = default)
         {
             try
             {
@@ -243,10 +257,12 @@ namespace ATI.Services.Common.Sql
                                    longTimeRequest, QueryMetricTypeLabel))
                         {
                             await connection.ExecuteAsync(
-                                procedureName,
-                                parameters,
-                                commandType: CommandType.StoredProcedure,
-                                commandTimeout: timeout);
+                                new CommandDefinition(
+                                    procedureName, 
+                                    parameters,
+                                    commandType: CommandType.StoredProcedure, 
+                                    commandTimeout: timeout,
+                                    cancellationToken: cancellationToken));
                         }
 
                         return new OperationResult<TResult>(parameters.Get<TResult>(ReturnValueFieldName));
@@ -265,7 +281,8 @@ namespace ATI.Services.Common.Sql
             DynamicParameters parameters,
             string metricEntity,
             TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
+            int? timeoutInSeconds = null,
+            CancellationToken cancellationToken = default)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -280,10 +297,12 @@ namespace ATI.Services.Common.Sql
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
-                                procedureName,
-                                parameters,
-                                commandType: CommandType.StoredProcedure,
-                                commandTimeout: timeout);
+                                new CommandDefinition(
+                                    procedureName, 
+                                    parameters,
+                                    commandType: CommandType.StoredProcedure, 
+                                    commandTimeout: timeout,
+                                    cancellationToken: cancellationToken));
                         }
 
                         T result;
@@ -313,7 +332,8 @@ namespace ATI.Services.Common.Sql
             DynamicParameters parameters,
             string metricEntity,
             TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
+            int? timeoutInSeconds = null,
+            CancellationToken cancellationToken = default)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -330,10 +350,12 @@ namespace ATI.Services.Common.Sql
                             QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
-                                procedureName,
-                                parameters,
-                                commandType: CommandType.StoredProcedure,
-                                commandTimeout: timeout);
+                                new CommandDefinition(
+                                    procedureName, 
+                                    parameters,
+                                    commandType: CommandType.StoredProcedure, 
+                                    commandTimeout: timeout,
+                                    cancellationToken: cancellationToken));
                         }
 
                         var returnValue = parameters.Get<int>(ReturnValueFieldName);
@@ -366,7 +388,8 @@ namespace ATI.Services.Common.Sql
             Func<SqlMapper.GridReader, Task<List<T>>> convertData,
             string metricEntity,
             TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
+            int? timeoutInSeconds = null,
+            CancellationToken cancellationToken = default)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -382,10 +405,12 @@ namespace ATI.Services.Common.Sql
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
-                                procedureName,
-                                parameters,
-                                commandType: CommandType.StoredProcedure,
-                                commandTimeout: timeout);
+                                new CommandDefinition(
+                                    procedureName, 
+                                    parameters,
+                                    commandType: CommandType.StoredProcedure, 
+                                    commandTimeout: timeout,
+                                    cancellationToken: cancellationToken));
                         }
 
                         var returnValue = parameters.Get<int>(ReturnValueFieldName);
@@ -428,7 +453,8 @@ namespace ATI.Services.Common.Sql
             Func<SqlMapper.GridReader, MetricsTimer, Task<List<T>>> convertData,
             string metricEntity,
             TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
+            int? timeoutInSeconds = null,
+            CancellationToken cancellationToken = default)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -444,10 +470,12 @@ namespace ATI.Services.Common.Sql
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
-                                procedureName,
-                                parameters,
-                                commandType: CommandType.StoredProcedure,
-                                commandTimeout: timeout);
+                                new CommandDefinition(
+                                    procedureName, 
+                                    parameters,
+                                    commandType: CommandType.StoredProcedure, 
+                                    commandTimeout: timeout,
+                                    cancellationToken: cancellationToken));
                         }
 
                         var returnValue = parameters.Get<int>(ReturnValueFieldName);
@@ -485,7 +513,8 @@ namespace ATI.Services.Common.Sql
             Func<SqlMapper.GridReader, Task<List<T>>> convertData,
             string metricEntity,
             TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
+            int? timeoutInSeconds = null,
+            CancellationToken cancellationToken = default)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -500,10 +529,12 @@ namespace ATI.Services.Common.Sql
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
-                                procedureName,
-                                parameters,
-                                commandType: CommandType.StoredProcedure,
-                                commandTimeout: timeout);
+                                new CommandDefinition(
+                                    procedureName, 
+                                    parameters,
+                                    commandType: CommandType.StoredProcedure, 
+                                    commandTimeout: timeout,
+                                    cancellationToken: cancellationToken));
                         }
 
                         List<T> result;
@@ -544,7 +575,8 @@ namespace ATI.Services.Common.Sql
             Func<SqlMapper.GridReader, MetricsTimer, Task<List<T>>> convertData,
             string metricEntity,
             TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
+            int? timeoutInSeconds = null,
+            CancellationToken cancellationToken = default)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -559,10 +591,12 @@ namespace ATI.Services.Common.Sql
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
-                                procedureName,
-                                parameters,
-                                commandType: CommandType.StoredProcedure,
-                                commandTimeout: timeout);
+                                new CommandDefinition(
+                                    procedureName, 
+                                    parameters,
+                                    commandType: CommandType.StoredProcedure, 
+                                    commandTimeout: timeout,
+                                    cancellationToken: cancellationToken));
                         }
 
                         List<T> result;
@@ -594,7 +628,8 @@ namespace ATI.Services.Common.Sql
             DynamicParameters parameters,
             string metricEntity,
             TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
+            int? timeoutInSeconds = null,
+            CancellationToken cancellationToken = default)
         {
             try
             {
@@ -608,10 +643,12 @@ namespace ATI.Services.Common.Sql
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             return new OperationResult<T>(await connection.ExecuteScalarAsync<T>(
-                                procedureName,
-                                parameters,
-                                commandType: CommandType.StoredProcedure,
-                                commandTimeout: timeout));
+                                new CommandDefinition(
+                                    procedureName, 
+                                    parameters,
+                                    commandType: CommandType.StoredProcedure, 
+                                    commandTimeout: timeout,
+                                    cancellationToken: cancellationToken)));
                         }
                     }
                 }
@@ -628,7 +665,8 @@ namespace ATI.Services.Common.Sql
             DynamicParameters parameters,
             string metricEntity,
             TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
+            int? timeoutInSeconds = null,
+            CancellationToken cancellationToken = default)
         {
             try
             {
@@ -645,10 +683,12 @@ namespace ATI.Services.Common.Sql
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             result = await connection.ExecuteScalarAsync<T>(
-                                procedureName,
-                                parameters,
-                                commandType: CommandType.StoredProcedure,
-                                commandTimeout: timeout);
+                                new CommandDefinition(
+                                    procedureName, 
+                                    parameters,
+                                    commandType: CommandType.StoredProcedure, 
+                                    commandTimeout: timeout,
+                                    cancellationToken: cancellationToken));
                         }
 
                         var returnValue = parameters.Get<int>(ReturnValueFieldName);
@@ -671,7 +711,8 @@ namespace ATI.Services.Common.Sql
             DynamicParameters parameters,
             string metricEntity,
             TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
+            int? timeoutInSeconds = null,
+            CancellationToken cancellationToken = default)
         {
             try
             {
@@ -685,10 +726,12 @@ namespace ATI.Services.Common.Sql
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             await connection.ExecuteAsync(
-                                procedureName,
-                                parameters,
-                                commandType: CommandType.StoredProcedure,
-                                commandTimeout: timeout);
+                                new CommandDefinition(
+                                    procedureName, 
+                                    parameters,
+                                    commandType: CommandType.StoredProcedure, 
+                                    commandTimeout: timeout,
+                                    cancellationToken: cancellationToken));
                         }
 
                         return new OperationResult(ActionStatus.Ok);
@@ -707,7 +750,8 @@ namespace ATI.Services.Common.Sql
             DynamicParameters parameters,
             string metricEntity,
             TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
+            int? timeoutInSeconds = null,
+            CancellationToken cancellationToken = default)
         {
             try
             {
@@ -722,10 +766,12 @@ namespace ATI.Services.Common.Sql
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             await connection.ExecuteAsync(
-                                procedureName,
-                                parameters,
-                                commandType: CommandType.StoredProcedure,
-                                commandTimeout: timeout);
+                                new CommandDefinition(
+                                    procedureName, 
+                                    parameters,
+                                    commandType: CommandType.StoredProcedure, 
+                                    commandTimeout: timeout,
+                                    cancellationToken: cancellationToken));
                         }
 
                         var returnValue = parameters.Get<int>(ReturnValueFieldName);
@@ -747,7 +793,8 @@ namespace ATI.Services.Common.Sql
             Func<SqlMapper.GridReader, Task<T>> convertData,
             string metricEntity,
             TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
+            int? timeoutInSeconds = null,
+            CancellationToken cancellationToken = default)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -763,10 +810,12 @@ namespace ATI.Services.Common.Sql
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
-                                procedureName,
-                                parameters,
-                                commandType: CommandType.StoredProcedure,
-                                commandTimeout: timeout);
+                                new CommandDefinition(
+                                    procedureName, 
+                                    parameters,
+                                    commandType: CommandType.StoredProcedure, 
+                                    commandTimeout: timeout,
+                                    cancellationToken: cancellationToken));
                         }
 
                         T result;
@@ -807,7 +856,8 @@ namespace ATI.Services.Common.Sql
             Func<SqlMapper.GridReader, MetricsTimer, Task<T>> convertData,
             string metricEntity,
             TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
+            int? timeoutInSeconds = null,
+            CancellationToken cancellationToken = default)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -823,10 +873,12 @@ namespace ATI.Services.Common.Sql
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
-                                procedureName,
-                                parameters,
-                                commandType: CommandType.StoredProcedure,
-                                commandTimeout: timeout);
+                                new CommandDefinition(
+                                    procedureName, 
+                                    parameters,
+                                    commandType: CommandType.StoredProcedure, 
+                                    commandTimeout: timeout,
+                                    cancellationToken: cancellationToken));
                         }
 
                         T result;
@@ -859,7 +911,8 @@ namespace ATI.Services.Common.Sql
             Func<SqlMapper.GridReader, Task<T>> convertData,
             string metricEntity,
             TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
+            int? timeoutInSeconds = null,
+            CancellationToken cancellationToken = default)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -876,10 +929,12 @@ namespace ATI.Services.Common.Sql
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
-                                procedureName,
-                                parameters,
-                                commandType: CommandType.StoredProcedure,
-                                commandTimeout: timeout);
+                                new CommandDefinition(
+                                    procedureName, 
+                                    parameters,
+                                    commandType: CommandType.StoredProcedure, 
+                                    commandTimeout: timeout,
+                                    cancellationToken: cancellationToken));
                         }
 
                         var returnValue = parameters.Get<int>(ReturnValueFieldName);
@@ -925,7 +980,8 @@ namespace ATI.Services.Common.Sql
             Func<SqlMapper.GridReader, MetricsTimer, Task<T>> convertData,
             string metricEntity,
             TimeSpan? longTimeRequest = null,
-            int? timeoutInSeconds = null)
+            int? timeoutInSeconds = null,
+            CancellationToken cancellationToken = default)
         {
             SqlMapper.GridReader reader = null;
             try
@@ -942,10 +998,12 @@ namespace ATI.Services.Common.Sql
                             longTimeRequest, QueryMetricTypeLabel))
                         {
                             reader = await connection.QueryMultipleAsync(
-                                procedureName,
-                                parameters,
-                                commandType: CommandType.StoredProcedure,
-                                commandTimeout: timeout);
+                                new CommandDefinition(
+                                    procedureName, 
+                                    parameters,
+                                    commandType: CommandType.StoredProcedure, 
+                                    commandTimeout: timeout,
+                                    cancellationToken: cancellationToken));
                         }
 
                         var returnValue = parameters.Get<int>(ReturnValueFieldName);

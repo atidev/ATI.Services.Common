@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ATI.Services.Common.Behaviors;
 using ATI.Services.Common.Logging;
@@ -41,7 +42,8 @@ public class PostgresDapper
         string metricEntity,
         bool receiveNotice = false,
         TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
+        int? timeoutInSeconds = null,
+        CancellationToken cancellationToken = default)
     {
         return await ExecuteAsync(
             functionName,
@@ -50,7 +52,8 @@ public class PostgresDapper
             metricEntity,
             receiveNotice,
             longTimeRequest,
-            timeoutInSeconds);
+            timeoutInSeconds, 
+            cancellationToken);
     }
 
     public async Task<OperationResult> ExecuteProcedureAsync(
@@ -59,7 +62,8 @@ public class PostgresDapper
         string metricEntity,
         bool receiveNotice = false,
         TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
+        int? timeoutInSeconds = null,
+        CancellationToken cancellationToken = default)
     {
         return await ExecuteAsync(
             procedureName,
@@ -68,7 +72,8 @@ public class PostgresDapper
             metricEntity,
             receiveNotice,
             longTimeRequest,
-            timeoutInSeconds);
+            timeoutInSeconds, 
+            cancellationToken);
     }
 
     private async Task<OperationResult> ExecuteAsync(
@@ -78,7 +83,8 @@ public class PostgresDapper
         string metricEntity,
         bool receiveNotice,
         TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
+        int? timeoutInSeconds = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -103,9 +109,11 @@ public class PostgresDapper
                 longTimeRequest, QueryMetricTypeLabel);
 
             await connection.ExecuteAsync(
-                query,
-                parameters,
-                commandTimeout: timeout);
+                new CommandDefinition(
+                    query, 
+                    parameters, 
+                    commandTimeout: timeout, 
+                    cancellationToken: cancellationToken));
             return new OperationResult(ActionStatus.Ok);
         }
         catch (Exception e)
@@ -121,7 +129,8 @@ public class PostgresDapper
         string metricEntity,
         bool receiveNotice = false,
         TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
+        int? timeoutInSeconds = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -139,9 +148,11 @@ public class PostgresDapper
                 connection.Notice += LoggOnNotice;
 
             var result = await ExecuteTaskWithMetrics(connection.ExecuteScalarAsync<T>(
-                    GetFunctionQuery(parameters, functionName),
-                    parameters,
-                    commandTimeout: timeout),
+                new CommandDefinition(
+                    GetFunctionQuery(parameters, functionName), 
+                    parameters, 
+                    commandTimeout: timeout, 
+                    cancellationToken: cancellationToken)),
                 _metrics.CreateMetricsTimerWithLogging(
                     metricEntity,
                     functionName,
@@ -165,7 +176,8 @@ public class PostgresDapper
         string metricEntity,
         bool receiveNotice = false,
         TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
+        int? timeoutInSeconds = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -185,9 +197,11 @@ public class PostgresDapper
 
             using var reader = await ExecuteTaskWithMetrics(
                 connection.QueryMultipleAsync(
-                    GetFunctionQuery(parameters, functionName),
-                    parameters,
-                    commandTimeout: timeout),
+                    new CommandDefinition(
+                        GetFunctionQuery(parameters, functionName), 
+                        parameters, 
+                        commandTimeout: timeout, 
+                        cancellationToken: cancellationToken)),
                 _metrics.CreateMetricsTimerWithLogging(
                     metricEntity,
                     functionName,
@@ -219,7 +233,8 @@ public class PostgresDapper
         string metricEntity,
         bool receiveNotice = false,
         TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
+        int? timeoutInSeconds = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -238,9 +253,11 @@ public class PostgresDapper
 
             using var reader = await ExecuteTaskWithMetrics(
                 connection.QueryMultipleAsync(
-                    GetFunctionQuery(parameters, functionName),
-                    parameters,
-                    commandTimeout: timeout),
+                    new CommandDefinition(
+                        GetFunctionQuery(parameters, functionName), 
+                        parameters, 
+                        commandTimeout: timeout, 
+                        cancellationToken: cancellationToken)),
                 _metrics.CreateMetricsTimerWithLogging(
                     metricEntity,
                     functionName,
@@ -278,7 +295,8 @@ public class PostgresDapper
         string metricEntity,
         bool receiveNotice = false,
         TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
+        int? timeoutInSeconds = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -297,9 +315,11 @@ public class PostgresDapper
 
             var result = await ExecuteTaskWithMetrics(
                 connection.QueryAsync<T>(
-                    GetFunctionQuery(parameters, functionName),
-                    parameters,
-                    commandTimeout: timeout),
+                    new CommandDefinition(
+                        GetFunctionQuery(parameters, functionName), 
+                        parameters, 
+                        commandTimeout: timeout, 
+                        cancellationToken: cancellationToken)),
                 _metrics.CreateMetricsTimerWithLogging(
                     metricEntity,
                     functionName,
@@ -323,7 +343,8 @@ public class PostgresDapper
         string metricEntity,
         bool receiveNotice = false,
         TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
+        int? timeoutInSeconds = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -342,9 +363,11 @@ public class PostgresDapper
 
             using var reader = await ExecuteTaskWithMetrics(
                 connection.QueryMultipleAsync(
-                    GetFunctionQuery(parameters, functionName),
-                    parameters,
-                    commandTimeout: timeout),
+                    new CommandDefinition(
+                        GetFunctionQuery(parameters, functionName), 
+                        parameters, 
+                        commandTimeout: timeout, 
+                        cancellationToken: cancellationToken)),
                 _metrics.CreateMetricsTimerWithLogging(
                     metricEntity,
                     functionName,
@@ -375,7 +398,8 @@ public class PostgresDapper
         string metricEntity,
         bool receiveNotice = false,
         TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
+        int? timeoutInSeconds = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -394,9 +418,11 @@ public class PostgresDapper
 
             using var reader = await ExecuteTaskWithMetrics(
                 connection.QueryMultipleAsync(
-                    GetFunctionQuery(parameters, functionName),
-                    parameters,
-                    commandTimeout: timeout),
+                    new CommandDefinition(
+                        GetFunctionQuery(parameters, functionName), 
+                        parameters, 
+                        commandTimeout: timeout, 
+                        cancellationToken: cancellationToken)),
                 _metrics.CreateMetricsTimerWithLogging(
                     metricEntity,
                     functionName,
@@ -436,7 +462,8 @@ public class PostgresDapper
         string metricEntity,
         bool receiveNotice = false,
         TimeSpan? longTimeRequest = null,
-        int? timeoutInSeconds = null)
+        int? timeoutInSeconds = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -455,9 +482,11 @@ public class PostgresDapper
 
             var result = await ExecuteTaskWithMetrics(
                 connection.QueryAsync<dynamic>(
-                    GetFunctionQuery(parameters, functionName),
-                    parameters,
-                    commandTimeout: timeout),
+                    new CommandDefinition(
+                        GetFunctionQuery(parameters, functionName), 
+                        parameters, 
+                        commandTimeout: timeout, 
+                        cancellationToken: cancellationToken)),
                 _metrics.CreateMetricsTimerWithLogging(
                     metricEntity,
                     functionName,
@@ -482,7 +511,8 @@ public class PostgresDapper
         string metricEntity,
         bool receiveNotice = false,
         TimeSpan? longTimeRequest = null, 
-        int? timeoutInSeconds = null)
+        int? timeoutInSeconds = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -501,9 +531,11 @@ public class PostgresDapper
 
             var result = await ExecuteTaskWithMetrics(
                 connection.QueryAsync<T>(
-                    sql,
-                    parameters,
-                    commandTimeout: timeout),
+                    new CommandDefinition(
+                        sql, 
+                        parameters, 
+                        commandTimeout: timeout, 
+                        cancellationToken: cancellationToken)),
                 _metrics.CreateMetricsTimerWithLogging(
                     metricEntity,
                     queryName,
